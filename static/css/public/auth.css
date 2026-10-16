@@ -1,0 +1,426 @@
+:root {
+    --app-azul: #005082;
+    --app-azul-2: #0a6aa6;
+    --app-azul-oscuro: #003a5f;
+    --app-velo: rgba(0, 40, 68, 0.72);
+    --app-acento: #67BD01;
+    --app-acento-oscuro: #58a300;
+    --app-tinta: #1d1d1f;
+    --app-texto: #424245;
+    --app-muted: #6e6e73;
+    --app-fondo: #ffffff;
+    --app-gris-claro: #f5f5f7;
+    --app-borde: #d2d2d7;
+    --app-blanco: #ffffff;
+    --au-fuente: 'Geist', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+html, body {
+    height: 100%;
+}
+
+.au-body {
+    margin: 0;
+    background: var(--app-fondo);
+    color: var(--app-texto);
+    font-family: var(--au-fuente);
+    font-size: 17px;
+    line-height: 1.47;
+    -webkit-font-smoothing: antialiased;
+}
+
+.au-body ::selection {
+    background: rgba(0, 80, 130, 0.15);
+    color: var(--app-tinta);
+}
+
+.au-stage {
+    min-height: 100svh;
+    margin: 0;
+    align-items: stretch;
+}
+
+.au-foto {
+    position: relative;
+    display: flex;
+    background: var(--app-azul-oscuro);
+    color: var(--app-blanco);
+    overflow: hidden;
+}
+
+.au-foto-imagen {
+    background-size: cover;
+    background-position: center 35%;
+    background-repeat: no-repeat;
+}
+
+.au-foto-imagen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--app-velo);
+}
+
+.au-foto-cuerpo {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+    padding: clamp(28px, 5vw, 64px);
+}
+
+.au-marca {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    color: var(--app-blanco);
+    font-weight: 600;
+    font-size: 1.4rem;
+    text-decoration: none;
+    border-radius: 8px;
+}
+
+.au-marca img {
+    max-height: 56px;
+    display: block;
+}
+
+.au-marca-clara {
+    background: var(--app-blanco);
+    padding: 8px 12px;
+    border-radius: 10px;
+}
+
+.au-marca-movil {
+    display: none;
+    color: var(--app-azul);
+    margin-bottom: 2rem;
+}
+
+.au-marca-movil img {
+    max-height: 40px;
+}
+
+.au-foto-texto {
+    max-width: 30rem;
+    margin: 3rem 0;
+}
+
+.au-foto-eyebrow {
+    margin: 0 0 1rem;
+    font-size: .85rem;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--app-acento);
+}
+
+.au-foto-titulo {
+    margin: 0 0 1rem;
+    font-family: var(--au-fuente);
+    font-weight: 500;
+    font-size: clamp(2rem, 3.6vw, 3rem);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    color: var(--app-blanco);
+    text-wrap: balance;
+}
+
+.au-foto-sub {
+    margin: 0;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.8);
+    max-width: 34ch;
+}
+
+.au-volver {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: .5rem;
+    min-height: 44px;
+    padding: .4rem 1.1rem;
+    border-radius: 999px;
+    color: var(--app-blanco);
+    background: rgba(255, 255, 255, 0.14);
+    font-size: .95rem;
+    text-decoration: none;
+    transition: background-color 150ms ease-out, transform 100ms ease-out;
+}
+
+.au-volver:hover {
+    background: rgba(255, 255, 255, 0.26);
+    color: var(--app-blanco);
+}
+
+.au-volver:active {
+    transform: scale(0.97);
+}
+
+.au-marca:focus-visible,
+.au-volver:focus-visible {
+    outline: 3px solid var(--app-acento);
+    outline-offset: 3px;
+}
+
+.au-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--app-fondo);
+    padding: clamp(32px, 6vw, 80px) 24px;
+}
+
+.au-panel-cuerpo {
+    width: 100%;
+    max-width: 420px;
+}
+
+.au-panel-cuerpo.au-card-wide {
+    max-width: 560px;
+}
+
+.au-eyebrow {
+    margin: 0 0 .6rem;
+    font-size: .8rem;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--app-azul);
+}
+
+.au-title {
+    margin: 0 0 .5rem;
+    font-family: var(--au-fuente);
+    font-weight: 500;
+    font-size: clamp(2rem, 3.4vw, 2.6rem);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    color: var(--app-tinta);
+}
+
+.au-sub {
+    margin: 0 0 2rem;
+    font-size: 1.05rem;
+    color: var(--app-muted);
+}
+
+.au-panel-cuerpo form {
+    margin: 0;
+}
+
+.au-panel-cuerpo .form-label {
+    margin-bottom: .45rem;
+    font-size: .95rem;
+    font-weight: 500;
+    color: var(--app-tinta);
+}
+
+.au-panel-cuerpo .form-control {
+    min-height: 54px;
+    border: 1px solid var(--app-borde);
+    border-radius: .85rem;
+    background: var(--app-blanco);
+    color: var(--app-tinta);
+    font-size: 1.05rem;
+    padding: .6rem 1.1rem;
+    box-shadow: none;
+    transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+}
+
+.au-panel-cuerpo .form-control::placeholder {
+    color: #a1a1a6;
+}
+
+.au-panel-cuerpo .form-control:focus {
+    border-color: var(--app-azul);
+    box-shadow: 0 0 0 3px rgba(0, 80, 130, 0.15);
+}
+
+.au-pass {
+    position: relative;
+}
+
+.au-pass .form-control {
+    padding-right: 3.2rem;
+}
+
+.au-pass-toggle {
+    position: absolute;
+    top: 50%;
+    right: .5rem;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border: 0;
+    background: transparent;
+    color: var(--app-muted);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.au-pass-toggle:hover,
+.au-pass-toggle:focus-visible {
+    color: var(--app-azul);
+    background: var(--app-gris-claro);
+    outline: none;
+}
+
+.au-panel-cuerpo .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 56px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--app-acento);
+    color: var(--app-tinta);
+    font-size: 1.1rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    transition: background-color 150ms ease-out, transform 100ms ease-out;
+}
+
+.au-panel-cuerpo .btn-primary:hover,
+.au-panel-cuerpo .btn-primary:focus {
+    background: var(--app-acento-oscuro);
+    color: var(--app-tinta);
+}
+
+.au-panel-cuerpo .btn-primary:focus-visible {
+    outline: 3px solid var(--app-azul);
+    outline-offset: 3px;
+}
+
+.au-panel-cuerpo .btn-primary:active {
+    transform: scale(0.97);
+}
+
+.au-panel-cuerpo .btn-primary:disabled {
+    opacity: .7;
+    cursor: wait;
+}
+
+.au-panel-cuerpo .btn:not(.btn-primary) {
+    border-radius: 999px;
+}
+
+.au-panel-cuerpo a.au-link {
+    color: var(--app-azul);
+    font-weight: 500;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 150ms ease-out, color 150ms ease-out;
+}
+
+.au-panel-cuerpo a.au-link:hover {
+    color: var(--app-azul-oscuro);
+    border-bottom-color: var(--app-acento);
+}
+
+.au-panel-cuerpo a.au-link:focus-visible {
+    outline: 2px solid var(--app-azul);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+.au-link-chico {
+    font-size: .9rem;
+}
+
+.au-links {
+    margin-top: 1.6rem;
+    font-size: .95rem;
+    color: var(--app-muted);
+}
+
+.au-links:empty {
+    display: none;
+}
+
+.au-links-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: .5rem 1rem;
+}
+
+.au-legal {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .6rem;
+    margin: 2.5rem 0 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--app-borde);
+    font-size: .85rem;
+    color: var(--app-muted);
+}
+
+.au-espera {
+    text-align: center;
+}
+
+.au-espera-logo {
+    height: 45px;
+    margin-bottom: 15px;
+}
+
+.au-espera-spinner {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.au-espera-titulo {
+    margin-top: 10px;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+.au-espera-texto {
+    margin-top: 5px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+@media (max-width: 991.98px) {
+    .au-stage {
+        flex-direction: column;
+    }
+
+    .au-foto {
+        display: none;
+    }
+
+    .au-marca-movil {
+        display: inline-flex;
+    }
+
+    .au-panel {
+        align-items: flex-start;
+        padding: 32px 20px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .au-title {
+        font-size: 1.9rem;
+    }
+
+    .au-sub {
+        margin-bottom: 1.5rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .au-panel-cuerpo .form-control,
+    .au-panel-cuerpo .btn-primary,
+    .au-panel-cuerpo a.au-link,
+    .au-volver {
+        transition: none;
+    }
+}

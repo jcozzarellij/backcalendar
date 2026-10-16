@@ -1,0 +1,32 @@
+{
+  "POSTGRES_USER": "",
+  "POSTGRES_HOST": "",
+  "POSTGRES_PORT": "",
+  "POSTGRES_PASSWORD": "",
+  "POSTGRES_DBNAME": "",
+  "USE_SSL": false,
+  "SECRET_KEY": "",
+  "DEBUG": false,
+  "DOMINIO_GENERAL": "",
+  "BASE_URL_PRODUCCION": "",
+  "WINDOWS": true,
+  "EMAIL_HOST": "smtp.gmail.com",
+  "EMAIL_PORT": 587,
+  "EMAIL_USE_TLS": true,
+  "EMAIL_HOST_USER": "",
+  "EMAIL_HOST_PASSWORD": "",
+  "DEFAULT_FROM_EMAIL": "",
+  "ADMINS": [
+    [
+      "Admin",
+      "admin@dominio.com"
+    ]
+  ],
+  "ID_GRUPO_ADMINISTRADOR": 1,
+  "BACKEND_PUBLIC_URL": "",
+  "PG_DUMP_CMD": "",
+  "ERROR_NOTIFY_EMAILS": [],
+  "GOOGLE_OAUTH_CLIENT_ID": "",
+  "GOOGLE_OAUTH_CLIENT_SECRET": "",
+  "GOOGLE_OAUTH_REDIRECT_URI": ""
+}

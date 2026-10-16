@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+        <div>
+            <small class="text-muted">Se conservan los {{ retencion }} respaldos más recientes. La descarga es solo para usuarios con acceso a este módulo.</small>
+        </div>
+        <button type="button" class="btn btn-sm btn-dark" id="btnCrearBackup" onclick="crearBackup(this)">
+            <i class="fa fa-plus me-1"></i> Generar backup ahora
+        </button>
+    </div>
+
+    <div class="alert alert-info d-flex align-items-start gap-2 py-2 small">
+        <i class="fa fa-circle-info mt-1"></i>
+        <div>
+            Los respaldos se guardan como <code>.tar</code> en <code>media/backups/año/mes/día/</code> y se generan con <strong>pg_dump</strong> (restaurable con pg_restore) o, si no está instalado en el servidor, con <strong>dumpdata</strong> de Django (restaurable con loaddata).
+            Para automatizarlo, programá <code>python manage.py backup_bd</code> en el cron o el Programador de tareas del servidor.
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle">
+                    <thead>
+                    <tr>
+                        <th>Archivo</th>
+                        <th class="text-center">Método</th>
+                        <th class="text-center">Tamaño</th>
+                        <th class="text-center">Fecha</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for b in backups %}
+                        <tr>
+                            <td><i class="fas fa-file-archive text-secondary me-2"></i>{{ b.nombre }}</td>
+                            <td class="text-center"><span class="badge {% if b.metodo == 'pg_dump' %}bg-success{% else %}bg-secondary{% endif %}">{{ b.metodo }}</span></td>
+                            <td class="text-center">{{ b.tamano }}</td>
+                            <td class="text-center">{{ b.fecha }}</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-light" href="{{ ruta }}?action=descargar&nombre={{ b.relativo }}" title="Descargar">
+                                    <i class="fa fa-download"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-light text-danger" title="Eliminar"
+                                        onclick="eliminarBackup('{{ b.relativo }}')">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                Todavía no hay respaldos. Generá el primero con «Generar backup ahora».
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script>
+        function crearBackup(btn) {
+            btn.disabled = true;
+            pantallaespera();
+            $.ajax({
+                type: "POST",
+                url: `{{ ruta }}`,
+                data: {'action': 'crear', 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                dataType: "json",
+                success: function (data) {
+                    setTimeout($.unblockUI, 1);
+                    btn.disabled = false;
+                    const r = data[0] || {};
+                    if (r.error) {
+                        mensajeWarning(r.message);
+                    } else {
+                        mensajeSuccess(r.message);
+                        if (r.reload) setTimeout(() => location.reload(), 900);
+                    }
+                },
+                error: function () {
+                    setTimeout($.unblockUI, 1);
+                    btn.disabled = false;
+                    mensajeWarning("Error de conexión.");
+                }
+            });
+        }
+
+        function eliminarBackup(nombre) {
+            Swal.fire({
+                title: '¿Eliminar este backup?',
+                text: nombre,
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+                $.ajax({
+                    type: "POST",
+                    url: `{{ ruta }}`,
+                    data: {'action': 'eliminar', 'nombre': nombre, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+                    dataType: "json",
+                    success: function (data) {
+                        const r = data[0] || {};
+                        if (r.error) {
+                            mensajeWarning(r.message);
+                        } else {
+                            mensajeSuccess(r.message);
+                            if (r.reload) setTimeout(() => location.reload(), 900);
+                        }
+                    },
+                    error: function () {
+                        mensajeWarning("Error de conexión.");
+                    }
+                });
+            });
+        }
+    </script>
+{% endblock %}

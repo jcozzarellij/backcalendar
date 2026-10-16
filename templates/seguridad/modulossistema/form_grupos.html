@@ -1,0 +1,43 @@
+<div class="row g-2">
+    <input type="hidden" name="action" value="guardar_grupos_modulo">
+    <input type="hidden" name="pk_modulo" value="{{ modulo.id }}">
+    <div class="col-12">
+        <div class="asignacion-info mb-3">
+            <div class="small text-muted">Módulo</div>
+            <div class="fw-semibold">{{ modulo.nombre }}</div>
+            <div class="small text-muted">{{ modulo.url }}</div>
+        </div>
+    </div>
+    <div class="col-12">
+        <label class="form-label small mb-2">Seleccioná los grupos del sidebar a los que pertenece esta URL</label>
+        <div class="asignacion-list">
+            {% for g in grupos %}
+                <label class="asignacion-item" for="grupo_check_{{ g.id }}">
+                    <input class="form-check-input" type="checkbox" name="c_grupos"
+                           value="{{ g.id }}" id="grupo_check_{{ g.id }}"
+                           {% if g.id in grupos_actuales_ids %}checked{% endif %}>
+                    <span class="asignacion-item-text">
+                        {% if g.icono %}<i class="{{ g.icono }}"></i>{% endif %}
+                        {{ g.nombre }}
+                        {% if g.prioridad is not None %}
+                            <span class="badge bg-light text-dark border">#{{ g.prioridad }}</span>
+                        {% endif %}
+                    </span>
+                </label>
+            {% empty %}
+                <div class="asignacion-empty">No hay grupos disponibles.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="border-top my-3"></div>
+
+<div class="d-flex justify-content-end">
+    <button type="button" class="btn btn-danger btn-sm me-1" data-bs-dismiss="modal">
+        <i class="fa fa-window-close me-1"></i>Cancelar
+    </button>
+    <button type="submit" class="btn btn-success btn-sm">
+        <i class="fa fa-save me-1"></i>Guardar
+    </button>
+</div>

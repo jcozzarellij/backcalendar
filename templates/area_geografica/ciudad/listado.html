@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="GET" class="mb-0">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Nombre de ciudad</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-end-0">
+                                <i class="fa fa-search text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control border-start-0"
+                                   placeholder="Buscar ciudad..." name="criterio_ciudad" value="{{ criterio_ciudad|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Nombre de provincia</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-end-0">
+                                <i class="fa fa-map text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control border-start-0"
+                                   placeholder="Buscar provincia..." name="criterio_prov" value="{{ criterio_prov|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Nombre de país</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-end-0">
+                                <i class="fa fa-globe text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control border-start-0"
+                                   placeholder="Buscar país..." name="criterio_pais" value="{{ criterio_pais|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Acciones</label>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i>
+                            </button>
+                            {% if url_vars %}
+                                <a href="{{ ruta }}" class="btn btn-default" title="Limpiar filtros">
+                                    <i class="fas fa-sync-alt"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row align-items-center mb-3">
+        <div class="col-md-12 mb-2 mb-md-0">
+            <a href="javascript:void(0)" onclick="formModal(0, 'Nueva Ciudad', 'add')" class="btn btn-success btn-sm">
+                <i class="fas fa-plus-circle me-2"></i> Nueva Ciudad
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="tabla" class="table table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th class="text-center">Nombre</th>
+                        <th class="text-center">Provincia</th>
+                        <th class="text-center">País</th>
+                        <th class="text-center">Acción</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for l in listado %}
+                        <tr>
+                            <td class="text-center">{{ l.nombre }}</td>
+                            <td class="text-center">{{ l.provincia.nombre }}</td>
+                            <td class="text-center">{{ l.provincia.pais.nombre }}</td>
+                            <td class="text-center">
+                                <div class="dropdown">
+                                    <button class="btn btn-icon" type="button" id="dropdownMenuButton-{{ l.pk }}"
+                                            data-bs-toggle="dropdown" aria-expanded="false"
+                                            style="background: none; border: none;">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton-{{ l.pk }}">
+                                        <li>
+                                            <a class="dropdown-item" href="javascript:void(0)" onclick="formModal({{ l.pk }}, 'Editar Ciudad', 'change')">
+                                                <i class="fas fa-edit me-2 text-primary"></i>Editar
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="javascript:void(0);"
+                                               onclick="eliminarajax({{ l.pk }}, '{{ l.nombre }}', 'delete', '{{ dict_url_vars }}')">
+                                                <i class="fas fa-trash me-2 text-danger"></i>Eliminar
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% include "paginacion.html" %}
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <form method="post" action="{{ ruta }}" class="form">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalNombre"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body detalleProdModal"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script>
+        function formModal(id, text, action) {
+            pantallaespera();
+            $.ajax({
+                type: "GET",
+                url: `{{ request.path }}`,
+                data: {'action': action, 'pk': id},
+                success: function (data) {
+                    setTimeout($.unblockUI, 1);
+                    if (data.result === true) {
+                        $('#modalNombre').html(text);
+                        $('.detalleProdModal').html(data.data);
+                        $('.detalleProdModal .select2').select2({
+                            width: '100%',
+                            dropdownParent: $('#modalDetalle')
+                        });
+                        new bootstrap.Modal(document.getElementById('modalDetalle')).show();
+                    } else {
+                        mensajeWarning(data.message);
+                    }
+                },
+                error: function () {
+                    setTimeout($.unblockUI, 1);
+                    mensajeWarning("Error de conexión.");
+                },
+                dataType: "json"
+            });
+        }
+
+        function eliminarajax(pk, nombre, accion, dict_url_vars = "", titulo = `Estas a punto de eliminar este registro ${nombre}`) {
+            Swal.fire({
+                title: titulo,
+                text: "Esta acción es irreversible",
+                type: 'warning',
+                showCancelButton: true,
+                allowOutsideClick: false,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, deseo hacerlo!',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.value) {
+                    pantallaespera();
+                    $.ajax({
+                        type: 'POST',
+                        url: '{{ request.path }}',
+                        async: false,
+                        data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            action: accion,
+                            id: pk,
+                            dict_url_vars: dict_url_vars,
+                        },
+                        dataType: "json",
+                        beforeSend: function () {
+                            pantallaespera();
+                        }
+                    }).done(function (data) {
+                        setTimeout($.unblockUI, 1);
+                        if (data.error === false) {
+                            location.reload();
+                        }
+                    }).fail(function (jqXHR, textStatus, errorThrown) {
+                        setTimeout($.unblockUI, 1);
+                        mensajeWarning('Error en el servidor');
+                    }).always(function () {
+                    });
+                }
+            })
+        }
+    </script>
+{% endblock %}

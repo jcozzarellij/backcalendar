@@ -1,0 +1,175 @@
+{% extends 'agenda/base_agenda.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
+    <link rel="stylesheet" href="/static/css/agenda/cita.css?v1.0">
+{% endblock %}
+{% block content %}
+    <div class="row g-3">
+        <div class="col-xl-8">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                        <span class="badge {% if cita.estado == 'confirmada' %}bg-success{% elif cita.estado == 'pendiente' %}bg-warning{% elif cita.estado == 'cancelada' or cita.estado == 'no_asistio' %}bg-danger{% else %}bg-secondary{% endif %} ct-estado">{{ cita.get_estado_display }}</span>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if cita.enlace_meet %}<a href="{{ cita.enlace_meet }}" target="_blank" rel="noopener" class="btn btn-success btn-sm"><i class="fas fa-video me-1"></i>Unirse a la videollamada</a>{% endif %}
+                            {% if puede_editar %}
+                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalReprogramar"><i class="fas fa-calendar-day me-1"></i>Reprogramar</button>
+                                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#modalCancelar"><i class="fas fa-ban me-1"></i>Cancelar cita</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-sm-6 col-lg-3"><p class="ct-etq">Fecha y hora</p><p class="ct-val">{{ cita.inicio|date:"D d M Y" }}<br>{{ cita.inicio|time:"H:i" }} – {{ cita.fin|time:"H:i" }}</p></div>
+                        <div class="col-sm-6 col-lg-3"><p class="ct-etq">Duración</p><p class="ct-val">{{ cita.duracion_min }} min</p></div>
+                        <div class="col-sm-6 col-lg-3"><p class="ct-etq">Proyecto / equipo</p><p class="ct-val">{{ cita.proyecto|default:'—' }}<br><span class="agenda-sub">{{ cita.equipo.nombre|default:'' }}</span></p></div>
+                        <div class="col-sm-6 col-lg-3"><p class="ct-etq">Producto</p><p class="ct-val">{{ cita.producto|default:'—' }}</p></div>
+                        <div class="col-sm-6 col-lg-3"><p class="ct-etq">Cliente</p><p class="ct-val">{{ cita.cliente }}<br><a href="mailto:{{ cita.cliente.correo }}" class="agenda-sub">{{ cita.cliente.correo }}</a>{% if cita.cliente.telefono %}<br><span class="agenda-sub">{{ cita.cliente.telefono }}</span>{% endif %}</p></div>
+                        <div class="col-sm-6 col-lg-3"><p class="ct-etq">Organizador</p><p class="ct-val">{{ cita.organizador.get_full_name|default:cita.organizador.username }}</p></div>
+                        <div class="col-sm-6 col-lg-3"><p class="ct-etq">Asignada por</p><p class="ct-val">{{ cita.get_asignada_por_display }}<br><span class="agenda-sub">Sesión {{ cita.numero_sesion }} del cliente</span></p></div>
+                        <div class="col-sm-6 col-lg-3"><p class="ct-etq">Google Calendar</p><p class="ct-val">
+                            {% if cita.sincronizada_google %}<span class="text-success"><i class="fas fa-check me-1"></i>Evento creado</span>{% if cita.enlace_evento %}<br><a href="{{ cita.enlace_evento }}" target="_blank" rel="noopener" class="agenda-sub">Abrir en Google</a>{% endif %}
+                            {% elif cita.estado == 'cancelada' %}—
+                            {% else %}<span class="text-warning"><i class="fas fa-triangle-exclamation me-1"></i>Sin sincronizar</span><br><span class="agenda-sub">{{ cita.error_google }}</span><br><button type="button" class="btn btn-light btn-sm mt-1" onclick="accionAgenda({{ cita.pk }}, 'sincronizar')">Reintentar</button>{% endif %}
+                        </p></div>
+                    </div>
+                    {% if cita.motivo_cancelacion %}<p class="text-danger mb-0 mt-2">Motivo de cancelación: {{ cita.motivo_cancelacion }}</p>{% endif %}
+                    {% if cita.estado == 'pendiente' and cita.error_google %}<p class="text-warning mb-0 mt-2"><i class="fas fa-triangle-exclamation me-1"></i>{{ cita.error_google }} Confírmala con «Reintentar» o cancélala.</p>{% endif %}
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h5 class="mb-0">Notas</h5>
+                        <span class="agenda-sub" id="ct-nota-estado">Se guardan solas mientras escribes.</span>
+                    </div>
+                    <textarea id="ct-nota" class="form-control" rows="5" placeholder="Temas a tratar, acuerdos, siguientes pasos…">{{ nota.texto|default:'' }}</textarea>
+                </div>
+            </div>
+
+            <div class="card" id="cierre">
+                <div class="card-body">
+                    <h5 class="mb-1">Cierre de la cita</h5>
+                    <p class="agenda-sub mb-3">Se completa al terminar; alimenta el historial del cliente y los reportes.</p>
+                    {% if cita.estado == 'cancelada' %}
+                        <p class="agenda-sub mb-0">La cita fue cancelada: no se registra cierre.</p>
+                    {% else %}
+                        <form method="post" action="{{ request.path }}" class="form" id="frm-cierre">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="cierre">
+                            <div class="row g-2">
+                                {% for field in form_cierre %}
+                                    <div class="col-lg-{{ field.field.widget.attrs.col|default:'12' }}">
+                                        <div class="mb-2">
+                                            <label class="form-label small mb-1" for="id_{{ field.name }}">{{ field.label }}</label>
+                                            {{ field }}
+                                            <div class="invalid-feedback" id="errorMessage{{ field.name }}"></div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="d-flex justify-content-end mt-2">
+                                <button type="submit" id="submit" class="btn btn-success btn-sm"><i class="fa fa-save me-1"></i>Guardar cierre</button>
+                            </div>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="mb-3">Participantes</h5>
+                    <ul class="list-unstyled mb-0">
+                        {% for p in participantes %}
+                            <li class="d-flex align-items-center justify-content-between py-1">
+                                <span>{{ p.usuario.get_full_name|default:p.usuario.username }}<span class="agenda-sub ms-1">· {{ p.get_rol_display }}</span></span>
+                                <span class="badge {% if p.respuesta == 'acepto' %}bg-success{% elif p.respuesta == 'rechazo' %}bg-danger{% else %}bg-secondary{% endif %}">{{ p.get_respuesta_display }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="mb-3">Actividad</h5>
+                    <ul class="ct-actividad">
+                        {% for a in actividad %}
+                            <li><strong>{{ a.accion }}</strong><div class="agenda-sub">{{ a.detalle }}</div><div class="agenda-sub">{{ a.creado_en|date:"D d M H:i" }}{% if a.autor %} · {{ a.autor.get_full_name|default:a.autor.username }}{% else %} · Sistema{% endif %}</div></li>
+                        {% empty %}
+                            <li class="agenda-sub">Sin actividad registrada.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="mb-3">Otras citas de {{ cita.cliente }}</h5>
+                    <ul class="list-unstyled mb-0">
+                        {% for o in otras %}
+                            <li class="py-1"><a href="/agenda/citas/{{ o.pk }}/">{{ o.titulo }}</a><div class="agenda-sub">{{ o.inicio|date:"D d M Y H:i" }} · {{ o.get_estado_display }}</div></li>
+                        {% empty %}
+                            <li class="agenda-sub">Es su primera cita.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalReprogramar" tabindex="-1" aria-labelledby="modalReprogramarTitulo" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalReprogramarTitulo">Reprogramar la cita</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="agenda-sub">Se actualiza en Google Calendar y se avisa a los invitados.</p>
+                    <div class="row g-2">
+                        <div class="col-7">
+                            <label class="form-label small mb-1" for="rp-inicio">Nuevo inicio</label>
+                            <input type="datetime-local" id="rp-inicio" class="form-control" value="{{ cita.inicio|date:'Y-m-d\TH:i' }}">
+                        </div>
+                        <div class="col-5">
+                            <label class="form-label small mb-1" for="rp-duracion">Duración (min)</label>
+                            <input type="number" id="rp-duracion" class="form-control" min="10" max="240" step="5" value="{{ cita.duracion_min }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success btn-sm" id="rp-confirmar"><i class="fa fa-save me-1"></i>Reprogramar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalCancelar" tabindex="-1" aria-labelledby="modalCancelarTitulo" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCancelarTitulo">Cancelar la cita</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="agenda-sub">El evento se elimina del calendario y se avisa al cliente.</p>
+                    <label class="form-label small mb-1" for="cn-motivo">Motivo</label>
+                    <input type="text" id="cn-motivo" class="form-control" maxlength="300" placeholder="Opcional">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Volver</button>
+                    <button type="button" class="btn btn-danger btn-sm" id="cn-confirmar"><i class="fas fa-ban me-1"></i>Cancelar la cita</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="ct-config" data-ruta="{{ request.path }}" hidden></div>
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script src="/static/js/agenda/crud.js?v1.1"></script>
+    <script src="/static/js/agenda/cita.js?v1.0"></script>
+{% endblock %}

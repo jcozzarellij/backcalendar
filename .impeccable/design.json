@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-08T00:00:00Z",
+  "title": "Design System: Turno de Exducere Online",
+  "extensions": {
+    "colorMeta": {
+      "azul": { "role": "primary", "displayName": "Azul institucional", "canonical": "#005082", "tonalRamp": ["#00182a", "#002a46", "#003a5f", "#005082", "#0a6aa6", "#4a93c4", "#9cc3dd", "#e0edf5"] },
+      "azul-oscuro": { "role": "primary", "displayName": "Azul institucional oscuro", "canonical": "#003a5f", "tonalRamp": ["#00182a", "#002a46", "#003a5f", "#005082", "#0a6aa6", "#4a93c4", "#9cc3dd", "#e0edf5"] },
+      "azul-medio": { "role": "primary", "displayName": "Azul medio", "canonical": "#0a6aa6", "tonalRamp": ["#00182a", "#002a46", "#003a5f", "#005082", "#0a6aa6", "#4a93c4", "#9cc3dd", "#e0edf5"] },
+      "azul-velo": { "role": "primary", "displayName": "Velo azul", "canonical": "rgba(0, 80, 130, 0.1)", "tonalRamp": ["#00182a", "#002a46", "#003a5f", "#005082", "#0a6aa6", "#4a93c4", "#9cc3dd", "#e0edf5"] },
+      "azul-borde-suave": { "role": "primary", "displayName": "Borde azul suave", "canonical": "#b3cbdb", "tonalRamp": ["#00182a", "#002a46", "#003a5f", "#005082", "#0a6aa6", "#4a93c4", "#b3cbdb", "#e0edf5"] },
+      "verde": { "role": "secondary", "displayName": "Verde acción", "canonical": "#67BD01", "tonalRamp": ["#1b3300", "#2f5800", "#3d7000", "#58a300", "#67BD01", "#8fd33f", "#c6e69c", "#eef8dd"] },
+      "verde-oscuro": { "role": "secondary", "displayName": "Verde acción oscuro", "canonical": "#58a300", "tonalRamp": ["#1b3300", "#2f5800", "#3d7000", "#58a300", "#67BD01", "#8fd33f", "#c6e69c", "#eef8dd"] },
+      "rojo": { "role": "tertiary", "displayName": "Rojo alerta", "canonical": "#D93838", "tonalRamp": ["#3a0c0c", "#5c1414", "#7a1c1c", "#b02c2c", "#D93838", "#e76f6f", "#f2b8b8", "#fbe8e8"] },
+      "pizarra": { "role": "tertiary", "displayName": "Pizarra", "canonical": "#64748B", "tonalRamp": ["#1e2530", "#2f3a4a", "#475569", "#64748B", "#8593a8", "#a9b4c4", "#cfd6e0", "#eef1f5"] },
+      "fondo": { "role": "neutral", "displayName": "Blanco cálido", "canonical": "#fcfbf8", "tonalRamp": ["#1f1d18", "#3d3a32", "#6b665a", "#9c968a", "#c9c4b8", "#e8e4dc", "#f5f3ee", "#fcfbf8"] },
+      "fondo-suave": { "role": "neutral", "displayName": "Gris suave", "canonical": "#f3f4f6", "tonalRamp": ["#1c1e22", "#363a41", "#5a606a", "#868c97", "#b2b7c0", "#d5d8de", "#e9ebee", "#f3f4f6"] },
+      "papel": { "role": "neutral", "displayName": "Papel", "canonical": "#ffffff", "tonalRamp": ["#071a31", "#3d4a56", "#5f6d77", "#8c98a2", "#b9c1c8", "#e4e6e9", "#f3f4f6", "#ffffff"] },
+      "tinta": { "role": "neutral", "displayName": "Tinta", "canonical": "#071a31", "tonalRamp": ["#030d19", "#071a31", "#1a2b3c", "#3d4a56", "#5f6d77", "#8c98a2", "#b9c1c8", "#e4e6e9"] },
+      "texto": { "role": "neutral", "displayName": "Texto", "canonical": "#3d4a56", "tonalRamp": ["#030d19", "#071a31", "#1a2b3c", "#3d4a56", "#5f6d77", "#8c98a2", "#b9c1c8", "#e4e6e9"] },
+      "gris": { "role": "neutral", "displayName": "Gris", "canonical": "#5f6d77", "tonalRamp": ["#030d19", "#071a31", "#1a2b3c", "#3d4a56", "#5f6d77", "#8c98a2", "#b9c1c8", "#e4e6e9"] },
+      "borde": { "role": "neutral", "displayName": "Borde", "canonical": "#e4e6e9", "tonalRamp": ["#1a1d21", "#33383e", "#565d66", "#828a94", "#aeb4bb", "#cfd3d8", "#e4e6e9", "#f3f4f6"] },
+      "nube": { "role": "neutral", "displayName": "Nube (panel)", "canonical": "#E6F0F5", "tonalRamp": ["#1a2b3c", "#334455", "#5b6b7a", "#8fa3b3", "#b6c6d2", "#c5d3dd", "#E6F0F5", "#f5f9fb"] },
+      "tinta-panel": { "role": "neutral", "displayName": "Tinta del panel", "canonical": "#1A2B3C", "tonalRamp": ["#0d161f", "#1A2B3C", "#334455", "#4c5e70", "#6f8192", "#9aabba", "#c5d3dd", "#E6F0F5"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Titular único de la landing, máximo 14ch, text-wrap: balance." },
+      "headline": { "displayName": "Headline", "purpose": "Encabezados de sección (.ld-h2), también en blanco dentro de la banda de cierre; lema y título del acceso en 600." },
+      "title": { "displayName": "Title", "purpose": "Nombre de producto en cada fila (1.25em); título de paso a 1.15em." },
+      "numeral": { "displayName": "Numeral", "purpose": "Día de la hoja de calendario; hermanos: hora en palabras (1.7em, −0.03em), código (1.3em, +0.04em). Siempre tinta." },
+      "body": { "displayName": "Body público", "purpose": "Texto base público de 17px; 21px con html.ld-grande. Todo lo público se mide en em sobre esta base." },
+      "body-panel": { "displayName": "Body panel", "purpose": "Cuerpo del panel interno a escala Bootstrap (1rem)." },
+      "titulo-panel": { "displayName": "Título panel", "purpose": "h1–h6, .page-title, .modal-title y alias de la barra lateral en Geist 600." },
+      "label": { "displayName": "Label", "purpose": "Banda de mes de la hoja de calendario: Geist 600, 0.8em, +0.06em, mayúsculas, blanco sobre azul." }
+    },
+    "shadows": [
+      { "name": "panel-card-rest", "value": "0 0.15rem 0.4rem rgba(26, 43, 60, 0.06)", "purpose": "Solo panel interno: .card en reposo (--bs-box-shadow-sm)." },
+      { "name": "panel-card-hover", "value": "0 0.5rem 1.25rem rgba(26, 43, 60, 0.08)", "purpose": "Solo panel interno: .card:hover y .dropdown-menu (--bs-box-shadow)." },
+      { "name": "panel-modal", "value": "0 1rem 2rem rgba(26, 43, 60, 0.12)", "purpose": "Solo panel interno: .modal-content (--bs-box-shadow-lg). Lo público no lleva sombras." }
+    ],
+    "motion": [
+      { "name": "ld-llegar", "value": "0.6s cubic-bezier(0.2, 0.9, 0.25, 1)", "purpose": "Entrada única de la tarjeta de turno: opacidad 0→1 y translateY(12px)→0. Desactivada con prefers-reduced-motion." },
+      { "name": "ld-pulsar", "value": "transform 100ms ease-out", "purpose": "Botones públicos y conmutador de letra: scale(0.97) en :active." },
+      { "name": "ld-fondo", "value": "background-color 150ms ease-out", "purpose": "Cambio de fondo en hover de botones y filas de producto." },
+      { "name": "ease-panel-btn", "value": "0.15s ease", "purpose": "Transición de .btn en el panel (transform, box-shadow, filter)." },
+      { "name": "ease-panel-card", "value": "0.2s ease", "purpose": "Transición de sombra de .card en el panel." },
+      { "name": "ease-celda", "value": "0.12s ease", "purpose": "Celdas de la rejilla de turnos (background-color, border-color)." }
+    ],
+    "breakpoints": [
+      { "name": "hoja-compacta", "value": "420px" },
+      { "name": "sm", "value": "575.98px" },
+      { "name": "md", "value": "767.98px" },
+      { "name": "lg", "value": "991.98px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botón de acción (verde)",
+      "kind": "button",
+      "refersTo": "button-action",
+      "description": "Único botón de acción principal por bloque: verde con texto tinta, píldora de 48px.",
+      "html": "<a href=\"#\" class=\"ds-btn-accion\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12l7 7 7-7\"/></svg>Elegir producto</a>",
+      "css": ".ds-btn-accion { display: inline-flex; align-items: center; justify-content: center; gap: .6rem; min-height: 48px; padding: .6rem 1.5rem; border: 1px solid #67BD01; border-radius: 999px; background: #67BD01; color: #071a31; font-family: Geist, Inter, system-ui, sans-serif; font-size: 17px; font-weight: 500; letter-spacing: -0.01em; text-decoration: none; transition: transform 100ms ease-out, background-color 150ms ease-out; } .ds-btn-accion:hover { background: #58a300; border-color: #58a300; } .ds-btn-accion:active { transform: scale(0.97); } .ds-btn-accion:focus-visible { outline: 3px solid #005082; outline-offset: 3px; }"
+    },
+    {
+      "name": "Botón primario (azul)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Botón para ir a algún lado («Ver sitio»): azul con texto blanco, píldora de 48px.",
+      "html": "<a href=\"#\" class=\"ds-btn-primario\">Ver sitio<svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 17L17 7M8 7h9v9\"/></svg></a>",
+      "css": ".ds-btn-primario { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 48px; min-width: 10rem; padding: .6rem 1.5rem; border: 1px solid #005082; border-radius: 999px; background: #005082; color: #ffffff; font-family: Geist, Inter, system-ui, sans-serif; font-size: 17px; font-weight: 500; letter-spacing: -0.01em; text-decoration: none; transition: transform 100ms ease-out, background-color 150ms ease-out; } .ds-btn-primario:hover { background: #003a5f; border-color: #003a5f; } .ds-btn-primario:active { transform: scale(0.97); } .ds-btn-primario:focus-visible { outline: 3px solid #005082; outline-offset: 3px; }"
+    },
+    {
+      "name": "Conmutador «Letra más grande»",
+      "kind": "button",
+      "refersTo": "button-toggle",
+      "description": "Botón de accesibilidad de 44px con una A grande; al pulsarse invierte a tinta sobre papel.",
+      "html": "<button type=\"button\" class=\"ds-letra\" aria-pressed=\"false\"><span class=\"ds-letra-a\" aria-hidden=\"true\">A</span>Letra más grande</button>",
+      "css": ".ds-letra { display: inline-flex; align-items: center; min-height: 44px; padding: .4rem 1.1rem; border: 1px solid #e4e6e9; border-radius: 999px; background: #ffffff; color: #071a31; font-family: Geist, Inter, system-ui, sans-serif; font-size: 16px; font-weight: 500; cursor: pointer; transition: transform 100ms ease-out, background-color 150ms ease-out; } .ds-letra-a { font-size: 1.3em; font-weight: 600; margin-right: .5rem; } .ds-letra:active { transform: scale(0.97); } .ds-letra[aria-pressed=\"true\"] { background: #071a31; border-color: #071a31; color: #ffffff; } .ds-letra:focus-visible { outline: 3px solid #005082; outline-offset: 3px; }"
+    },
+    {
+      "name": "Etiqueta",
+      "kind": "chip",
+      "refersTo": "chip-etiqueta",
+      "description": "Píldora gris suave con texto gris; rotula la tarjeta de ejemplo sin mayúsculas.",
+      "html": "<span class=\"ds-etiqueta\">Ejemplo</span>",
+      "css": ".ds-etiqueta { display: inline-block; padding: .1rem .7rem; border-radius: 999px; background: #f3f4f6; color: #5f6d77; font-family: Geist, Inter, system-ui, sans-serif; font-size: 14px; font-weight: 500; letter-spacing: .02em; }"
+    },
+    {
+      "name": "Tarjeta de turno con hoja de calendario",
+      "kind": "card",
+      "refersTo": "card-turno",
+      "description": "El objeto firma: papel con borde 1px, hoja de calendario con banda azul, hora en tinta, bloque gris suave y pie con código.",
+      "html": "<article class=\"ds-turno\"><p class=\"ds-turno-tagfila\"><span class=\"ds-turno-tag\">Ejemplo</span></p><div class=\"ds-turno-cab\"><div class=\"ds-hoja\"><span class=\"ds-hoja-mes\">Oct</span><span class=\"ds-hoja-dia\">14</span></div><div><p class=\"ds-turno-fecha\">Miércoles 14 de octubre</p><p class=\"ds-turno-hora\">2:20 de la tarde</p></div></div><p class=\"ds-turno-con\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#005082\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"3\" y=\"6\" width=\"13\" height=\"12\" rx=\"2\"/><path d=\"M16 10l5-3v10l-5-3z\"/></svg>Videollamada con el equipo de Moodle con IA</p><div class=\"ds-turno-pie\"><div class=\"ds-turno-qr\"></div><div><p class=\"ds-turno-etiqueta\">Código de su cita</p><p class=\"ds-turno-codigo\">QW-7K2M-91</p></div></div></article>",
+      "css": ".ds-turno { max-width: 460px; padding: 1.5rem 1.5rem 1.25rem; border: 1px solid #e4e6e9; border-radius: 1.25rem; background: #ffffff; color: #071a31; font-family: Geist, Inter, system-ui, sans-serif; font-size: 17px; line-height: 1.5; } .ds-turno p { margin: 0; } .ds-turno-tagfila { margin: -.5rem 0 .5rem; text-align: right; } .ds-turno-tag { display: inline-block; padding: .1rem .7rem; border-radius: 999px; background: #f3f4f6; color: #5f6d77; font-size: .8em; font-weight: 500; letter-spacing: .02em; } .ds-turno-cab { display: flex; align-items: center; gap: 1rem; } .ds-hoja { width: 5rem; border: 1px solid #e4e6e9; border-radius: .9rem; overflow: hidden; text-align: center; background: #ffffff; flex: 0 0 auto; } .ds-hoja-mes { display: block; padding: .25rem .6rem; background: #005082; color: #ffffff; font-size: .8em; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; } .ds-hoja-dia { display: block; padding: .2rem .6rem .3rem; font-size: 2.4em; font-weight: 500; line-height: 1; letter-spacing: -0.04em; color: #071a31; font-variant-numeric: tabular-nums; } .ds-turno-fecha { color: #5f6d77; letter-spacing: -0.005em; } .ds-turno-hora { margin-top: .1rem; font-size: 1.7em; font-weight: 500; line-height: 1.1; letter-spacing: -0.03em; color: #071a31; } .ds-turno-con { display: flex; align-items: center; gap: .6rem; margin: 1.25rem 0 0; padding: .9rem 1rem; border-radius: .9rem; background: #f3f4f6; font-weight: 500; letter-spacing: -0.005em; } .ds-turno-pie { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #e4e6e9; } .ds-turno-qr { width: 88px; height: 88px; flex: 0 0 auto; border: 2px solid #071a31; border-radius: 6px; background: #ffffff; } .ds-turno-etiqueta { font-size: .9em; color: #5f6d77; } .ds-turno-codigo { font-size: 1.3em; font-weight: 500; letter-spacing: .04em; font-variant-numeric: tabular-nums; color: #071a31; }"
+    },
+    {
+      "name": "Tarjeta de paso",
+      "kind": "card",
+      "refersTo": "card-paso",
+      "description": "Paso numerado: papel con borde 1px y un círculo azul de 2rem con el número a la izquierda.",
+      "html": "<ol class=\"ds-pasos\"><li class=\"ds-paso\"><h3>Elija el producto</h3><p>Sobre qué quiere conversar: cada producto tiene su propio equipo.</p></li></ol>",
+      "css": ".ds-pasos { list-style: none; margin: 0; padding: 0; counter-reset: paso; font-family: Geist, Inter, system-ui, sans-serif; font-size: 17px; line-height: 1.5; } .ds-paso { position: relative; max-width: 360px; padding: 1.5rem 1.5rem 1.5rem 4.4rem; border: 1px solid #e4e6e9; border-radius: 1.25rem; background: #ffffff; } .ds-paso::before { counter-increment: paso; content: counter(paso); position: absolute; top: 1.4rem; left: 1.4rem; width: 2rem; height: 2rem; border-radius: 50%; background: #005082; color: #ffffff; font-weight: 500; font-size: .95em; display: flex; align-items: center; justify-content: center; } .ds-paso h3 { margin: 0 0 .35rem; font-size: 1.15em; font-weight: 500; letter-spacing: -0.02em; color: #071a31; } .ds-paso p { margin: 0; color: #5f6d77; }"
+    },
+    {
+      "name": "Lista de productos",
+      "kind": "custom",
+      "refersTo": "lista-productos",
+      "description": "Una sola tarjeta contenedora con filas separadas por líneas de 1px: nombre, descripción, subproductos en azul y botón «Ver sitio».",
+      "html": "<ul class=\"ds-lista\"><li class=\"ds-fila\"><div class=\"ds-fila-texto\"><h3 class=\"ds-fila-nombre\">Moodle con IA</h3><p class=\"ds-fila-desc\">Un tutor con inteligencia artificial dentro de sus aulas de Moodle.</p><p class=\"ds-fila-sub\"><span>Tutor</span><span>Evaluación</span></p></div><a href=\"#\" class=\"ds-fila-btn\">Ver sitio</a></li><li class=\"ds-fila\"><div class=\"ds-fila-texto\"><h3 class=\"ds-fila-nombre\">Kawana Proctoring</h3><p class=\"ds-fila-desc\">Supervisión de exámenes en línea.</p></div><a href=\"#\" class=\"ds-fila-btn\">Ver sitio</a></li></ul>",
+      "css": ".ds-lista { list-style: none; margin: 0; padding: 0; border: 1px solid #e4e6e9; border-radius: 1.25rem; background: #ffffff; overflow: hidden; font-family: Geist, Inter, system-ui, sans-serif; font-size: 17px; line-height: 1.5; color: #3d4a56; } .ds-fila { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.4rem 1.5rem; transition: background-color 150ms ease-out; } .ds-fila + .ds-fila { border-top: 1px solid #e4e6e9; } .ds-fila:hover { background: #fcfbf8; } .ds-fila p, .ds-fila h3 { margin: 0; } .ds-fila-nombre { font-size: 1.25em; font-weight: 500; line-height: 1.2; letter-spacing: -0.025em; color: #071a31; margin-bottom: .3rem; } .ds-fila-desc { max-width: 48ch; color: #5f6d77; letter-spacing: -0.005em; } .ds-fila-sub { margin-top: .5rem; font-size: .9em; color: #005082; font-weight: 500; } .ds-fila-sub span + span::before { content: '·'; margin: 0 .5rem; color: #e4e6e9; } .ds-fila-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; min-width: 10rem; padding: .6rem 1.5rem; border-radius: 999px; background: #005082; color: #ffffff; font-weight: 500; letter-spacing: -0.01em; text-decoration: none; flex: 0 0 auto; transition: transform 100ms ease-out, background-color 150ms ease-out; } .ds-fila-btn:hover { background: #003a5f; } .ds-fila-btn:active { transform: scale(0.97); } .ds-fila-btn:focus-visible { outline: 3px solid #005082; outline-offset: 3px; }"
+    },
+    {
+      "name": "Banda de cierre",
+      "kind": "custom",
+      "refersTo": "banda-tinta",
+      "description": "Cierre de página: tinta sólida redondeada con logo blanco, headline, lista al 85 % y un único botón verde.",
+      "html": "<section class=\"ds-banda\"><div class=\"ds-banda-texto\"><p class=\"ds-banda-logo\">TURNO</p><h2 class=\"ds-banda-titulo\">Turno, también para su empresa</h2><ul class=\"ds-banda-lista\"><li>Sus clientes eligen día y hora en un portal con su marca.</li><li>Cada cita se crea en Google Calendar con su videollamada.</li></ul></div><a href=\"#\" class=\"ds-banda-btn\">Conocer Exducere Online</a></section>",
+      "css": ".ds-banda { display: flex; align-items: center; justify-content: space-between; gap: 2rem; padding: 3rem 2.5rem; border-radius: 1.5rem; background: #071a31; color: #ffffff; font-family: Geist, Inter, system-ui, sans-serif; font-size: 17px; line-height: 1.5; } .ds-banda-logo { margin: 0 0 1.5rem; font-size: 1.75rem; font-weight: 600; letter-spacing: -0.02em; } .ds-banda-titulo { margin: 0 0 1rem; font-size: clamp(1.6rem, 2.8vw, 2.25rem); font-weight: 500; line-height: 1.12; letter-spacing: -0.03em; color: #ffffff; } .ds-banda-lista { margin: 0; padding-left: 1.25rem; color: rgba(255, 255, 255, 0.85); } .ds-banda-lista li + li { margin-top: .4rem; } .ds-banda-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: .6rem 1.5rem; border-radius: 999px; background: #67BD01; color: #071a31; font-weight: 500; letter-spacing: -0.01em; text-decoration: none; flex: 0 0 auto; transition: transform 100ms ease-out, background-color 150ms ease-out; } .ds-banda-btn:hover { background: #58a300; } .ds-banda-btn:active { transform: scale(0.97); } .ds-banda-btn:focus-visible { outline: 3px solid #005082; outline-offset: 3px; }"
+    },
+    {
+      "name": "Navegación pública",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Cabecera blanca con borde inferior, enlaces grises con subrayado verde en hover/activo y píldora azul «Iniciar sesión» de 44px.",
+      "html": "<header class=\"ds-cab\"><a href=\"#\" class=\"ds-marca\">TURNO</a><nav class=\"ds-nav\"><a href=\"#\" class=\"is-active\">Privacidad</a><a href=\"#\">Protección de datos</a><a href=\"#\" class=\"ds-nav-btn\">Iniciar sesión</a></nav></header>",
+      "css": ".ds-cab { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 14px 24px; background: #ffffff; border-bottom: 1px solid #e4e6e9; font-family: Geist, Inter, system-ui, sans-serif; } .ds-marca { font-weight: 700; font-size: 1.25rem; letter-spacing: -0.02em; color: #005082; text-decoration: none; } .ds-nav { display: flex; align-items: center; gap: 1.2rem; } .ds-nav a { color: #5f6d77; font-size: 1rem; font-weight: 500; text-decoration: none; padding: 8px 0; border-bottom: 2px solid transparent; } .ds-nav a:hover, .ds-nav a.is-active { color: #005082; border-bottom-color: #67BD01; } .ds-nav a.ds-nav-btn { background: #005082; color: #ffffff; min-height: 44px; padding: 9px 20px; border-radius: 999px; border-bottom: 0; display: inline-flex; align-items: center; } .ds-nav a.ds-nav-btn:hover { background: #0a6aa6; } .ds-nav a:focus-visible { outline: 2px solid #67BD01; outline-offset: 2px; }"
+    },
+    {
+      "name": "Campo de formulario (acceso)",
+      "kind": "input",
+      "refersTo": "input-acceso",
+      "description": "Campo de 50px sobre blanco cálido con borde 1px y radio 10px; en foco pasa a papel con borde azul medio y anillo de 3px.",
+      "html": "<label class=\"ds-label\" for=\"ds-usuario\">Usuario</label><input id=\"ds-usuario\" class=\"ds-input\" type=\"text\" placeholder=\"Su correo o usuario\">",
+      "css": ".ds-label { display: block; margin-bottom: .4rem; font-family: Geist, Inter, system-ui, sans-serif; font-size: .82rem; font-weight: 600; color: #071a31; } .ds-input { display: block; width: 100%; min-height: 50px; padding: .55rem .9rem; border: 1px solid #e4e6e9; border-radius: 10px; background: #fcfbf8; color: #071a31; font-family: Geist, Inter, system-ui, sans-serif; font-size: 1rem; transition: border-color .16s ease, background-color .16s ease, box-shadow .16s ease; } .ds-input::placeholder { color: #94a3b8; } .ds-input:focus { outline: none; background: #ffffff; border-color: #0a6aa6; box-shadow: 0 0 0 3px rgba(0, 80, 130, 0.18); }"
+    },
+    {
+      "name": "Celda de la rejilla de turnos (panel)",
+      "kind": "custom",
+      "refersTo": "celda-turno",
+      "description": "Celda de media hora del panel: papel con borde, azul sólido al seleccionarse, foco verde.",
+      "html": "<div class=\"ds-rejilla\"><button type=\"button\" class=\"ds-celda\" aria-pressed=\"false\">08:00</button><button type=\"button\" class=\"ds-celda\" aria-pressed=\"true\">08:30</button><button type=\"button\" class=\"ds-celda\" aria-pressed=\"false\">09:00</button></div>",
+      "css": ".ds-rejilla { display: flex; gap: 4px; } .ds-celda { width: 5rem; min-height: 2.1rem; padding: 0; border: 1px solid #DCE4F3; border-radius: .55rem; background: #ffffff; color: transparent; font-family: Geist, Inter, system-ui, sans-serif; font-size: .72rem; font-variant-numeric: tabular-nums; cursor: pointer; transition: background-color .12s ease, border-color .12s ease; } .ds-celda:hover { border-color: #b3cbdb; color: #64748B; } .ds-celda[aria-pressed=\"true\"] { background: #005082; border-color: #005082; color: #ffffff; } .ds-celda:focus-visible { outline: 3px solid #67BD01; outline-offset: 1px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "El turno sobre la mesa",
+    "overview": "Turno es la plataforma de citas de Exducere Online y su mundo visual nace de un solo objeto: el turno que el cliente va a recibir, puesto en grande antes de pedirle nada. Todo lo demás es la mesa de alrededor. En lo público esa mesa es un blanco cálido (#fcfbf8) sobre el que descansan superficies de papel blanco delimitadas por líneas finas (#e4e6e9); la tinta es un azul casi negro (#071a31) que escribe titulares, numerales y la banda de cierre; el azul institucional (#005082) solo pinta la banda de mes de la hoja de calendario, los numeradores de los pasos y los botones que llevan a otro sitio; el verde (#67BD01) aparece una vez por bloque, en el botón que hay que pulsar. No hay degradados, no hay vidrio, no hay sombras, no hay cuadrícula de mes.\n\nUna sola familia tipográfica, Geist (autoalojada, eje variable 100–900), hace todo el trabajo: titulares en peso 500 con tracking muy cerrado (−0.035em en el display), cuerpo en 400, etiquetas en 600. Lo que diferencia un titular de un párrafo es el tamaño, el color de tinta y el tracking, no el cambio de fuente. El estilo es plano y sin ornamentos, parecido a una herramienta de agenda profesional: la jerarquía la dan el espacio en blanco y las líneas de 1 px.\n\nEl sistema tiene dos registros con la misma marca y la misma fuente. El registro público (landing /, legales, acceso) es lento, grande y formal: texto base de 17 px (21 px con «Letra más grande»), píldoras de 48 px, trato de usted, una decisión por pantalla. El registro interno (panel Django sobre Bootstrap 5.3, /agenda/…) es denso y operativo: hereda los tokens de marca por las variables --turno-* y --bs-* redefinidas en static/base_adicional.css, sigue sobre fondo nube (#E6F0F5) con tinta #1A2B3C, y admite tres sombras tonales en tarjetas, menús y modales. Entre registros cambia la temperatura del fondo y la tinta; no cambian el azul, el verde, Geist, las píldoras ni la regla de un solo botón de acción.",
+    "keyCharacteristics": [
+      "Blanco cálido de fondo, papel blanco con borde de 1 px (#e4e6e9), tinta casi negra: tres materiales en lo público.",
+      "Geist en todo, peso 500 para titulares con tracking negativo; nunca una segunda familia.",
+      "Azul #005082 para informar y navegar; verde #67BD01 una sola vez por bloque, siempre con texto tinta.",
+      "Sin sombras, degradados ni vidrio en lo público; el panel usa solo tres sombras de tinta azulada.",
+      "Píldoras de 999 px para lo que se pulsa, 1.25 rem para lo que contiene; grid de Bootstrap 5 para toda composición."
+    ],
+    "rules": [
+      { "name": "La regla del único verde", "body": "El verde solo se pinta en el botón de acción principal de cada bloque, en la selección de texto y en el subrayado del ítem activo. Nunca en texto corrido, iconos, bordes decorativos ni fondos. Si hay dos botones verdes a la vista en una sección, uno sobra.", "section": "colors" },
+      { "name": "La regla de la tinta sobre verde", "body": "Todo texto sobre #67BD01 va en tinta (.btn-success público y del panel, .badge.bg-success, ::selection). Blanco sobre ese verde no cumple contraste y está prohibido en el código.", "section": "colors" },
+      { "name": "La regla del azul que informa", "body": "El azul institucional nunca es fondo de página ni de tarjeta: aparece como banda, numerador, icono, enlace o botón de navegación. La única superficie azul grande es el lado institucional de la pantalla de acceso.", "section": "colors" },
+      { "name": "La regla de la única familia", "body": "Geist en todo: titulares, cuerpo, numerales, botones, panel. No se añade una segunda fuente ni se usan los @font-face de Fredoka, Inter o Plus Jakarta Sans que siguen declarados en turno_fuentes.css.", "section": "typography" },
+      { "name": "La regla del em público", "body": "En lo público ningún tamaño va en rem ni px salvo --ld-base; todo deriva en em para que «Letra más grande» (17 → 21 px) escale titulares, botones y hoja de calendario sin romper nada.", "section": "typography" },
+      { "name": "La regla del 500 cerrado", "body": "Un titular es Geist 500 con tracking negativo; el 700 no existe en la landing. Si un texto necesita más presencia, crece de tamaño o pasa a tinta, no engorda.", "section": "typography" },
+      { "name": "La regla del papel plano", "body": "Fuera del panel interno no hay sombras: una pieza pública que necesite destacar cambia de plano (papel sobre blanco cálido, tinta sobre blanco cálido) o gana un borde, no una sombra.", "section": "elevation" },
+      { "name": "La regla de la sombra de tinta", "body": "Cuando el panel usa sombra, es de la tinta (#1A2B3C) a 6–12 % y difusa; nunca negra, nunca de desplazamiento duro.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do componer con el grid de Bootstrap 5 (row + col-*) y dejar el CSS propio para el material; archivo en static/css/<app>/ enlazado por ruta absoluta /static/... con ?vX.Y incrementado en cada cambio.",
+      "Do mantener en lo público texto base de 17 px, píldoras de 48 px, tamaños en em, el conmutador «Letra más grande» y el trato de «usted»; «cita» y «videollamada», nunca «reunión» ni «Meet» hacia el cliente.",
+      "Do escribir todo en Geist: titulares en 500 con tracking negativo, cuerpo en 400, etiquetas en 600.",
+      "Do usar verde solo en el botón de acción principal de cada bloque, siempre con texto tinta, y azul #005082 para informar y navegar.",
+      "Do mostrar una cita con la hoja de calendario y la tarjeta de turno; una lista de opciones como filas separadas por líneas de 1 px dentro de una sola tarjeta.",
+      "Do declarar prefers-reduced-motion para toda animación o transición nueva.",
+      "Do escribir el copy visible en español y los textos de ayuda de iconos con aria-hidden en el icono y visually-hidden en el texto."
+    ],
+    "donts": [
+      "Don't usar degradados, mesh, glassmorphism ni backdrop-filter, ni deformar o reducir el logo por debajo de 24 px.",
+      "Don't añadir box-shadow a ninguna superficie pública; en el panel, solo las tres sombras de tinta ya definidas.",
+      "Don't usar btn-outline-*: los botones son píldoras sólidas azules o verdes.",
+      "Don't escribir <style> en plantillas ni comentarios en HTML, CSS o JS.",
+      "Don't poner texto blanco sobre el verde #67BD01 ni verde en texto, iconos o bordes.",
+      "Don't abrir una pantalla pública con una cuadrícula de mes ni con tarjetas icono+título genéricas; el cliente ve primero su turno.",
+      "Don't introducir kickers o eyebrows en mayúsculas sobre los titulares de las superficies nuevas, ni una segunda familia tipográfica, ni titulares en 700."
+    ]
+  }
+}

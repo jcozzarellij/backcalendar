@@ -1,0 +1,104 @@
+.cron-kpis {
+    margin-bottom: 1rem;
+}
+
+.cron-kpi {
+    border: 1px solid #e3e6ea;
+    border-left-width: 4px;
+    border-left-color: #6c757d;
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+}
+
+.cron-kpi-lbl {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: #6c757d;
+}
+
+.cron-kpi-val {
+    font-size: 1.4rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.cron-kpi-ok { border-left-color: #198754; }
+.cron-kpi-mal { border-left-color: #dc3545; }
+.cron-kpi-off { border-left-color: #adb5bd; }
+
+.cron-nombre {
+    font-weight: 600;
+    color: #16324a;
+}
+
+.cron-desc {
+    font-size: .78rem;
+    color: #8a97a5;
+}
+
+.cron-sched {
+    font-size: .82rem;
+    background: #f2f4f7;
+    padding: 2px 8px;
+    border-radius: 6px;
+    color: #334;
+}
+
+.cron-detalle {
+    font-size: .72rem;
+    color: #b02a37;
+}
+
+.cron-badge {
+    font-size: .76rem;
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+
+.cron-badge.ok { background: #d1e7dd; color: #146c43; }
+.cron-badge.caido { background: #fff3cd; color: #997404; }
+.cron-badge.error { background: #f8d7da; color: #b02a37; }
+.cron-badge.off { background: #e9ecef; color: #6c757d; }
+.cron-badge.nunca { background: #e2e3e5; color: #41464b; }
+
+.cron-fila.cron-estado-caido,
+.cron-fila.cron-estado-error {
+    background: #fff9f9;
+}
+
+.cron-switch {
+    width: 46px;
+    height: 26px;
+    border-radius: 999px;
+    border: 0;
+    position: relative;
+    cursor: pointer;
+    transition: background .2s;
+    background: #ced4da;
+}
+
+.cron-switch.on { background: #198754; }
+
+.cron-switch-dot {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    transition: left .2s;
+}
+
+.cron-switch.on .cron-switch-dot { left: 23px; }
+
+.cron-edit-nombre {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: #16324a;
+}

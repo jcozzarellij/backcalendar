@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load templatefunctions %}
+
+{% block head %}
+    <style>
+        .row [class*='col-'] {
+            background-clip: content-box;
+        }
+    </style>
+{% endblock %}
+
+{% block atras %}{{ request.path }}{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body py-2">
+                    <form method="post" enctype="multipart/form-data" action="{{ ruta }}" class="form">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="change"/>
+
+                        <div class="row g-1">
+                            {% for field in form %}
+                                {% if field.is_hidden %}
+                                    {{ field }}
+                                {% else %}
+                                    <div class="col-lg-{{ field.field.widget.attrs.col }}">
+                                        <div class="mb-2">
+                                            <label class="form-label small mb-1" for="id_{{ field.name }}">{{ field.label }}</label><br>
+                                            {{ field }}
+                                            <div class="invalid-feedback" id="errorMessage{{ field.name }}"></div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <a class="btn btn-danger btn-sm me-1" href="{{ ruta }}">
+                                    <i class="fa fa-window-close me-1"></i> Cancelar
+                                </a>
+                                <button {% if action != 'ver' %}type="submit" id="submit"{% else %}disabled{% endif %} class="btn btn-success btn-sm">
+                                    <i class="fa fa-save me-1"></i> Guardar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <link href="/static/assets/plugins/summernote/dist/summernote.css" rel="stylesheet"/>
+    <script src="/static/assets/plugins/summernote/dist/summernote.min.js"></script>
+    <script>
+        var handleSummernote = function () {
+            $('#id_terminosycondiciones').summernote({
+                placeholder: 'Ingrese Detalle',
+                height: $(window).height()
+            });
+        };
+
+        var FormSummernote = function () {
+            "use strict";
+            return {
+                init: function () {
+                    handleSummernote();
+                }
+            };
+        }();
+
+        $(document).ready(function () {
+            FormSummernote.init();
+        });
+    </script>
+    {{ form.media }}
+{% endblock %}

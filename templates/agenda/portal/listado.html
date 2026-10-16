@@ -1,0 +1,110 @@
+{% extends 'agenda/base_agenda.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
+    <link rel="stylesheet" href="/static/css/agenda/portal.css?v2.0">
+{% endblock %}
+{% block eyebrow %}Administración{% endblock %}
+{% block acciones %}
+    {% if portales|length > 1 %}
+        <div class="btn-group" role="group" aria-label="Portal">
+            {% for p in portales %}<a href="?portal={{ p.pk }}" class="btn btn-sm {% if portal_actual and p.pk == portal_actual.pk %}btn-primary{% else %}btn-light{% endif %}">{{ p.nombre }}</a>{% endfor %}
+        </div>
+    {% endif %}
+    {% if puede_editar %}<button type="button" class="btn btn-light btn-sm" onclick="formModal(0, 'Nuevo portal', 'add')"><i class="fas fa-plus me-1"></i>Portal</button>{% endif %}
+{% endblock %}
+{% block content %}
+    {% if portal_actual %}
+        <div class="row g-3">
+            <div class="col-xl-7">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-3">
+                                <p class="po-etq">Dominio</p>
+                                <code class="po-codigo">{{ base_publica }}</code>
+                            </div>
+                            <div class="col-md-3">
+                                <p class="po-etq">Logo</p>
+                                {% if portal_actual.logo %}<img src="{{ portal_actual.logo.url }}" alt="" class="po-logo">{% else %}<span class="po-logo po-logo-vacio" style="--po-color: {{ portal_actual.color_principal }}">{{ portal_actual.nombre|first }}</span>{% endif %}
+                            </div>
+                            <div class="col-md-3">
+                                <p class="po-etq">Color principal</p>
+                                <span class="po-color" style="--po-color: {{ portal_actual.color_principal }}"></span> <code class="po-codigo">{{ portal_actual.color_principal }}</code>
+                            </div>
+                            <div class="col-md-3 text-md-end">
+                                {% if puede_editar %}
+                                    <button type="button" class="btn btn-light btn-sm" onclick="formModal({{ portal_actual.pk }}, 'Editar portal', 'change')"><i class="fas fa-edit me-1"></i>Editar portal</button>
+                                    <button type="button" class="btn btn-light btn-sm mt-1" onclick="formModal({{ portal_actual.pk }}, 'Incrustar {{ portal_actual.nombre|escapejs }} en otro sitio', 'incrustar')"><i class="fas fa-code me-1"></i>Incrustar</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <p class="agenda-sub mt-3 mb-0">Sitios donde se puede incrustar: {% if portal_actual.sitios_autorizados %}<code>{{ portal_actual.sitios_autorizados|linebreaksbr }}</code>{% else %}ninguno todavía{% endif %}{% if portal_actual.telefono_atencion %} · Teléfono de atención {{ portal_actual.telefono_atencion }}{% endif %}</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h5 class="mb-0">Productos del portal</h5>
+                    {% if puede_editar %}<button type="button" class="btn btn-primary btn-sm" onclick="formModal({{ portal_actual.pk }}, 'Nuevo producto en {{ portal_actual.nombre|escapejs }}', 'addproducto')"><i class="fas fa-plus me-1"></i>Nuevo producto</button>{% endif %}
+                </div>
+                {% for p in portal_actual.raices %}
+                    {% include 'agenda/portal/tarjeta_producto.html' with p=p nivel=0 %}
+                    {% for h in p.hijos %}
+                        {% include 'agenda/portal/tarjeta_producto.html' with p=h nivel=1 %}
+                    {% endfor %}
+                {% empty %}
+                    <div class="card"><div class="card-body agenda-vacio text-center">Este portal no tiene productos. Agrega el primero con «Nuevo producto».</div></div>
+                {% endfor %}
+            </div>
+
+            <div class="col-xl-5">
+                {% if compartir %}
+                    <div class="card po-compartir">
+                        <div class="card-body">
+                            <h5 class="mb-1">Compartir «{{ compartir.producto.nombre }}»</h5>
+                            <p class="agenda-sub mb-3">El QR lleva al enlace de este producto. Sirve para impresos, tarjetas o pantallas.</p>
+                            <div class="row g-3 align-items-center mb-3">
+                                <div class="col-auto">
+                                    <img src="{{ compartir.qr }}" alt="Código QR del enlace de reserva" class="po-qr" width="140" height="140">
+                                </div>
+                                <div class="col">
+                                    <a href="{{ compartir.qr }}" download="qr-{{ compartir.producto.slug }}.svg" class="btn btn-light btn-sm"><i class="fas fa-download me-1"></i>Descargar QR</a>
+                                </div>
+                            </div>
+                            <div class="btn-group mb-2" role="group" aria-label="Tipo de enlace">
+                                <button type="button" class="btn btn-sm btn-primary" data-po-tipo="pagina">Página</button>
+                                <button type="button" class="btn btn-sm btn-light" data-po-tipo="ventana">Ventana</button>
+                                <button type="button" class="btn btn-sm btn-light" data-po-tipo="incrustado">Incrustado</button>
+                            </div>
+                            <textarea class="form-control po-enlace font-monospace" id="po-enlace" rows="2" readonly data-pagina="{{ compartir.url }}" data-ventana="{{ compartir.url_ventana }}" data-incrustado="{{ compartir.iframe }}">{{ compartir.url }}</textarea>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="copiarEnlace('po-enlace')"><i class="fas fa-copy me-1"></i>Copiar</button>
+                                <a href="{{ compartir.url }}" target="_blank" rel="noopener" class="btn btn-light btn-sm"><i class="fas fa-external-link-alt me-1"></i>Ver como cliente</a>
+                            </div>
+                            <div class="border-top my-3"></div>
+                            <div class="row g-2">
+                                <div class="col-6"><p class="po-etq">Duración</p><p class="po-val">{{ compartir.tiempos.duracion }} min</p></div>
+                                <div class="col-6"><p class="po-etq">Antelación mínima</p><p class="po-val">{{ compartir.tiempos.antelacion }} h</p></div>
+                                <div class="col-6"><p class="po-etq">Se puede agendar hasta</p><p class="po-val">{{ compartir.tiempos.ventana }} días</p></div>
+                                <div class="col-6"><p class="po-etq">Margen entre citas</p><p class="po-val">{{ compartir.tiempos.margen }} min</p></div>
+                                <div class="col-6"><p class="po-etq">Máximo por día</p><p class="po-val">{% if compartir.tiempos.limite_dia %}{{ compartir.tiempos.limite_dia }}{% else %}Sin límite{% endif %}</p></div>
+                                <div class="col-6"><p class="po-etq">Máximo por semana</p><p class="po-val">{% if compartir.producto.limite_semana %}{{ compartir.producto.limite_semana }}{% else %}Sin límite{% endif %}</p></div>
+                            </div>
+                            {% if puede_editar %}<button type="button" class="btn btn-light btn-sm mt-2" onclick="formModal({{ compartir.producto.pk }}, 'Editar producto', 'changeproducto')"><i class="fas fa-sliders me-1"></i>Ajustar tiempos</button>{% endif %}
+                            <p class="agenda-sub mt-2 mb-0">Los tiempos vacíos heredan del producto padre y, si no, de Configuración.</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <div class="card"><div class="card-body agenda-vacio text-center">Todavía no hay portales. Crea uno con «Portal» o corre <code>python scripts/seed_portal_ejemplo.py</code>.</div></div>
+    {% endif %}
+
+    {% include 'agenda/parciales/modal_crud.html' %}
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script src="/static/js/agenda/crud.js?v1.1"></script>
+    <script src="/static/js/agenda/portal.js?v2.0"></script>
+{% endblock %}

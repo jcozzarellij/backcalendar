@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
+      xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="x-apple-disable-message-reformatting">
+    <title></title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        html,
+        body {
+            margin: 0 auto !important;
+            padding: 0 !important;
+            height: 100% !important;
+            width: 100% !important;
+            background: #faf8fe;
+        }
+
+        * {
+            -ms-text-size-adjust: 100%;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        div[style*="margin: 16px 0"] {
+            margin: 0 !important;
+        }
+
+        table,
+        td {
+            mso-table-lspace: 0pt !important;
+            mso-table-rspace: 0pt !important;
+        }
+
+        table {
+            border-spacing: 0 !important;
+            border-collapse: collapse !important;
+            table-layout: fixed !important;
+            margin: 0 auto !important;
+        }
+
+        img {
+            -ms-interpolation-mode: bicubic;
+        }
+
+        a {
+            text-decoration: none;
+            color: #005082;
+        }
+
+        *[x-apple-data-detectors],
+        .unstyle-auto-detected-links *,
+        .aBn {
+            border-bottom: 0 !important;
+            cursor: default !important;
+            color: inherit !important;
+            text-decoration: none !important;
+            font-size: inherit !important;
+            font-family: inherit !important;
+            font-weight: inherit !important;
+            line-height: inherit !important;
+        }
+
+        .a6S {
+            display: none !important;
+            opacity: 0.01 !important;
+        }
+
+        .im {
+            color: inherit !important;
+        }
+
+        img.g-img + div {
+            display: none !important;
+        }
+
+        body {
+            font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-weight: 400;
+            font-size: 15px;
+            line-height: 1.7;
+            color: #414755;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #1a1b1f;
+            margin-top: 0;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .em-btn {
+            display: inline-block;
+            background: #67BD01;
+            color: #003a5f !important;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 0.02em;
+            padding: 13px 28px;
+            border-radius: 12px;
+        }
+
+        @media screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+            }
+
+            .em-pad {
+                padding: 28px 22px !important;
+            }
+        }
+    </style>
+</head>
+
+<body width="100%" style="margin: 0; padding: 0 !important; mso-line-height-rule: exactly; background-color: #faf8fe;">
+<center style="width: 100%; background-color: #faf8fe;">
+    <div style="display: none; font-size: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all; font-family: sans-serif;">
+        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
+    </div>
+
+    <div style="height: 26px"></div>
+
+    <div class="email-container" style="max-width: 600px; margin: 0 auto 26px; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px -40px rgba(0,40,85,0.45);">
+        <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+            <tr>
+                <td bgcolor="#005082" style="background-color:#005082; padding: 30px 34px; text-align: left;">
+                    <h2 style="color: #ffffff; margin: 0; font-size: 22px; line-height: 1.3;">{% block titulo %}{% endblock %}</h2>
+                </td>
+            </tr>
+            <tr>
+                <td style="height: 4px; line-height: 4px; font-size: 0; background-color: #67BD01;">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="em-pad" style="padding: 34px; background-color: #ffffff; color: #414755; font-family: 'Inter','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 15px; line-height: 1.7;">
+                    {% block content %}{% endblock %}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="max-width: 600px; margin: 0 auto; padding: 0 20px 40px; text-align: center; color: #9298a6; font-family: 'Inter','Helvetica Neue',Helvetica,Arial,sans-serif; font-size: 12px; line-height: 1.6;">
+        <p style="margin: 0;">&copy; {% now "Y" %} {{ nombreempresa|default:'' }} · Este es un correo automático, no respondas a este mensaje.</p>
+    </div>
+</center>
+</body>
+</html>

@@ -1,0 +1,601 @@
+{% extends 'base.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/stylenew/modulogrupo.css?v={{ version_css }}">
+    <link rel="stylesheet" href="/static/iconos_selector.css">
+    <link href="/static/assets/plugins/jstree/dist/themes/default/style.min.css" rel="stylesheet"/>
+{% endblock %}
+{% block content %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="GET" class="mb-0">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Búsqueda general</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-end-0">
+                                <i class="fa fa-search text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control border-start-0"
+                                   placeholder="Nombre de la sección..." name="criterio" value="{{ criterio }}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Módulo (URL)</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-end-0">
+                                <i class="fa fa-tag text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control border-start-0"
+                                   placeholder="Buscar por nombre de módulo..." name="criterio_modulo" value="{{ criterio_modulo }}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Acciones</label>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i>
+                            </button>
+                            {% if url_vars %}
+                                <a href="{{ ruta }}?{{ dict_url_vars }}" class="btn btn-default">
+                                    <i class="fas fa-sync-alt"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row align-items-center mb-3">
+        <div class="col-md-12 mb-2 mb-md-0 d-flex gap-2 align-items-center">
+            <a href="?action=add&{{ dict_url_vars }}" class="btn btn-success btn-sm">
+                <i class="fas fa-plus-circle me-2"></i> Nuevo Registro
+            </a>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-guardar-orden" style="display:none;"
+                    onclick="guardarOrden()">
+                <i class="fas fa-save me-1"></i> Guardar orden
+            </button>
+            <span class="small text-muted" id="orden-hint" style="display:none;">
+                <i class="fas fa-info-circle me-1"></i>Cambios de prioridad pendientes
+            </span>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="tabla" class="table table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th class="text-center">ID / Creado</th>
+                        <th class="text-center">Prioridad</th>
+                        <th class="text-center">Nombre</th>
+                        <th class="text-center">Ícono</th>
+                        <th class="text-center" style="width: 40%">
+                            Modulos
+                        </th>
+                        <th class="text-center">Acción</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for mod in listado %}
+                        <tr>
+                            <td class="text-center">
+                                <div class="fw-semibold">#{{ mod.id }}</div>
+                                <div class="small text-muted">{{ mod.fecha_registro|date:"Y-m-d H:i" }}</div>
+                            </td>
+                            <td class="text-center">
+                                <input type="number" class="form-control form-control-sm text-center input-prioridad"
+                                       data-id="{{ mod.pk }}" data-original="{{ mod.prioridad|default:0 }}"
+                                       value="{{ mod.prioridad|default:0 }}"
+                                       style="width:65px;margin:0 auto;" min="0">
+                            </td>
+                            <td class="text-center">{{ mod.nombre }}</td>
+                            <td class="text-center">
+                                <i class="{{ mod.icono }}"></i>
+                            </td>
+                            <td class="text-center">
+                                <div class="accordion accordion-flush" id="modulos_{{ mod.id }}">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="heading_{{ mod.id }}">
+                                            <button class="accordion-button collapsed py-2 bg-muted"
+                                                    type="button"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#collapse_{{ mod.id }}"
+                                                    aria-expanded="false"
+                                                    aria-controls="collapse_{{ mod.id }}">
+                                                <span class="fw-medium">
+                                                    <i class="fa fa-user me-2"></i>
+                                                    Modulos <b class="ms-1">({{ mod.modulos_pagina|length }})</b>
+                                                </span>
+                                            </button>
+                                        </h2>
+                                        <div id="collapse_{{ mod.id }}"
+                                             class="accordion-collapse collapse"
+                                             aria-labelledby="heading_{{ mod.id }}"
+                                             data-bs-parent="#modulos_{{ mod.id }}">
+                                            <div class="accordion-body py-2 text-start">
+                                                {% for m in mod.modulos_pagina %}
+                                                    <a href="{{ m.url }}" target="_blank"
+                                                       class="btn btn-default btn-mini mb-1">
+                                                        <i class="fa fa-tag me-1"></i> {{ m }}
+                                                    </a>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <div class="dropdown">
+                                    <button class="btn btn-icon" type="button" id="dropdownMenuButton-{{ mod.pk }}"
+                                            data-bs-toggle="dropdown" aria-expanded="false"
+                                            style="background: none; border: none;">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end"
+                                        aria-labelledby="dropdownMenuButton-{{ mod.pk }}">
+                                        <li>
+                                            <a class="dropdown-item"
+                                               href="{{ ruta }}?pk={{ mod.pk }}&action=ver&{{ dict_url_vars }}">
+                                                <i class="fas fa-eye me-2 text-info"></i>Ver
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="javascript:void(0);"
+                                               onclick="vermodulos({{ mod.pk }},'{{ mod.nombre }}')">
+                                                <i class="fas fa-list-ol me-2 text-secondary"></i>URLs de este grupo
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                               href="{{ ruta }}?pk={{ mod.pk }}&action=change&{{ dict_url_vars }}">
+                                                <i class="fas fa-edit me-2 text-primary"></i>Editar
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="javascript:void(0);"
+                                               onclick="editarGrupoModal({{ mod.pk }}, '{{ mod.nombre|escapejs }}')">
+                                                <i class="fas fa-bolt me-2 text-warning"></i>Configurar URLs (modal)
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="javascript:void(0);"
+                                               onclick="eliminarajax({{ mod.pk }}, '{{ mod.nombre }}', 'delete', '{{ dict_url_vars }}')">
+                                                <i class="fas fa-trash me-2 text-danger"></i>Eliminar
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% include 'paginacion.html' %}
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade modal-modulogrupo" id="modalEditarGrupo" tabindex="-1"
+         aria-labelledby="modalEditarGrupoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditarGrupoLabel">Configurar URLs del grupo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="modalEditarGrupoBody">
+                    <div class="text-center p-5 text-muted">
+                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                        <div class="small mt-2">Cargando...</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">
+                        <i class="fa fa-window-close me-1"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm" id="btnGuardarGrupoModal" disabled>
+                        <i class="fa fa-save me-1"></i> Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade modal-modulogrupo" id="modalIconsGrupo" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Seleccione un ícono</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text border-end-0">
+                            <i class="fa fa-search text-muted"></i>
+                        </span>
+                        <input id="txtBuscarIconoGrupo" type="search" class="form-control border-start-0"
+                               placeholder="Buscar ícono..."/>
+                    </div>
+                    <div class="nav nav-tabs mb-3" role="tablist">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-iconoirG"
+                                type="button">Iconoir</button>
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-icofontG" type="button">Icofont</button>
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-lineawesomeG" type="button">Line Awesome</button>
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-fontawesomeG" type="button">Font Awesome</button>
+                    </div>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="tab-iconoirG"><div id="iconoirG-container" class="icon-grid"></div></div>
+                        <div class="tab-pane fade" id="tab-icofontG"><div id="icofontG-container" class="icon-grid"></div></div>
+                        <div class="tab-pane fade" id="tab-lineawesomeG"><div id="lineawesomeG-container" class="icon-grid"></div></div>
+                        <div class="tab-pane fade" id="tab-fontawesomeG"><div id="fontawesomeG-container" class="icon-grid"></div></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="seleccionarIconoGrupo">Seleccionar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalListados" tabindex="-1" aria-labelledby="modalListadosLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalListadosLabel">Listado de Módulos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                        <tr>
+                            <th>Permisos</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- Contenido dinámico -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/assets/plugins/jstree/dist/jstree.min.js"></script>
+    <script>
+        let jstreeModalInstance = null;
+        let iconoSelGrupo = '';
+
+        function editarGrupoModal(pk, nombre) {
+            const modalEl = document.getElementById('modalEditarGrupo');
+            const body = $('#modalEditarGrupoBody');
+            $('#modalEditarGrupoLabel').text('Configurar URLs · ' + nombre);
+            $('#btnGuardarGrupoModal').prop('disabled', true);
+            body.html('<div class="text-center p-5 text-muted"><i class="fas fa-spinner fa-spin fa-2x"></i><div class="small mt-2">Cargando...</div></div>');
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+
+            $.get('{{ ruta }}', {pk: pk, action: 'change_modal'})
+                .done(function (html) {
+                    body.html(html);
+                    initModalForm();
+                    $('#btnGuardarGrupoModal').prop('disabled', false);
+                })
+                .fail(function () {
+                    body.html('<div class="alert alert-danger m-3">Error al cargar el formulario.</div>');
+                });
+        }
+
+        function initModalForm() {
+            $('#modalEditarGrupoBody .select2-modal').select2({
+                width: '100%',
+                dropdownParent: $('#modalEditarGrupo')
+            });
+
+            $('#busquedaModal').on('change', filtrarArbolModal);
+            $('#buscarPorNombreModal').on('input', filtrarArbolModal);
+
+            const $tree = $('#jstree-modulos-urls-modal');
+            $tree.jstree({
+                "core": {
+                    "themes": {"responsive": false},
+                    "check_callback": function (operation, node, node_parent) {
+                        if (operation === 'move_node') {
+                            return this.get_node(node).parent === this.get_node(node_parent).id &&
+                                   node.children.length === 0;
+                        }
+                        return true;
+                    }
+                },
+                "types": {
+                    "default": {"icon": "fa fa-folder text-warning fa-lg"},
+                    "file": {"icon": "fa fa-file text-inverse fa-lg"}
+                },
+                "plugins": ["wholerow", "checkbox", "dnd", "types"]
+            });
+
+            $tree.on("move_node.jstree", function (e, data) {
+                if (data.node.children.length === 0) {
+                    const inp = $tree.jstree(true).get_node(data.parent).children;
+                    for (let i = 0; i < inp.length; i++) {
+                        const mod = $tree.jstree(true).get_node(inp[i]);
+                        try {
+                            const datosMod = JSON.parse($('#' + mod.state.input_id).val());
+                            datosMod.orden = i;
+                            $('#' + mod.state.input_id).val(JSON.stringify(datosMod));
+                        } catch (e) {}
+                    }
+                }
+            });
+
+            $tree.on("changed.jstree", function (e, ppp) {
+                try {
+                    const children = ppp.node.children;
+                    if (children.length > 0) {
+                        for (let i = 0; i < children.length; i++) {
+                            const sel = '#' + children[i];
+                            if ($(sel).data('jstree') && $(sel).data('jstree').url) {
+                                const datos = $(sel).data('jstree');
+                                $('#' + datos.input_id).prop("checked", ppp.action === 'select_node');
+                            }
+                        }
+                    } else {
+                        const datos = ppp.node.data.jstree;
+                        if (datos && datos.url) {
+                            $('#' + datos.input_id).prop("checked", ppp.action === 'select_node');
+                        }
+                    }
+                } catch (e) {}
+            });
+
+            $('#buscarIconoModal').on('click', function () {
+                cargarIconosGrupo();
+                new bootstrap.Modal(document.getElementById('modalIconsGrupo')).show();
+            });
+        }
+
+        function filtrarArbolModal() {
+            const seleccion = $('#busquedaModal').children('option:selected').toArray().map(o => $(o).val().toUpperCase());
+            const texto = ($('#buscarPorNombreModal').val() || '').toLowerCase();
+            $('#jstree-modulos-urls-modal .jstree-container-ul > li').each(function () {
+                let okApp = true;
+                if (seleccion.length > 0) {
+                    const app = ($(this).attr('data-paraBuscar') || '').toUpperCase();
+                    okApp = seleccion.indexOf(app) !== -1;
+                }
+                let okNom = true;
+                if (texto) {
+                    const nombreApp = $(this).attr('data-nombre') || '';
+                    let hallado = nombreApp.includes(texto);
+                    if (!hallado) {
+                        $(this).find('li').each(function () {
+                            const nh = $(this).attr('data-nombre') || '';
+                            if (nh.includes(texto)) { hallado = true; return false; }
+                        });
+                    }
+                    okNom = hallado;
+                }
+                $(this).toggle(okApp && okNom);
+            });
+        }
+
+        let iconosCargadosG = false;
+        function cargarIconosGrupo() {
+            if (iconosCargadosG) return;
+            fetch('/static/js/icons/all-icons-translated.json')
+                .then(r => r.json())
+                .then(data => {
+                    ['iconoir','icofont','lineawesome','fontawesome'].forEach(tipo => {
+                        const cont = $(`#${tipo}G-container`);
+                        cont.empty();
+                        data[tipo].forEach(icon => {
+                            cont.append(`<div class="icon-item" data-icon="${icon.class}" data-en="${icon.en.toLowerCase()}" data-es="${icon.es.toLowerCase()}"><i class="${icon.class}"></i><span class="icon-name">${icon.en} / ${icon.es}</span></div>`);
+                        });
+                    });
+                    $('#modalIconsGrupo .icon-item').on('click', function () {
+                        $('#modalIconsGrupo .icon-item').removeClass('selected-icon');
+                        $(this).addClass('selected-icon');
+                        iconoSelGrupo = $(this).data('icon');
+                    });
+                    iconosCargadosG = true;
+                });
+        }
+
+        $('#txtBuscarIconoGrupo').on('input', function () {
+            const t = $(this).val().toLowerCase();
+            $('#modalIconsGrupo .icon-item').each(function () {
+                const en = $(this).data('en') || '';
+                const es = $(this).data('es') || '';
+                const ic = ($(this).data('icon') || '').toLowerCase();
+                $(this).toggle(en.includes(t) || es.includes(t) || ic.includes(t));
+            });
+        });
+
+        $('#seleccionarIconoGrupo').on('click', function () {
+            if (iconoSelGrupo) {
+                $('#modalEditarGrupoBody #id_icono').val(iconoSelGrupo);
+                bootstrap.Modal.getInstance(document.getElementById('modalIconsGrupo')).hide();
+            } else {
+                mensajeWarning('Por favor seleccione un ícono');
+            }
+        });
+
+        $('#btnGuardarGrupoModal').on('click', function () {
+            const $form = $('#frmModuloGrupoModal');
+            if (!$form.length) return;
+            $form.find('.is-invalid').removeClass('is-invalid');
+            $form.find('.invalid-feedback').html('');
+
+            const fd = new FormData($form[0]);
+            const $btn = $(this);
+            const htmlOri = $btn.html();
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Guardando...');
+            pantallaespera();
+
+            $.ajax({
+                type: 'POST',
+                url: '{{ ruta }}',
+                data: fd,
+                dataType: 'json',
+                cache: false,
+                contentType: false,
+                processData: false
+            }).done(function (data) {
+                setTimeout($.unblockUI, 1);
+                $btn.prop('disabled', false).html(htmlOri);
+                if (!Array.isArray(data)) data = [data];
+                let ok = true;
+                data.forEach(function (v) {
+                    if (v.error) {
+                        ok = false;
+                        if (v.form) {
+                            v.form.forEach(function (row) {
+                                Object.keys(row).forEach(function (k) {
+                                    $('#modalEditarGrupoBody #id_' + k).addClass('is-invalid');
+                                    $('#modalEditarGrupoBody #errorMessage' + k).html(row[k]);
+                                });
+                            });
+                            if (v.message) Swal.fire(v.message, '', 'error');
+                        } else {
+                            Swal.fire(v.message || 'Error', '', 'error');
+                        }
+                    }
+                });
+                if (ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('modalEditarGrupo')).hide();
+                    location.reload();
+                }
+            }).fail(function () {
+                setTimeout($.unblockUI, 1);
+                $btn.prop('disabled', false).html(htmlOri);
+                Swal.fire('Error de conexión', '', 'error');
+            });
+        });
+
+        function vergrupos(pk, nombre) {
+            getPromise('{{ ruta }}', {pk: pk, action: 'ver_grupos'}).then(function (value) {
+                $('#modalListados').find('table').children('thead').children('tr').children('th').html(`Grupo de permisos del grupo ${nombre}`);
+                const table = $('#modalListados').find('table').children('tbody');
+                table.html('');
+                for (var i = 0; i < value.length; i++) {
+                    table.append(`<tr><td>${value[i].name}</td></tr>`);
+                }
+
+                // Usar Bootstrap 5 modal
+                const modal = new bootstrap.Modal(document.getElementById('modalListados'));
+                modal.show();
+            });
+        }
+
+        function vermodulos(pk, nombre) {
+            getPromise('{{ ruta }}', {pk: pk, action: 'ver_modulos'}).then(function (value) {
+                $('#modalListados').find('table').children('thead').children('tr').children('th').html(`Módulos del grupo ${nombre}`);
+                const table = $('#modalListados').find('table').children('tbody');
+                table.html('');
+                for (var i = 0; i < value.length; i++) {
+                    table.append(`<tr><td>${value[i].nombres}</td></tr>`);
+                }
+
+                // Usar Bootstrap 5 modal
+                const modal = new bootstrap.Modal(document.getElementById('modalListados'));
+                modal.show();
+            });
+        }
+
+        function eliminarajax(pk, nombre, accion, dict_url_vars = "", titulo = `Estas a punto de eliminar este registro ${nombre}`) {
+            Swal.fire({
+                title: titulo,
+                text: "Esta acción es irreversible",
+                type: 'warning',
+                showCancelButton: true,
+                allowOutsideClick: false,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, deseo hacerlo!',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.value) {
+                    pantallaespera();
+                    $.ajax({
+                        type: 'POST',
+                        url: '{{ request.path }}',
+                        async: false,
+                        data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            action: accion,
+                            id: pk,
+                            dict_url_vars: dict_url_vars,
+                        },
+                        dataType: "json",
+                        beforeSend: function () {
+                            pantallaespera();
+                        }
+                    }).done(function (data) {
+                        setTimeout($.unblockUI, 1);
+                        if (data.error === false) {
+                            location.reload();
+                        }
+                    }).fail(function (jqXHR, textStatus, errorThrown) {
+                        setTimeout($.unblockUI, 1);
+                        mensajeWarning('Error en el servidor');
+                    }).always(function () {
+                    });
+                }
+            });
+        }
+
+        /* ── Prioridad editable inline ── */
+        $(document).on('input change', '.input-prioridad', function () {
+            var changed = false;
+            $('.input-prioridad').each(function () {
+                if (String($(this).val()) !== String($(this).data('original'))) {
+                    changed = true;
+                    $(this).addClass('border-primary');
+                } else {
+                    $(this).removeClass('border-primary');
+                }
+            });
+            $('#btn-guardar-orden').toggle(changed);
+            $('#orden-hint').toggle(changed);
+        });
+
+        function guardarOrden() {
+            var cambios = [];
+            $('.input-prioridad').each(function () {
+                var val = parseInt($(this).val()) || 0;
+                if (String(val) !== String($(this).data('original'))) {
+                    cambios.push({ id: $(this).data('id'), prioridad: val });
+                }
+            });
+            if (!cambios.length) return;
+            $('#btn-guardar-orden').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Guardando...');
+            $.ajax({
+                type: 'POST',
+                url: '{{ request.path }}',
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    action: 'cambiar_prioridades',
+                    cambios: JSON.stringify(cambios)
+                },
+                success: function (data) {
+                    if (data.error === false) {
+                        location.reload();
+                    } else {
+                        alert(data.message || 'Error al guardar');
+                        $('#btn-guardar-orden').prop('disabled', false).html('<i class="fas fa-save me-1"></i> Guardar orden');
+                    }
+                },
+                error: function () {
+                    alert('Error de conexion');
+                    $('#btn-guardar-orden').prop('disabled', false).html('<i class="fas fa-save me-1"></i> Guardar orden');
+                }
+            });
+        }
+
+    </script>
+{% endblock %}

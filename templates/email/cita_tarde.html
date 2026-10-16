@@ -1,0 +1,13 @@
+{% extends 'email/emailbase.html' %}
+
+{% block titulo %}Empezamos unos minutos tarde{% endblock %}
+{% block content %}
+    <div style="color:#424245; line-height:1.5; font-family:Arial,'Helvetica Neue',Helvetica,sans-serif; padding:10px 10px 0">
+        <p style="margin:0 0 14px; font-size:16px; color:#1d1d1f">Hola, {{ cliente.nombres }}.</p>
+        <p style="margin:0 0 18px; font-size:15px">Le pedimos disculpas: su cita <strong>{{ cita.codigo }}</strong> de las {{ cita.inicio|time:"H:i" }} empezará unos <strong>{{ minutos }} minutos</strong> más tarde. La videollamada sigue siendo la misma.</p>
+        {% if cita.enlace_meet %}
+            <p style="margin:0 0 18px"><a href="{{ cita.enlace_meet }}" style="display:inline-block; background:#67BD01; color:#1d1d1f; font-weight:600; font-size:15px; padding:12px 22px; border-radius:999px; text-decoration:none">Entrar a la videollamada</a></p>
+        {% endif %}
+        <p style="margin:0; font-size:15px">Gracias por su paciencia.</p>
+    </div>
+{% endblock %}

@@ -1,0 +1,48 @@
+<input type="hidden" name="action" value="guardar_horario">
+<input type="hidden" name="id" value="{{ tarea.pk }}">
+
+<div class="cron-edit-nombre mb-3"><i class="bi {{ tarea.icono }}"></i> {{ tarea.nombre }}</div>
+
+<div class="mb-3">
+    <label class="form-label small">Periodicidad</label>
+    <select class="form-select" name="schedule" id="selSchedule">
+        {% for val, etiqueta in periodicidades %}
+            <option value="{{ val }}"
+                {% if tarea.schedule == val %}selected{% elif val == 'personalizado' and not es_predefinida %}selected{% endif %}>
+                {{ etiqueta }}
+            </option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="mb-3" id="cajaCustom" {% if es_predefinida %}hidden{% endif %}>
+    <label class="form-label small">Expresión cron (min hora díames mes díasem)</label>
+    <input type="text" class="form-control" name="schedule_custom" placeholder="0 4 * * 6"
+           value="{% if not es_predefinida %}{{ tarea.schedule }}{% endif %}">
+    <div class="form-text">Ej: <code>*/10 * * * *</code> cada 10 min · <code>0 4 * * 6</code> sábados 4:00 · <code>0 2 * * *</code> diario 2:00.</div>
+</div>
+
+<div class="form-check form-switch mb-3">
+    <input class="form-check-input" type="checkbox" name="gestionado" value="1" id="chkGestionado" {% if tarea.gestionado_crontab %}checked{% endif %}>
+    <label class="form-check-label small" for="chkGestionado">Escribir esta tarea en el crontab del servidor</label>
+</div>
+
+<div class="alert alert-light border small mb-3">
+    <i class="fa fa-clock me-1"></i> El cambio de horario se aplica al crontab real en la próxima
+    sincronización (el meta-cron corre cada 15 min). El apagado/encendido es inmediato.
+</div>
+
+<div class="d-flex justify-content-end gap-2">
+    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+    <button type="submit" class="btn btn-sm btn-primary"><i class="fa fa-check me-1"></i>Guardar horario</button>
+</div>
+
+<script>
+    (function () {
+        var sel = document.getElementById('selSchedule');
+        var caja = document.getElementById('cajaCustom');
+        sel.addEventListener('change', function () {
+            caja.hidden = (sel.value !== 'personalizado');
+        });
+    })();
+</script>

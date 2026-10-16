@@ -1,0 +1,44 @@
+.tb-titulo {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin: 0 0 .75rem;
+    font-weight: 600;
+}
+
+.tb-lista {
+    min-height: 8rem;
+    padding: .25rem;
+    border-radius: var(--bs-border-radius);
+    transition: background-color .12s ease;
+}
+
+.tb-columna.tb-sobre .tb-lista {
+    background: var(--bs-primary-bg-subtle);
+}
+
+.tb-tarjeta {
+    padding: .8rem .9rem;
+    margin-bottom: .6rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    background: #ffffff;
+}
+
+.tb-tarjeta[draggable="true"] {
+    cursor: grab;
+}
+
+.tb-tarjeta.tb-arrastrando {
+    opacity: .5;
+}
+
+.tb-acciones {
+    display: flex;
+    gap: .25rem;
+}
+
+.tb-vacio {
+    padding: 1rem .5rem;
+    text-align: center;
+}

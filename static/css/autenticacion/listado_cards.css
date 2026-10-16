@@ -1,0 +1,270 @@
+.usuarios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+}
+
+.usuario-card {
+    background: #fff;
+    border: 1px solid #eef0f3;
+    border-radius: 14px;
+    padding: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+}
+
+.usuario-card-head {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+}
+
+.usuario-card-foto {
+    flex-shrink: 0;
+}
+
+.usuario-card-foto img {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.usuario-card-titulo {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.usuario-card-nombre {
+    font-weight: 600;
+    font-size: .95rem;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.usuario-card-username {
+    color: #6b7280;
+    font-size: .82rem;
+}
+
+.usuario-card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .3rem;
+    margin-top: .35rem;
+}
+
+.membresia-pill {
+    background: #f6d67a;
+    color: #5a4300;
+    font-weight: 600;
+}
+
+.usuario-card-menu {
+    flex-shrink: 0;
+}
+
+.usuario-card-contacto {
+    font-size: .85rem;
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+}
+
+.usuario-card-contacto a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.usuario-card-contacto a:hover {
+    text-decoration: underline;
+}
+
+.usuario-card-perfiles {
+    display: flex;
+    gap: 1rem;
+    font-size: .82rem;
+}
+
+.usuario-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid #f1f2f4;
+    padding-top: .6rem;
+    font-size: .78rem;
+    color: #6b7280;
+}
+
+.usuario-card-grupos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem;
+}
+
+.ficha-kpi {
+    border: 1px solid #e4e4f0;
+    border-radius: 12px;
+    padding: 12px 14px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.ficha-kpi-label {
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.ficha-kpi-valor {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1d2233;
+}
+
+.ficha-kpi-sub {
+    font-size: .74rem;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.ficha-subtitulo {
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #0081c1;
+    font-weight: 700;
+    margin: 16px 0 8px;
+}
+
+.pia-badge-ok {
+    background: #e4ecf3;
+    color: #0081c1;
+    border: 1px solid #cfe0ec;
+}
+
+.pia-badge-falta {
+    background: #fff7ed;
+    color: #b45309;
+    border: 1px solid #fed7aa;
+}
+
+.pia-badge-expertos {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.hc-resumen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    margin-bottom: 1rem;
+}
+
+.hc-kpi {
+    flex: 1 1 10rem;
+    background: #f6f9fc;
+    border: 1px solid #e4ecf3;
+    border-left: 4px solid #0081c1;
+    border-radius: 12px;
+    padding: .7rem .9rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.hc-kpi-pendiente {
+    border-left-color: #e8a23d;
+}
+
+.hc-kpi-label {
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: #9ca3af;
+    font-weight: 700;
+}
+
+.hc-kpi-valor {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #1d2233;
+}
+
+.hc-kpi-nota {
+    font-size: .74rem;
+    color: #6b7280;
+}
+
+.hc-tabla th {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: #9ca3af;
+}
+
+.hc-num {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.hc-pie {
+    font-size: .78rem;
+    color: #6b7280;
+    margin: .75rem 0 0;
+}
+
+.pia-ficha {
+    background: #f6f9fc;
+    border: 1px solid #e4ecf3;
+    border-left: 4px solid #0081c1;
+    border-radius: 12px;
+    padding: .85rem 1rem;
+    margin-top: 1rem;
+}
+
+.pia-ficha-vacia {
+    border-left-color: #e8a23d;
+}
+
+.pia-ficha-label {
+    display: block;
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: #9ca3af;
+    font-weight: 700;
+    margin-bottom: .1rem;
+}
+
+.pia-ficha-texto {
+    font-size: .84rem;
+    color: #4b5563;
+    white-space: pre-wrap;
+    margin-bottom: .6rem;
+}
+
+.pia-ficha-experto {
+    background: #fff;
+    border: 1px solid #e4ecf3;
+    border-radius: 8px;
+    padding: .5rem .7rem;
+    margin-bottom: .4rem;
+}
+
+.ficha-kpi-link {
+    display: inline-block;
+    margin-top: .35rem;
+    font-size: .76rem;
+    color: #0081c1;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.ficha-kpi-link:hover {
+    text-decoration: underline;
+}

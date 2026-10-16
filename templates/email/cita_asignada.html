@@ -1,0 +1,16 @@
+{% extends 'email/emailbase.html' %}
+
+{% block titulo %}Te asignaron una cita{% endblock %}
+{% block content %}
+    <div style="color:#424245; line-height:1.5; font-family:Arial,'Helvetica Neue',Helvetica,sans-serif; padding:10px 10px 0">
+        <p style="margin:0 0 14px; font-size:16px; color:#1d1d1f">Hola, {{ usuario.first_name|default:usuario.username }}.</p>
+        <p style="margin:0 0 18px; font-size:15px">Entras como participante en esta cita:</p>
+        <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%; border:1px solid #d2d2d7; border-radius:12px; border-collapse:separate; margin:0 0 18px">
+            <tr><td style="padding:10px 14px; font-size:14px; color:#6e6e73; width:40%">Cita</td><td style="padding:10px 14px; font-size:15px; color:#1d1d1f"><strong>{{ cita.titulo }}</strong></td></tr>
+            <tr><td style="padding:10px 14px; font-size:14px; color:#6e6e73">Cliente</td><td style="padding:10px 14px; font-size:15px; color:#1d1d1f">{{ cita.cliente.nombres }}</td></tr>
+            <tr><td style="padding:10px 14px; font-size:14px; color:#6e6e73">Fecha</td><td style="padding:10px 14px; font-size:15px; color:#1d1d1f"><strong>{{ fecha_larga }}</strong>, {{ cita.inicio|time:"H:i" }} a {{ cita.fin|time:"H:i" }}</td></tr>
+            <tr><td style="padding:10px 14px; font-size:14px; color:#6e6e73">Organiza</td><td style="padding:10px 14px; font-size:15px; color:#1d1d1f">{{ cita.organizador.get_full_name|default:cita.organizador.username }}</td></tr>
+        </table>
+        <p style="margin:0 0 18px; font-size:15px">La invitación también llega a tu Google Calendar. En el panel la ves en <strong>Agenda → Hoy</strong>.</p>
+    </div>
+{% endblock %}

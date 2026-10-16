@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{{ titulo }} · {{ nombreempresa|default:"Turno" }}</title>
+    {% if favicon %}<link href="{{ favicon }}" rel="shortcut icon"/>{% endif %}
+    <link href="/static/fonts/fontawesome/css/all.css?v=6.1.1" rel="stylesheet"/>
+    <link href="/static/assets_riz/css/bootstrap.css?v1.1" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="/static/sweetalert2/sweetalert2.css?1.0"/>
+    <link rel="stylesheet" href="/static/fonts/turno_fuentes.css?v1.2">
+    <link rel="stylesheet" href="/static/css/public/auth.css?v=20261008.10-{{ version_css }}"/>
+    {% block auth_head %}{% endblock %}
+</head>
+<body class="au-body">
+<main class="au-stage row g-0">
+    <aside class="au-foto col-lg-6{% if confi.fondo_landing %} au-foto-imagen{% endif %}"{% if confi.fondo_landing %} style="background-image:url('{{ confi.fondo_landing.url }}')"{% endif %}>
+        <div class="au-foto-cuerpo">
+            <a href="/" class="au-marca" aria-label="Ir a la página de inicio">
+                {% if confi and confi.logo_sistema_white %}
+                    <img src="{{ confi.logo_sistema_white.url }}" alt="{{ nombreempresa|default:'Turno' }}">
+                {% elif logo %}
+                    <img src="{{ logo }}" alt="{{ nombreempresa|default:'Turno' }}" class="au-marca-clara">
+                {% else %}
+                    <span>{{ nombreempresa|default:"Turno" }}</span>
+                {% endif %}
+            </a>
+            <div class="au-foto-texto">
+                <p class="au-foto-eyebrow">Panel del equipo</p>
+                <h2 class="au-foto-titulo">Su día, sus turnos y sus citas en un solo lugar.</h2>
+                <p class="au-foto-sub">Cada cita se crea en Google Calendar con su videollamada y llega al cliente por correo.</p>
+            </div>
+            <a href="/" class="au-volver"><i class="fas fa-arrow-left" aria-hidden="true"></i>Volver al inicio</a>
+        </div>
+    </aside>
+
+    <section class="au-panel col-lg-6" aria-label="Acceso a la plataforma">
+        <div class="au-panel-cuerpo {% block au_card_class %}{% endblock %}">
+            <a href="/" class="au-marca au-marca-movil" aria-label="Ir a la página de inicio">
+                {% if logo %}<img src="{{ logo }}" alt="{{ nombreempresa|default:'Turno' }}">{% else %}<span>{{ nombreempresa|default:"Turno" }}</span>{% endif %}
+            </a>
+            <p class="au-eyebrow">{% block au_eyebrow %}Acceso seguro{% endblock %}</p>
+            <h1 class="au-title">{% block au_title %}{% endblock %}</h1>
+            <p class="au-sub">{% block au_sub %}{% endblock %}</p>
+
+            {% block auth_body %}{% endblock %}
+
+            <div class="au-links">
+                {% block au_links %}{% endblock %}
+            </div>
+            <p class="au-legal">
+                <a href="/privacidad/" class="au-link">Política de privacidad</a>
+                <span aria-hidden="true">·</span>
+                <a href="/proteccion-datos/" class="au-link">Protección de datos</a>
+            </p>
+        </div>
+    </section>
+</main>
+
+<script src="/static/js/jquery-3.3.1.min.js"></script>
+<script src="/static/jquery.blockUI.js"></script>
+<script src="/static/sweetalert2/sweetalert2.js"></script>
+<script src="/static/validaciones/funciones.js?v=3"></script>
+<script src="/static/js/public/auth.js?v1.0"></script>
+<script>
+    var auLogoEspera = '{% if confi and confi.logo_sistema_white %}{{ confi.logo_sistema_white.url }}{% elif logo %}{{ logo }}{% endif %}';
+    {% if messages %}
+        {% for message in messages %}
+            Swal.fire('{{ message|escapejs }}', '{{ nombreempresa|escapejs }}', '{% if message.tags %}{{ message.tags }}{% endif %}');
+        {% endfor %}
+    {% endif %}
+</script>
+{% block auth_jscript %}{% endblock %}
+</body>
+</html>

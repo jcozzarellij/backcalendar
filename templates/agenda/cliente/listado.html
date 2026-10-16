@@ -1,0 +1,149 @@
+{% extends 'agenda/base_agenda.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
+    <link rel="stylesheet" href="/static/css/agenda/cita.css?v1.0">
+    <link rel="stylesheet" href="/static/css/agenda/cliente.css?v2.0">
+{% endblock %}
+{% block eyebrow %}Clientes{% endblock %}
+{% block titulo_pagina %}Clientes{% endblock %}
+{% block subtitulo %}<p class="mi-sub">Cada persona que agenda queda aquí con su historial. La ficha se crea sola con la primera cita.</p>{% endblock %}
+{% block acciones %}
+    <button type="button" onclick="formModal(0, 'Nuevo cliente', 'add', {}, '/agenda/clientes/')" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>Nuevo cliente</button>
+{% endblock %}
+{% block content %}
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <form method="GET" action="/agenda/clientes/" class="mb-2">
+                <div class="input-group">
+                    <span class="input-group-text border-end-0"><i class="fa fa-search text-muted" aria-hidden="true"></i></span>
+                    <input type="search" class="form-control border-start-0" name="criterio" value="{{ criterio|default:'' }}" placeholder="Nombre, correo o código" aria-label="Buscar cliente">
+                </div>
+            </form>
+            <div class="cl-lista">
+                {% for l in listado_lateral %}
+                    <a href="/agenda/clientes/{{ l.pk }}/" class="cl-item {% if cliente and l.pk == cliente.pk %}activo{% endif %}">
+                        <span>
+                            <strong>{{ l.nombres }}</strong>
+                            <span class="agenda-sub">{{ l.correo }}{% if l.portal_origen %} · {{ l.portal_origen.nombre }}{% endif %}</span>
+                        </span>
+                        <span class="mi-pildora">{{ l.n_citas }} cita{{ l.n_citas|pluralize }}</span>
+                    </a>
+                {% empty %}
+                    <p class="agenda-sub">{% if criterio %}Ningún cliente coincide con «{{ criterio }}».{% else %}Todavía no hay clientes. Se crean solos cuando alguien agenda desde el portal.{% endif %}</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            {% if cliente %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap align-items-start justify-content-between gap-2">
+                            <div>
+                                <h4 class="mb-1">{{ cliente.nombres }}</h4>
+                                <div class="d-flex flex-wrap gap-2 align-items-center">
+                                    <span class="mi-pildora">{{ cliente.codigo }}</span>
+                                    <span class="mi-pildora">Atender en {{ cliente.get_idioma_display|lower }}</span>
+                                    {% if es_lead %}<span class="badge bg-success">Lead potencial</span>{% endif %}
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="formModal({{ cliente.pk }}, 'Agendar cita a {{ cliente.nombres|escapejs }}', 'agendar', {}, '/agenda/clientes/')"><i class="fas fa-calendar-plus me-1"></i>Agendar seguimiento</button>
+                                <button type="button" class="btn btn-light btn-sm" onclick="enlaceCliente({{ cliente.pk }})"><i class="fas fa-link me-1"></i>Copiar enlace personal</button>
+                                <button type="button" class="btn btn-light btn-sm" onclick="formModal({{ cliente.pk }}, 'Editar cliente', 'change', {}, '/agenda/clientes/')"><i class="fas fa-edit me-1"></i>Editar</button>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-2">
+                            <div class="col-6 col-md-3"><div class="cl-kpi-caja"><strong>{{ kpi.asistidas }}</strong><span>Sesiones realizadas</span></div></div>
+                            <div class="col-6 col-md-3"><div class="cl-kpi-caja"><strong>{{ proximas|length }}</strong><span>Próximas</span></div></div>
+                            <div class="col-6 col-md-3"><div class="cl-kpi-caja"><strong>{{ kpi.canceladas }}</strong><span>Canceladas</span></div></div>
+                            <div class="col-6 col-md-3"><div class="cl-kpi-caja"><strong>{{ kpi.no_asistio }}</strong><span>No asistió</span></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-xl-7">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="mb-3">Continuidad de sesiones</h5>
+                                {% for c in proximas %}
+                                    <div class="cl-sesion">
+                                        <span class="cl-sesion-num cl-sesion-prox">{{ c.numero_sesion }}</span>
+                                        <div class="flex-grow-1">
+                                            <strong>{% if c.producto %}{{ c.producto }}{% else %}{{ c.titulo }}{% endif %}</strong> <span class="badge bg-success">{{ c.get_estado_display }}</span>
+                                            <div class="agenda-sub mi-hora">{{ c.inicio|date:"D d M Y · H:i" }} · con {{ c.organizador.get_full_name|default:c.organizador.username }} · {{ c.codigo }}</div>
+                                        </div>
+                                        <a href="/agenda/citas/{{ c.pk }}/" class="btn btn-light btn-sm">Abrir</a>
+                                    </div>
+                                {% endfor %}
+                                {% for c in pasadas %}
+                                    <div class="cl-sesion">
+                                        <span class="cl-sesion-num">{{ c.numero_sesion }}</span>
+                                        <div class="flex-grow-1">
+                                            <strong>{% if c.producto %}{{ c.producto }}{% else %}{{ c.titulo }}{% endif %}</strong> <span class="badge {% if c.estado == 'cerrada' or c.estado == 'realizada' %}bg-secondary{% else %}bg-danger{% endif %}">{{ c.get_estado_display }}</span>
+                                            <div class="agenda-sub mi-hora">{{ c.inicio|date:"D d M Y · H:i" }} · con {{ c.organizador.get_full_name|default:c.organizador.username }} · {{ c.codigo }}</div>
+                                            {% if c.cierre %}<div class="agenda-sub">{{ c.cierre.get_tipo_reunion_display }}{% if c.cierre.pidio_proforma %} · pidió proforma{% endif %}{% if c.cierre.resumen %} · {{ c.cierre.resumen|truncatechars:90 }}{% endif %}</div>{% endif %}
+                                        </div>
+                                        <a href="/agenda/citas/{{ c.pk }}/" class="btn btn-light btn-sm">Abrir</a>
+                                    </div>
+                                {% endfor %}
+                                {% if not proximas and not pasadas %}<p class="agenda-sub mb-0">Todavía no tiene citas. Agéndale una con «Agendar seguimiento».</p>{% endif %}
+                                <div class="mt-3">
+                                    <label class="form-label small mb-1" for="cl-nota">Nota privada del equipo</label>
+                                    <textarea id="cl-nota" class="form-control" rows="3" data-pk="{{ cliente.pk }}" placeholder="Contexto para quien lo atienda la próxima vez.">{{ cliente.nota_privada }}</textarea>
+                                    <div class="d-flex justify-content-between agenda-sub mt-1"><span>El cliente nunca ve estas notas.</span><span id="cl-nota-estado">Se guarda sola.</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-5">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="mb-2">Lo que nos dio el cliente</h5>
+                                <div class="cl-dato"><span>Correo</span><a href="mailto:{{ cliente.correo }}">{{ cliente.correo }}</a></div>
+                                <div class="cl-dato"><span>Teléfono o WhatsApp</span>{% if cliente.telefono %}<a href="tel:{{ cliente.telefono|cut:' ' }}">{{ cliente.telefono }}</a>{% else %}—{% endif %}</div>
+                                <div class="cl-dato"><span>Idioma elegido</span>{{ cliente.get_idioma_display|lower }}</div>
+                                <div class="cl-dato"><span>Origen</span>{{ cliente.portal_origen|default:'Panel' }} · desde {{ cliente.fecha_registro|date:"d M Y" }}</div>
+                            </div>
+                        </div>
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="mb-2">Lo que captó el sistema <span class="mi-pildora">Solo uso interno</span></h5>
+                                {% with captura=cliente.citas.first %}{% endwith %}
+                                {% for cap in capturas %}
+                                    <div class="cl-dato"><span>IP{% if cap.anonimizada %} (anonimizada){% endif %}</span><span class="mi-hora">{{ cap.ip|default:'—' }}</span></div>
+                                    <div class="cl-dato"><span>Dispositivo</span>{{ cap.navegador|truncatechars:60|default:'—' }}</div>
+                                    <div class="cl-dato"><span>Llegó desde</span>{{ cap.origen|default:'—'|truncatechars:60 }}</div>
+                                    <div class="cl-dato"><span>Idioma del navegador</span>{{ cap.idioma_navegador|default:'—'|truncatechars:20 }}</div>
+                                {% empty %}
+                                    <p class="agenda-sub mb-0">Sin datos técnicos: sus citas se crearon desde el panel.</p>
+                                {% endfor %}
+                                <p class="agenda-sub mt-2 mb-0">La IP se anonimiza pasado el plazo de Configuración; estos datos se declaran en el aviso de privacidad del portal.</p>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="mb-2">Quién lo ha atendido</h5>
+                                {% for p in personas %}
+                                    <div class="cl-dato"><span>{{ p.usuario.get_full_name|default:p.usuario.username }}</span>{{ p.n }} cita{{ p.n|pluralize }}</div>
+                                {% empty %}<p class="agenda-sub mb-0">Nadie todavía.</p>{% endfor %}
+                                {% if atendio %}<p class="agenda-sub mt-2 mb-0">Última vez lo atendió {{ atendio.get_full_name|default:atendio.username }}: conviene que siga con esa persona.</p>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card"><div class="card-body agenda-vacio text-center">Elige un cliente de la lista para ver su ficha.</div></div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% include 'agenda/parciales/modal_crud.html' %}
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script src="/static/js/agenda/crud.js?v1.1"></script>
+    <script src="/static/js/agenda/cliente.js?v1.1"></script>
+{% endblock %}

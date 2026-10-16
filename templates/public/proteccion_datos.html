@@ -1,0 +1,18 @@
+{% extends 'public/base.html' %}
+
+{% block content %}
+<section class="py-4">
+    <p class="text-uppercase text-muted small mb-1">Legal</p>
+    <h1 class="h3">Protección de datos personales</h1>
+    <p class="text-muted small">Última actualización: {{ fecha|date:"d/m/Y" }}</p>
+    <h2 class="h5 mt-4">1. Qué datos tratamos</h2>
+    <p>Datos de identificación y contacto de los usuarios (nombre, documento, correo) y el registro de su actividad dentro de la plataforma.</p>
+    <h2 class="h5 mt-4">2. Para qué los usamos</h2>
+    <p>Para autenticar a cada usuario, controlar los permisos de acceso y mantener la auditoría de los cambios.</p>
+    <h2 class="h5 mt-4">3. Conservación y seguridad</h2>
+    <p>Los datos se guardan en servidores controlados por la organización, con acceso restringido según el rol de cada usuario.</p>
+    <h2 class="h5 mt-4">4. Tus derechos</h2>
+    <p>Puedes pedir acceso, rectificación o eliminación de tus datos escribiendo a
+        <a href="mailto:{{ confi.email_notificacion|default:confi.email }}">{{ confi.email_notificacion|default:confi.email|default:"el correo del administrador" }}</a>.</p>
+</section>
+{% endblock %}

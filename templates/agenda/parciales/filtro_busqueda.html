@@ -1,0 +1,24 @@
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="GET" class="mb-0">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label" for="criterio">Buscar</label>
+                    <div class="input-group">
+                        <span class="input-group-text border-end-0"><i class="fa fa-search text-muted" aria-hidden="true"></i></span>
+                        <input type="text" id="criterio" class="form-control border-start-0" placeholder="{{ placeholder_busqueda|default:'Buscar…' }}"
+                               name="criterio" value="{{ criterio|default:'' }}">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary" aria-label="Buscar"><i class="fas fa-search"></i></button>
+                        {% if url_vars %}
+                            <a href="{{ ruta }}" class="btn btn-default" aria-label="Quitar filtros"><i class="fas fa-sync-alt"></i></a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

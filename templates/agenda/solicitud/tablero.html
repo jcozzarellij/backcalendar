@@ -1,0 +1,68 @@
+{% extends 'agenda/base_agenda.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
+    <link rel="stylesheet" href="/static/css/agenda/tablero.css?v1.0">
+{% endblock %}
+{% block content %}
+    <div class="row align-items-center mb-3">
+        <div class="col-md-8 d-flex flex-wrap gap-2">
+            <button type="button" onclick="formModal(0, 'Nueva solicitud', 'add')" class="btn btn-success btn-sm">
+                <i class="fas fa-plus-circle me-2"></i>Nueva solicitud
+            </button>
+            <div class="btn-group" role="group" aria-label="Vista">
+                <a href="{{ ruta }}" class="btn btn-light btn-sm"><i class="fas fa-list me-1"></i>Tabla</a>
+                <a href="{{ ruta }}?vista=tablero" class="btn btn-primary btn-sm"><i class="fas fa-columns me-1"></i>Tablero</a>
+            </div>
+        </div>
+        <div class="col-md-4 text-md-end agenda-sub">Arrastra una tarjeta de la cola a «Con cita» para asignarle horario, o a «Cerradas» para cerrarla sin cita.</div>
+    </div>
+
+    <div class="row g-3 tb-tablero">
+        {% for col in columnas %}
+            <div class="col-md-4">
+                <div class="card h-100 tb-columna" data-estado="{{ col.clave }}">
+                    <div class="card-body">
+                        <h5 class="tb-titulo">{{ col.nombre }} <span class="badge bg-secondary">{{ col.items|length }}</span></h5>
+                        <div class="tb-lista" data-lista="{{ col.clave }}">
+                            {% for s in col.items %}
+                                <article class="tb-tarjeta" draggable="{% if s.estado == 'en_cola' %}true{% else %}false{% endif %}" data-pk="{{ s.pk }}" data-estado="{{ s.estado }}" aria-label="{{ s.codigo }} de {{ s.cliente.nombres }}">
+                                    <div class="d-flex justify-content-between align-items-start gap-2">
+                                        <div>
+                                            <p class="mb-0 fw-semibold">{{ s.cliente.nombres }}</p>
+                                            <p class="mb-0 agenda-sub">{{ s.producto|default:'Sin producto' }}{% if s.equipo %} · {{ s.equipo.nombre }}{% endif %}</p>
+                                        </div>
+                                        <span class="badge bg-light text-dark">{{ s.codigo }}</span>
+                                    </div>
+                                    {% if s.motivo %}<p class="mb-0 mt-1 agenda-sub">{{ s.motivo|truncatechars:70 }}</p>{% endif %}
+                                    {% if s.telefono_para_llamar %}<p class="mb-0 mt-1 agenda-sub"><i class="fas fa-phone me-1"></i>{{ s.telefono_para_llamar }}</p>{% endif %}
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <span class="agenda-sub">{{ s.fecha_registro|date:"d/m H:i" }} · {{ s.get_origen_display }}</span>
+                                        <div class="tb-acciones">
+                                            {% if s.estado == 'en_cola' %}
+                                                <button type="button" class="btn btn-success btn-sm" onclick="formModal({{ s.pk }}, 'Asignar horario a {{ s.cliente.nombres|escapejs }}', 'asignar')" aria-label="Asignar horario"><i class="fas fa-calendar-check"></i></button>
+                                            {% else %}
+                                                {% for c in s.citas.all %}<a href="/agenda/citas/{{ c.pk }}/" class="btn btn-primary btn-sm" aria-label="Ver cita {{ c.codigo }}"><i class="fas fa-video"></i></a>{% endfor %}
+                                            {% endif %}
+                                            <button type="button" class="btn btn-light btn-sm" onclick="formModal({{ s.pk }}, 'Editar solicitud', 'change')" aria-label="Editar"><i class="fas fa-edit"></i></button>
+                                        </div>
+                                    </div>
+                                </article>
+                            {% empty %}
+                                <p class="agenda-sub tb-vacio mb-0">{{ col.vacio }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% include 'agenda/parciales/modal_crud.html' %}
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script src="/static/js/agenda/crud.js?v1.1"></script>
+    <script src="/static/js/agenda/solicitud.js?v1.0"></script>
+    <script src="/static/js/agenda/tablero.js?v1.0"></script>
+{% endblock %}

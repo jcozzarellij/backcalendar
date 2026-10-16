@@ -1,0 +1,481 @@
+from datetime import datetime
+
+from django import forms
+from django.core.validators import FileExtensionValidator
+from django.db import models
+from django.forms.widgets import DateTimeBaseInput
+from django.utils.html import strip_tags
+from django.utils.safestring import mark_safe
+from for_django_projects.form_utils.forms import BetterForm, BetterModelForm
+
+from core.constantes import SIMBOLO_MONEDA
+from core.funciones_adicionales import customgetattr
+from backcalendar.settings import AUTH_USER_MODEL
+
+
+class NormalModel(models.Model):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Campos diferidos (via .only()/.defer() o values_list parciales) — si
+        # tocamos su atributo, Django dispara refresh_from_db() que re-instancia
+        # el modelo → nuevo __init__ → loop infinito. Los salteamos y listo:
+        # los _boolhtml/_money/_a_tag no son criticos si el campo ni siquiera
+        # esta cargado en la instancia.
+        deferred_fields = set()
+        try:
+            deferred_fields = self.get_deferred_fields()
+        except Exception:
+            pass
+        for x in self._meta.fields:
+            f = x.name
+            if f in deferred_fields:
+                continue
+            if isinstance(self._meta.get_field(f), models.BooleanField):
+                is_true = customgetattr(self, f)
+                if is_true == None:
+                    t = 'fas fa-clock text-info'
+                else:
+                    t = 'fa-check-circle text-success' if is_true else 'fa-times-circle text-secondary'
+                setattr(self, '%s_boolhtml' % f, mark_safe('<i class="fas ' + t + '"></i>'))
+                t = "HABILITADO" if is_true else "DESHABILITADO"
+                setattr(self, '%s_texthtml' % f, t)
+                t = "Sí" if is_true else "No"
+                setattr(self, '%s_yesorno' % f, t)
+            if isinstance(self._meta.get_field(f), models.DecimalField):
+                t = customgetattr(self, f)
+                if t != None:
+                    setattr(self, '%s_unlocalize' % f, str(t).replace(',', '.'))
+                    setattr(self, '%s_money' % f, "{}{}".format(SIMBOLO_MONEDA, str(t).replace(',', '.')))
+                    t = int(float(customgetattr(self, f)))
+                    setattr(self, '%s_integer' % f, t)
+            if isinstance(self._meta.get_field(f), models.FileField):
+                file = getattr(self, f)
+                if file:
+                    archivo_icon = '<i class="far fa-file"></i>'
+                    extension = str(file.name.split('.')[-1]).lower()
+                    if extension in ('svg', 'jpg', 'jpeg', 'png', 'tiff', "jfif", 'gif', 'bmp'):
+                        archivo_icon = '<i class="far fa-file-image"></i>'
+                    elif extension in ('doc', 'docx'):
+                        archivo_icon = '<i class="far fa-file-word"></i>'
+                    elif extension in ('xls', 'xlsx'):
+                        archivo_icon = '<i class="far fa-file-excel"></i>'
+                    elif extension in ('csv', ):
+                        archivo_icon = '<i class="fas fa-file-csv"></i>'
+                    elif extension in ('pptx', 'pptm', 'ppt'):
+                        archivo_icon = '<i class="far fa-file-powerpoint"></i>'
+                    elif extension in ('pdf',):
+                        archivo_icon = '<i class="far fa-file-pdf"></i>'
+                    elif extension in ('c', 'cpp', 'cxx', 'class','cmd', 'bat', 'html', 'css', 'js', 'sh'):
+                        archivo_icon = '<i class="far fa-file-code"></i>'
+
+                    setattr(self, '%s_a_tag' % f, mark_safe(
+                        '<a target="_blank" href="{}">{} descargar</a>'.format(file.url, archivo_icon)
+                    ))
+                    setattr(self, '%s_icon' % f, mark_safe(archivo_icon))
+                    setattr(self, '%s_is_image' % f, extension in ('svg', 'jpg', 'jpeg', 'png', 'tiff', "jfif", 'gif', 'bmp'))
+
+    def get_registros_auditoria(self):
+        from django.contrib.contenttypes.models import ContentType
+        from seguridad.models import AudiUsuarioTabla
+        return AudiUsuarioTabla.objects.filter(
+            content_type__id=ContentType.objects.get_for_model(self).id,
+            object_id=self.id
+        )
+
+    def get_log_entries(self):
+        from django.contrib.contenttypes.models import ContentType
+        from django.contrib.admin.models import LogEntry
+        return LogEntry.objects.filter(
+            content_type_id=ContentType.objects.get_for_model(self).id,
+            object_id=self.id
+        )
+
+    class Meta:
+        abstract = True
+
+
+class ModeloBase(NormalModel):
+    usuario_creacion = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True, related_name='+')
+    fecha_registro = models.DateTimeField(verbose_name="Fecha de Registro", auto_now_add=True, editable=False)
+    usuario_modificacion = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True, related_name='+')
+    fecha_modificacion = models.DateTimeField(verbose_name="Fecha de Registro", blank=True, null=True, editable=False)
+    status = models.BooleanField(default=True, editable=False)
+
+    def save(self, *args, **kwargs):
+        from core.custom_middleware import get_current_request
+        request = kwargs.pop('request', None) or get_current_request()
+        fecha_registro = fecha_modificacion = datetime.now()
+        update_fields = None
+        # Determinar el usuario autenticado si el request existe
+        usuario_id = None
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            usuario_id = request.user.id
+
+        for key, value in kwargs.items():
+            if 'usuario_id' == key:
+                usuario_id = value
+            if 'fecha_modificacion' == key:
+                fecha_modificacion = value
+            if 'fecha_registro' == key:
+                fecha_registro = value
+            if 'update_fields' == key:
+                update_fields = value
+
+        if self.pk:
+            self.fecha_modificacion = fecha_modificacion
+            if usuario_id:
+                self.usuario_modificacion_id = usuario_id
+            if update_fields is not None:
+                update_fields = [*update_fields, 'usuario_modificacion_id', 'fecha_modificacion']
+                kwargs['update_fields'] = list(set(update_fields))
+        else:
+            # fecha_registro es DateTimeField → guardamos datetime completo (no sólo date)
+            # para no perder la hora. El atributo transitorio hora_registro se sigue
+            # exponiendo para compatibilidad con plantillas/código legacy.
+            self.fecha_registro = fecha_registro
+            self.hora_registro = fecha_registro.time()
+            if usuario_id:
+                self.usuario_creacion_id = usuario_id
+
+        # super(ModeloBase, self).save(*args, **kwargs)
+        models.Model.save(self, update_fields=update_fields)
+
+    class Meta:
+        abstract = True
+
+
+class RegistroInmutable(NormalModel):
+    """Base de los registros que son EVIDENCIA: se escriben una vez y nunca se modifican ni se
+    borran. `save()` rechaza cualquier actualización y `delete()` está bloqueado.
+
+    Es la alternativa a `ModeloBase` cuando la fila no debe poder editarse: el soft-delete
+    (`status=False`) y la columna de modificación son formas de editar, justo lo que estos
+    registros tienen que impedir. Cada hijo pone su propia marca de tiempo (`creado_en`).
+    La usan las respuestas y calificaciones de la evaluación."""
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None and type(self).objects.filter(pk=self.pk).exists():
+            raise ValueError(f'{type(self).__name__} es inmutable: no se puede modificar el registro #{self.pk}.')
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValueError(f'{type(self).__name__} es inmutable: no se puede borrar el registro #{self.pk}.')
+
+
+class FormError(Exception):
+    def __init__(self, form, prefix="", sufix=""):
+        super().__init__("Error en el formulario")
+        if isinstance(form, list) or isinstance(form, tuple):
+            self.errors = []
+            for x in form:
+                for k, v in x.errors.items():
+                    self.errors.append({prefix+k+sufix: v[0]})
+        else:
+            self.errors = [{prefix+k+sufix: v[0]} for k, v in form.errors.items()]
+        self.dict_error = {
+            'error': True,
+            "form": self.errors,
+            "message": "Datos incorrectos, revise la información registrada."
+        }
+
+
+class CustomDateInput(DateTimeBaseInput):
+    def format_value(self, value):
+        return str(value or '')
+
+
+class FormParent:
+
+    class Media:
+        css = {
+            'all': ('/static/assets/plugins/switchery/switchery.min.css', )
+        }
+        js = (
+            '/static/assets/plugins/switchery/switchery.min.js',
+            '/static/js/renderSwicheryControl.js',
+            # '/static/assets/plugins/select2/js/select2.full.min.js',
+            # '/static/assets/plugins/select2/js/i18n/es.js',
+            # '/static/assets/plugins/dropify/js/dropify.min.js',
+            # '/static/js/form-controls-init.js',
+            '/static/js/forms.js?v=12',
+            # '/static/panel/js/inline_forms.js?v=2',
+        )
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        self.ver = kwargs.pop('ver', False)
+        self.editando = bool('instance' in kwargs and kwargs.get("instance") and kwargs.get("instance").id)
+        customStep = kwargs.pop('customStep', None)
+        cantCharsSelect2 = kwargs.pop('cantCharsSelect2', {})
+        addDataNameInput = kwargs.pop('addDataNameInput', False)
+        select2_req = kwargs.pop('select2_req', [])#listado d campos que deban tener select2 ajax
+        no_requeridos = kwargs.pop('no_requeridos', [])#listado d campos que no quieran q sean requeridos en el form
+        requeridos = kwargs.pop('requeridos', [])#listado d campos que x defecto son requeridos pero quiere q no lo sean en el form
+        campos = kwargs.pop('campos', [])#listado d campos con su widget customizado
+        querysets = kwargs.pop('querysets', {})#listado d campos con un queryset filtrado
+        no_switchery = kwargs.pop('no_switchery', [])#listado d campos BooleanField que no quieran q se dibujen con switchery en el form
+        no_select2 = kwargs.pop('no_select2', [])#listado d campos que no quieran q se renderice con la librería select2
+        inlines = kwargs.pop('inlines', [])
+        select2_simple = kwargs.pop('select2_simple', [])
+
+        # AHORA puedes usar self.instance de forma segura
+        if self.editando:
+            self.instancia = kwargs['instance']
+        super(FormParent, self).__init__(*args, **kwargs)
+
+        if inlines:
+            self.inlines = inlines
+            if self.editando and len(args) == 0:
+                instancia = self.instance
+                if hasattr(self, 'inlines'):
+                    for i in range(len(self.inlines)):
+                        Formset = self.inlines[i]["formset"]
+                        self.inlines[i]["formset"] = Formset(instance=instancia)
+        for w in campos:
+            self.fields[w['field']] = w['widget']
+        if type(no_requeridos).__name__.lower() in ("list", "tuple"):
+            for nr in no_requeridos:
+                self.fields[nr].required = False
+        for r in requeridos:
+            self.fields[r].required = True
+        for k, v in querysets.items():
+            self.fields[k].queryset = v
+        if hasattr(self, "Meta"):
+            Modelo = self.Meta.model
+            nombre_app, nombre_model = Modelo._meta.app_label, Modelo._meta.model_name
+        for k, v in self.fields.items():
+            field = self.fields[k]
+            if isinstance(field.widget, forms.FileInput) and hasattr(self, '_meta') and hasattr(self._meta.model._meta.get_field(k), "validators"):
+                extensions = []
+                for x in self._meta.model._meta.get_field(k).validators:
+                    if isinstance(x, FileExtensionValidator):
+                        extensions.append(",".join([f".{ext}" for ext in x.allowed_extensions]))
+                if len(extensions) > 0:
+                    self.fields[k].widget.attrs["accept"] = ",".join(extensions)
+                    self.fields[k].widget.attrs["data-allowed-file-extensions"] = " ".join(extensions).replace(".", "").replace(",", " ")
+                if self.editando and getattr(self.instance, k) and hasattr(getattr(self.instance, k), "url"):
+                    self.fields[k].widget.attrs["data-default-file"] = getattr(getattr(self.instance, k), "url")
+            if no_requeridos == "__all__":
+                self.fields[k].required = False
+            if isinstance(field, forms.DateField):
+                self.fields[k].widget = CustomDateInput()
+                self.fields[k].widget.input_type = "date"
+            if isinstance(field, forms.TimeField) or isinstance(field.widget, forms.TimeInput):
+                self.fields[k].widget.input_type = "time"
+            if (isinstance(field, forms.ModelMultipleChoiceField) or isinstance(field, forms.ModelChoiceField)) and not field.widget.is_hidden:
+                if hasattr(field, 'queryset') and not k in no_select2:
+                    self.fields[k].widget.attrs['class'] = "select2"
+                else:
+                    self.fields[k].widget.attrs['class'] = "form-control"
+            elif isinstance(field, forms.TypedChoiceField) or isinstance(field.widget, forms.Select):
+                if k in no_select2:
+                    self.fields[k].widget.attrs['class'] = "form-control"
+                else:
+                    self.fields[k].widget.attrs['class'] = "select2"
+            elif isinstance(field, forms.MultipleChoiceField):
+                if hasattr(field, 'choices'):
+                    self.fields[k].widget.attrs['class'] = "select2"
+            elif (isinstance(field.widget, forms.CheckboxInput) or isinstance(field.widget, forms.CheckboxSelectMultiple)) and not(k in no_switchery):
+                self.fields[k].widget.attrs['class'] = "js-switch"
+                self.fields[k].widget.attrs['data-render'] = "switchery"
+                self.fields[k].widget.attrs['data-theme'] = "default"
+            else:
+                self.fields[k].widget.attrs['class'] = "form-control"
+            if isinstance(field.widget, forms.Textarea):
+                if not 'rows' in self.fields[k].widget.attrs:
+                    self.fields[k].widget.attrs['rows'] = "2"
+            if self.fields[k].required and self.fields[k].label:
+                self.fields[k].label = mark_safe(self.fields[k].label + '<span style="color:red;margin-left:2px;"><strong>*</strong></span>')
+            if self.ver:
+                self.fields[k].widget.attrs['readonly'] = "readonly"
+            if not 'col' in self.fields[k].widget.attrs:
+                self.fields[k].widget.attrs['col'] = "12"
+            if addDataNameInput:
+                self.fields[k].widget.attrs['data-nameinput'] = k
+            if k in select2_simple:
+                self.fields[k].widget.attrs['class'] = "jselect2"
+
+        for f in self.fieldsets:
+            step = f.name
+            for ff in f.boundfields:
+                k = ff.name
+                if self.fields[k].required:
+                    self.fields[k].widget.attrs['data-parsley-required'] = "true"
+                self.fields[k].widget.attrs['data-parsley-group'] = customStep or step
+                self.fields[k].widget.attrs['data-parsley-required-message'] = strip_tags("{} es obligatorio".format(
+                    self.fields[k].label))
+
+class FormCustom:
+
+    class Media:
+        css = {
+            'all': ('/static/assets/plugins/switchery/switchery.min.css', )
+        }
+        js = (
+            '/static/assets/plugins/switchery/switchery.min.js',
+            '/static/js/renderSwicheryControl.js',
+            # '/static/assets/plugins/select2/js/select2.full.min.js',
+            # '/static/assets/plugins/select2/js/i18n/es.js',
+            # '/static/assets/plugins/dropify/js/dropify.min.js',
+            # '/static/js/form-controls-init.js',
+            # '/static/js/forms.js?v=12',
+            # '/static/panel/js/inline_forms.js?v=2',
+        )
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        self.ver = kwargs.pop('ver', False)
+        self.instance = kwargs.pop('instance', None)
+        customStep = kwargs.pop('customStep', None)
+        cantCharsSelect2 = kwargs.pop('cantCharsSelect2', {})
+        addDataNameInput = kwargs.pop('addDataNameInput', False)
+        select2_req = kwargs.pop('select2_req', [])#listado d campos que deban tener select2 ajax
+        no_requeridos = kwargs.pop('no_requeridos', [])#listado d campos que no quieran q sean requeridos en el form
+        requeridos = kwargs.pop('requeridos', [])#listado d campos que x defecto son requeridos pero quiere q no lo sean en el form
+        campos = kwargs.pop('campos', [])#listado d campos con su widget customizado
+        querysets = kwargs.pop('querysets', {})#listado d campos con un queryset filtrado
+        no_switchery = kwargs.pop('no_switchery', [])#listado d campos BooleanField que no quieran q se dibujen con switchery en el form
+        no_select2 = kwargs.pop('no_select2', [])#listado d campos que no quieran q se renderice con la librería select2
+        select2_simple = kwargs.pop('select2_simple', [])
+        inlines = kwargs.pop('inlines', [])
+
+        super(FormCustom, self).__init__(*args, **kwargs)
+
+        if inlines:
+            self.inlines = inlines
+            if self.instance and len(args) == 0:
+                instancia = self.instance
+                if hasattr(self, 'inlines'):
+                    for i in range(len(self.inlines)):
+                        Formset = self.inlines[i]["formset"]
+                        self.inlines[i]["formset"] = Formset(instance=instancia)
+        for w in campos:
+            self.fields[w['field']] = w['widget']
+        if type(no_requeridos).__name__.lower() in ("list", "tuple"):
+            for nr in no_requeridos:
+                self.fields[nr].required = False
+        for r in requeridos:
+            self.fields[r].required = True
+        for k, v in querysets.items():
+            self.fields[k].queryset = v
+        if hasattr(self, "Meta"):
+            Modelo = self.Meta.model
+            nombre_app, nombre_model = Modelo._meta.app_label, Modelo._meta.model_name
+        for k, v in self.fields.items():
+            field = self.fields[k]
+            if isinstance(field.widget, forms.FileInput) and hasattr(self, '_meta') and hasattr(self._meta.model._meta.get_field(k), "validators"):
+                extensions = []
+                for x in self._meta.model._meta.get_field(k).validators:
+                    if isinstance(x, FileExtensionValidator):
+                        extensions.append(",".join([f".{ext}" for ext in x.allowed_extensions]))
+                if len(extensions) > 0:
+                    self.fields[k].widget.attrs["accept"] = ",".join(extensions)
+                    self.fields[k].widget.attrs["data-allowed-file-extensions"] = " ".join(extensions).replace(".", "").replace(",", " ")
+                if self.editando and getattr(self.instance, k) and hasattr(getattr(self.instance, k), "url"):
+                    self.fields[k].widget.attrs["data-default-file"] = getattr(getattr(self.instance, k), "url")
+            if no_requeridos == "__all__":
+                self.fields[k].required = False
+            if isinstance(field, forms.DateField):
+                attrs_ = self.fields[k].widget.attrs
+                self.fields[k].widget = CustomDateInput(attrs={'type': 'date'})
+                self.fields[k].widget.attrs = attrs_
+                # Personalizar el valor inicial si está presente en los datos iniciales del formulario
+                if k in self.initial:
+                    if self.initial.get(k):
+                        fecha_str = self.initial[k].strftime('%Y-%m-%d')
+                        self.initial[k] = fecha_str
+            if isinstance(field, forms.TimeField) or isinstance(field.widget, forms.TimeInput):
+                self.fields[k].widget.input_type = "time"
+            if (isinstance(field, forms.ModelMultipleChoiceField) or isinstance(field, forms.ModelChoiceField)) and not field.widget.is_hidden:
+                if hasattr(field, 'queryset') and not k in no_select2:
+                    self.fields[k].widget.attrs['class'] = "select2"
+                else:
+                    self.fields[k].widget.attrs['class'] = "form-control"
+            elif isinstance(field, forms.TypedChoiceField) or isinstance(field.widget, forms.Select):
+                if k in no_select2:
+                    self.fields[k].widget.attrs['class'] = "form-control"
+                else:
+                    self.fields[k].widget.attrs['class'] = "select2"
+            elif isinstance(field, forms.MultipleChoiceField):
+                if hasattr(field, 'choices'):
+                    self.fields[k].widget.attrs['class'] = "select2"
+            elif (isinstance(field.widget, forms.CheckboxInput) or isinstance(field.widget, forms.CheckboxSelectMultiple)) and not (k in no_switchery):
+                self.fields[k].widget.attrs['class'] = "js-switch"
+                self.fields[k].widget.attrs['data-render'] = "switchery"
+                self.fields[k].widget.attrs['data-theme'] = "default"
+            elif not isinstance(field, forms.FileField):
+                self.fields[k].widget.attrs['class'] = "form-control"
+            if isinstance(field.widget, forms.Textarea):
+                if not 'rows' in self.fields[k].widget.attrs:
+                    self.fields[k].widget.attrs['rows'] = "2"
+            if self.fields[k].required and self.fields[k].label:
+                self.fields[k].label = mark_safe(self.fields[k].label + '<span style="color:red;margin-left:2px;"><strong>*</strong></span>')
+            if self.ver:
+                self.fields[k].widget.attrs['readonly'] = "readonly"
+            if not 'col' in self.fields[k].widget.attrs:
+                self.fields[k].widget.attrs['col'] = "12"
+            if addDataNameInput:
+                self.fields[k].widget.attrs['data-nameinput'] = k
+            if k in select2_simple:
+                self.fields[k].widget.attrs['class'] = "jselect2"
+
+        for f in self.fieldsets:
+            step = f.name
+            for ff in f.boundfields:
+                k = ff.name
+                if self.fields[k].required:
+                    self.fields[k].widget.attrs['data-parsley-required'] = "true"
+                self.fields[k].widget.attrs['data-parsley-group'] = customStep or step
+                self.fields[k].widget.attrs['data-parsley-required-message'] = strip_tags("{} es obligatorio".format(
+                    self.fields[k].label))
+
+
+class FormBase(FormCustom, BetterForm):
+    pass
+
+
+class ModelFormBase(FormParent, BetterModelForm):
+
+    def is_valid(self):
+        is_valid = super(ModelFormBase, self).is_valid()
+        form = self
+        if hasattr(form, 'inlines'):
+            for inline in form.inlines:
+                Formset = inline["formset"]
+                formset = Formset(self.data, self.files, instance=self.instance if self.editando else None)
+                is_valid = is_valid and formset.is_valid()
+                errors = {}
+                for i in range(len(formset.errors)):
+                    e = formset.errors[i]
+                    for k, v in e.items():
+                        errors['{}-{}-{}'.format(formset.prefix, i, k)] = v
+                self.errors.update(
+                    errors
+                )
+        return is_valid
+
+    def save(self, commit=True):
+
+        if self.request:
+            if self.instance.pk:
+                self.instance.usuario_modificacion = self.request.user
+            else:
+                self.instance.usuario_creacion = self.request.user
+
+        obj = super(ModelFormBase, self).save(commit=commit)
+        if commit:
+            obj.save()
+            self._save_m2m()  # Guardar relaciones many-to-many si las hay
+
+        form = self
+        if hasattr(form, 'inlines'):
+            for inline in form.inlines:
+                Formset = inline["formset"]
+                formset = Formset(self.data, self.files, instance=obj)
+                if formset.is_valid():
+                    formset.save()
+        return obj

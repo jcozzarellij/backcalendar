@@ -1,0 +1,57 @@
+{% extends 'public/seguridad/base_auth.html' %}
+
+{% block au_eyebrow %}Recuperar acceso{% endblock %}
+{% block au_title %}Recuperar usuario{% endblock %}
+{% block au_sub %}Ingresa tu correo electrónico y te enviamos tu nombre de usuario al instante.{% endblock %}
+
+{% block auth_body %}
+    <form action="{{ request.path }}" method="post" id="frm-restaurar">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label" for="recoverEmail">Correo electrónico</label>
+            <input type="email" class="form-control" id="recoverEmail" name="email"
+                   placeholder="tucorreo@ejemplo.com" required>
+        </div>
+        <button class="btn btn-primary" type="submit">
+            Recuperar mi usuario <i class="fas fa-envelope ms-1"></i>
+        </button>
+    </form>
+{% endblock %}
+
+{% block au_links %}
+    <div class="au-links-row">
+        <a href="/restorepass/" class="au-link">¿Olvidaste tu contraseña?</a>
+        <a href="/login/" class="au-link">Iniciar sesión</a>
+    </div>
+{% endblock %}
+
+{% block auth_jscript %}
+    <script>
+        $('#frm-restaurar').on('submit', function (e) {
+            e.preventDefault();
+            var frmData = new FormData($(this)[0]);
+            $.ajax({
+                url: '{{ request.path }}',
+                data: frmData,
+                method: 'POST',
+                dataType: 'json',
+                cache: false,
+                contentType: false,
+                processData: false,
+                beforeSend: function () {
+                    pantallaespera('Enviando', 'Buscando tu usuario...');
+                }
+            }).done(function (data) {
+                setTimeout($.unblockUI, 1);
+                if (data.resp === true) {
+                    location = "/";
+                } else {
+                    mensajeDanger(data.error);
+                }
+            }).fail(function () {
+                setTimeout($.unblockUI, 1);
+                mensajeDanger('Error de conexión.');
+            });
+        });
+    </script>
+{% endblock %}

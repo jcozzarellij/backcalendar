@@ -1,0 +1,178 @@
+{% extends 'agenda/base_agenda.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
+    <link rel="stylesheet" href="/static/css/agenda/turnos.css?v1.1">
+{% endblock %}
+{% block content %}
+    {% if administrar and usuarios %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="GET" class="mb-0">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-5">
+                            <label class="form-label" for="usuario">Turnos de</label>
+                            <select id="usuario" name="usuario" class="select2" onchange="this.form.submit()">
+                                {% for u in usuarios %}
+                                    <option value="{{ u.pk }}" {% if u.pk == usuario_turnos.pk %}selected{% endif %}>{{ u.get_full_name|default:u.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="row g-3">
+        <div class="col-xl-8">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="row g-2 align-items-center mb-3">
+                        <div class="col-lg-5">
+                            <h5 class="mb-1">Semana tipo</h5>
+                            <p class="agenda-sub mb-0">Arrastra sobre varios espacios para marcarlos de una vez. Toca un día o una hora para marcar la columna o la fila entera.</p>
+                        </div>
+                        <div class="col-lg-7 text-lg-end">
+                            <div class="turnos-rapidos" role="group" aria-label="Relleno rápido">
+                                <button type="button" class="btn btn-light btn-sm" data-relleno="completa">Jornada completa</button>
+                                <button type="button" class="btn btn-light btn-sm" data-relleno="mananas">Solo mañanas</button>
+                                <button type="button" class="btn btn-light btn-sm" data-relleno="tardes">Solo tardes</button>
+                                <button type="button" class="btn btn-light btn-sm" data-relleno="copiar">Copiar lunes de martes a viernes</button>
+                                <button type="button" class="btn btn-light btn-sm" data-relleno="limpiar">Limpiar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive turnos-scroll">
+                        <table class="turnos-rejilla" aria-describedby="turnos-resumen">
+                            <thead>
+                            <tr>
+                                <th scope="col" class="turnos-esquina"><span class="visually-hidden">Hora</span></th>
+                                {% for valor, nombre in dias %}
+                                    <th scope="col">
+                                        <button type="button" class="turnos-cabecera" data-dia="{{ valor }}" title="Marcar o quitar todo el {{ nombre|lower }}">{{ nombre|slice:":3" }}</button>
+                                    </th>
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for h in horas %}
+                                <tr>
+                                    <th scope="row">
+                                        <button type="button" class="turnos-cabecera turnos-hora" data-hora="{{ h }}" title="Marcar o quitar las {{ h }} toda la semana">{{ h }}</button>
+                                    </th>
+                                    {% for valor, nombre in dias %}
+                                        <td>
+                                            <button type="button" class="turnos-celda" data-dia="{{ valor }}" data-hora="{{ h }}"
+                                                    aria-pressed="false" aria-label="{{ nombre }} {{ h }}">{{ h }}</button>
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="mb-3">¿Hasta cuándo aplica?</h5>
+                    <div class="mb-3">
+                        <label class="form-label" for="turnos-alcance">Vigencia</label>
+                        <select id="turnos-alcance" class="select2">
+                            {% for valor, nombre in alcances %}
+                                <option value="{{ valor }}">{{ nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row g-2 mb-3 d-none" id="turnos-rango">
+                        <div class="col-6">
+                            <label class="form-label" for="turnos-desde">Desde</label>
+                            <input type="date" id="turnos-desde" class="form-control" min="{{ fecha }}" value="{{ fecha }}">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label" for="turnos-hasta">Hasta</label>
+                            <input type="date" id="turnos-hasta" class="form-control" min="{{ fecha }}">
+                        </div>
+                    </div>
+                    <div class="turnos-resumen" id="turnos-resumen" aria-live="polite">
+                        <span class="turnos-resumen-numero" id="turnos-total">0</span>
+                        <span>turnos por semana · <strong id="turnos-horas">0 h</strong></span>
+                    </div>
+                    {% if patron %}
+                        <p class="agenda-sub mt-2 mb-0">Vigente ahora: desde {{ patron.vigencia_desde|date:"d/m/Y" }}{% if patron.vigencia_hasta %} hasta {{ patron.vigencia_hasta|date:"d/m/Y" }}{% else %}, sin fecha de fin{% endif %}.</p>
+                    {% else %}
+                        <p class="agenda-sub mt-2 mb-0">Todavía no hay una semana tipo guardada: mientras tanto no se te asignan citas.</p>
+                    {% endif %}
+                    <div class="d-grid mt-3">
+                        <button type="button" class="btn btn-primary" id="turnos-guardar"><i class="fa fa-save me-1"></i>Guardar y aplicar</button>
+                    </div>
+                    {% if proximos %}
+                        <div class="border-top mt-3 pt-3">
+                            <p class="small fw-semibold mb-1">Programadas</p>
+                            <ul class="list-unstyled small mb-0">
+                                {% for p in proximos %}
+                                    <li>Desde {{ p.vigencia_desde|date:"d/m/Y" }}{% if p.vigencia_hasta %} hasta {{ p.vigencia_hasta|date:"d/m/Y" }}{% endif %}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="row g-2 align-items-center mb-2">
+                        <div class="col">
+                            <h5 class="mb-0">Excepciones</h5>
+                            <p class="agenda-sub mb-0">Días que se salen de la semana tipo.</p>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-success btn-sm"
+                                    onclick="formModal(0, 'Nueva excepción', 'addexcepcion'{% if administrar %}, {'usuario': {{ usuario_turnos.pk }}}{% endif %})">
+                                <i class="fas fa-plus-circle me-1"></i>Añadir
+                            </button>
+                        </div>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for e in excepciones %}
+                            <li class="list-group-item px-0">
+                                <div class="row g-2 align-items-center">
+                                    <div class="col">
+                                        <span class="badge {% if e.tipo == 'vacaciones' %}bg-primary{% elif e.tipo == 'permiso' %}bg-warning{% else %}bg-secondary{% endif %}">{{ e.get_tipo_display }}</span>
+                                        <div class="small mt-1">
+                                            {% if e.fecha_desde == e.fecha_hasta %}{{ e.fecha_desde|date:"D d M Y" }}{% else %}{{ e.fecha_desde|date:"d M" }} a {{ e.fecha_hasta|date:"d M Y" }}{% endif %}
+                                            · {% if e.hora_inicio %}{{ e.hora_inicio|time:"H:i" }} a {{ e.hora_fin|time:"H:i" }}{% else %}todo el día{% endif %}
+                                        </div>
+                                        {% if e.motivo %}<div class="agenda-sub">{{ e.motivo }}</div>{% endif %}
+                                    </div>
+                                    <div class="col-auto">
+                                        <button type="button" class="btn btn-light btn-sm" aria-label="Quitar excepción"
+                                                onclick="accionAgenda({{ e.pk }}, 'delete'{% if administrar %}, {'usuario': {{ usuario_turnos.pk }}}{% endif %})">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item px-0 agenda-sub">Sin excepciones próximas. Carga aquí vacaciones o permisos como un rango de fechas.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'agenda/parciales/modal_crud.html' %}
+    {{ celdas|json_script:"turnos-celdas" }}
+    <div id="turnos-config" data-paso="{{ paso }}" data-usuario="{% if administrar %}{{ usuario_turnos.pk }}{% endif %}" hidden></div>
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script src="/static/js/agenda/crud.js?v1.1"></script>
+    <script src="/static/js/agenda/turnos.js?v1.1"></script>
+{% endblock %}

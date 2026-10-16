@@ -1,0 +1,555 @@
+{% extends 'base.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/stylenew/modulossistema.css?v={{ version_css }}">
+    <link rel="stylesheet" href="/static/iconos_selector.css">
+    <link rel="stylesheet" href="/static/css/seguridad/modulos_urls.css?v1.1">
+{% endblock %}
+{% block content %}
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="GET" class="mb-0">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Buscar</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-end-0">
+                                <i class="fa fa-search text-muted"></i>
+                            </span>
+                            <input type="text" class="form-control border-start-0"
+                                   placeholder="Buscar..." name="criterio" value="{{ criterio }}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Grupo (sidebar)</label>
+                        <select name="grupo" class="form-control">
+                            <option value="">Todos los grupos</option>
+                            {% for g in grupos_filtro %}
+                                <option value="{{ g.id }}" {% if grupo_sel == g.id %}selected{% endif %}>{{ g.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Rol de usuario</label>
+                        <select name="rol" class="form-control">
+                            <option value="">Todos los roles</option>
+                            {% for r in roles_filtro %}
+                                <option value="{{ r.id }}" {% if rol_sel == r.id %}selected{% endif %}>{{ r.group.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">En uso</label>
+                        <select name="usadas" class="form-control">
+                            <option value="">Todas</option>
+                            <option value="1" {% if usadas == '1' %}selected{% endif %}>En uso</option>
+                            <option value="0" {% if usadas == '0' %}selected{% endif %}>Sin usar</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Grupos asignados</label>
+                        <select name="grupos_n" class="form-control">
+                            <option value="">Cualquier cantidad</option>
+                            <option value="mas2" {% if grupos_n == 'mas2' %}selected{% endif %}>En más de 2 grupos</option>
+                            <option value="2" {% if grupos_n == '2' %}selected{% endif %}>En 2 grupos</option>
+                            <option value="1" {% if grupos_n == '1' %}selected{% endif %}>En 1 solo grupo</option>
+                            <option value="0" {% if grupos_n == '0' %}selected{% endif %}>Sin ningún grupo</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Ordenar por</label>
+                        <select name="orden" class="form-control">
+                            <option value="id_desc" {% if orden == 'id_desc' %}selected{% endif %}>ID desc (más nuevas primero)</option>
+                            <option value="id_asc" {% if orden == 'id_asc' %}selected{% endif %}>ID asc</option>
+                            <option value="nombre_asc" {% if orden == 'nombre_asc' %}selected{% endif %}>Nombre A-Z</option>
+                            <option value="nombre_desc" {% if orden == 'nombre_desc' %}selected{% endif %}>Nombre Z-A</option>
+                            <option value="fecha_desc" {% if orden == 'fecha_desc' %}selected{% endif %}>Fecha desc</option>
+                            <option value="fecha_asc" {% if orden == 'fecha_asc' %}selected{% endif %}>Fecha asc</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Acciones</label>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i>
+                            </button>
+                            {% if url_vars %}
+                                <a href="{{ request.path }}" class="btn btn-default">
+                                    <i class="fas fa-sync-alt"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row align-items-center mb-3">
+        <div class="col-md-12 mb-2 mb-md-0 d-flex gap-2 flex-wrap">
+            <a href="javascript:void(0)" onclick="formModal(0, 'Nuevo módulo', 'add')" class="btn btn-success btn-sm">
+                <i class="fas fa-plus-circle me-2"></i> Nuevo módulo
+            </a>
+            <a href="javascript:void(0)" onclick="extraerUrls()" class="btn btn-info btn-sm">
+                <i class="fas fa-magic me-2"></i> Extraer URLs nuevas
+            </a>
+            <span class="urls-contador ms-auto align-self-center">
+                <strong>{{ list_count }}</strong> URL{{ list_count|pluralize:"s" }}
+                {% if url_vars %}con los filtros aplicados{% else %}registradas{% endif %}
+            </span>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="tabla" class="table table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th class="text-center">ID / Creado</th>
+                        <th class="text-center">Orden</th>
+                        <th class="text-center">Ícono</th>
+                        <th class="text-center">Nombre</th>
+                        <th class="text-center">URL</th>
+                        <th class="text-center">Grupos</th>
+                        <th class="text-center">Roles</th>
+                        <th class="text-center">Acción</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for mod in listado %}
+                        <tr>
+                            <td class="text-center">
+                                <div class="fw-semibold">#{{ mod.id }}</div>
+                                <div class="small text-muted">{{ mod.fecha_registro|date:"Y-m-d H:i" }}</div>
+                            </td>
+                            <td class="text-center">
+                                <input type="number" class="form-control form-control-sm orden-input"
+                                       ida="{{ mod.id }}" vl="{{ mod.orden }}" value="{{ mod.orden }}" step="1">
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-icon btn-sm btn-seleccionar-icono"
+                                        data-id="{{ mod.id }}" data-icono="{{ mod.icono|default_if_none:'' }}"
+                                        title="Cambiar ícono">
+                                    <i class="icono-preview-{{ mod.id }} {{ mod.icono|default:'fa-regular fa-image text-muted' }}"
+                                       style="font-size: 1.15rem;"></i>
+                                </button>
+                            </td>
+                            <td>
+                                {{ mod.nombre }}
+                            </td>
+                            <td>
+                                <a href="{{ mod.url }}" target="_blank" class="text-primary">{{ mod.url }}</a>
+                            </td>
+                            <td>
+                                {% if mod.grupos_count > 2 %}
+                                    <div><span class="urls-multi" title="Esta URL aparece en {{ mod.grupos_count }} grupos del sidebar">{{ mod.grupos_count }} grupos</span></div>
+                                {% endif %}
+                                {% for g in mod.grupos_activos %}
+                                    <span class="badge bg-info text-dark me-1 mb-1">{{ g.nombre }}</span>
+                                {% empty %}
+                                    <span class="text-muted small">—</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for gm in mod.roles_activos %}
+                                    <span class="badge bg-warning text-dark me-1 mb-1">{{ gm.group.name }}</span>
+                                {% empty %}
+                                    <span class="text-muted small">—</span>
+                                {% endfor %}
+                            </td>
+                            <td class="text-center">
+                                <div class="dropdown">
+                                    <button class="btn btn-icon" type="button" id="dropdownMenuButton-{{ mod.pk }}"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton-{{ mod.pk }}">
+                                        <li>
+                                            <a class="dropdown-item" href="javascript:void(0);"
+                                               onclick="formModal({{ mod.id }}, 'Editar {{ mod.nombre }}','change')">
+                                                <i class="fas fa-edit me-2 text-primary"></i>Editar
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="javascript:void(0);"
+                                               onclick="gestionarGrupos({{ mod.id }}, 'Agregar/quitar grupos — {{ mod.nombre }}')">
+                                                <i class="fas fa-layer-group me-2 text-info"></i>Agregar/quitar grupos
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="javascript:void(0);"
+                                               onclick="gestionarRoles({{ mod.id }}, 'Agregar/quitar roles — {{ mod.nombre }}')">
+                                                <i class="fas fa-user-shield me-2 text-warning"></i>Agregar/quitar roles
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="javascript:void(0);"
+                                               onclick="eliminarajax({{ mod.pk }}, '{{ mod.nombre }}', 'delete')">
+                                                <i class="fas fa-trash me-2 text-danger"></i>Eliminar
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% include "paginacion.html" %}
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalDetalle" tabindex="-1" aria-labelledby="modalDetalleLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <form method="post" enctype="multipart/form-data" action="{{ ruta }}" class="form">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalNombre"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body detalleProdModal">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalIconsModulo" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Seleccione un ícono</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text border-end-0">
+                            <i class="fa fa-search text-muted"></i>
+                        </span>
+                        <input id="txtBuscarIconoModulo" type="search" class="form-control border-start-0"
+                               placeholder="Buscar ícono..."/>
+                    </div>
+                    <div class="nav nav-tabs mb-3" role="tablist">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-iconoirModulo" data-tipo="iconoir" type="button">Iconoir</button>
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-icofontModulo" data-tipo="icofont" type="button">Icofont</button>
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-lineawesomeModulo" data-tipo="lineawesome" type="button">Line Awesome</button>
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-fontawesomeModulo" data-tipo="fontawesome" type="button">Font Awesome</button>
+                    </div>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="tab-iconoirModulo"><div id="iconoirModulo-container" class="icon-grid"></div></div>
+                        <div class="tab-pane fade" id="tab-icofontModulo"><div id="icofontModulo-container" class="icon-grid"></div></div>
+                        <div class="tab-pane fade" id="tab-lineawesomeModulo"><div id="lineawesomeModulo-container" class="icon-grid"></div></div>
+                        <div class="tab-pane fade" id="tab-fontawesomeModulo"><div id="fontawesomeModulo-container" class="icon-grid"></div></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary btn-sm" id="guardarIconoModulo">Seleccionar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script>
+        function extraerUrls() {
+            pantallaespera();
+            $.ajax({
+                type: 'GET',
+                url: '{{ request.path }}',
+                data: {
+                    action: 'extraer_urls_preview'
+                },
+                dataType: 'json'
+            }).done(function (data) {
+                setTimeout($.unblockUI, 1);
+                if (data && data.result === true) {
+                    $('#modalNombre').html('Extraer URLs del sistema');
+                    $('.detalleProdModal').html(data.data);
+                    const modal = new bootstrap.Modal(document.getElementById('modalDetalle'));
+                    modal.show();
+                } else {
+                    mensajeWarning((data && data.message) || 'No se pudo armar la vista previa.');
+                }
+            }).fail(function () {
+                setTimeout($.unblockUI, 1);
+                mensajeWarning('Error del servidor.');
+            });
+        }
+
+        function gestionarGrupos(id, text) {
+            pantallaespera();
+            $.ajax({
+                type: 'GET',
+                url: '{{ request.path }}',
+                data: {
+                    action: 'grupos_modulo',
+                    id: id
+                },
+                dataType: 'json'
+            }).done(function (data) {
+                setTimeout($.unblockUI, 1);
+                if (data && data.result === true) {
+                    $('#modalNombre').html(text);
+                    $('.detalleProdModal').html(data.data);
+                    const modal = new bootstrap.Modal(document.getElementById('modalDetalle'));
+                    modal.show();
+                } else {
+                    mensajeWarning((data && data.message) || 'Módulo no encontrado.');
+                }
+            }).fail(function () {
+                setTimeout($.unblockUI, 1);
+                mensajeWarning('Error del servidor.');
+            });
+        }
+
+        function gestionarRoles(id, text) {
+            pantallaespera();
+            $.ajax({
+                type: 'GET',
+                url: '{{ request.path }}',
+                data: {
+                    action: 'roles_modulo',
+                    id: id
+                },
+                dataType: 'json'
+            }).done(function (data) {
+                setTimeout($.unblockUI, 1);
+                if (data && data.result === true) {
+                    $('#modalNombre').html(text);
+                    $('.detalleProdModal').html(data.data);
+                    const modal = new bootstrap.Modal(document.getElementById('modalDetalle'));
+                    modal.show();
+                } else {
+                    mensajeWarning((data && data.message) || 'Módulo no encontrado.');
+                }
+            }).fail(function () {
+                setTimeout($.unblockUI, 1);
+                mensajeWarning('Error del servidor.');
+            });
+        }
+
+        function formModal(id, text, action) {
+            pantallaespera();
+            $.ajax({
+                type: "GET",
+                url: `{{ request.path }}`,
+                data: {
+                    'action': action,
+                    'id': id,
+                },
+                success: function (data) {
+                    setTimeout($.unblockUI, 1);
+                    if (data.result === true) {
+                        $('#modalNombre').html(text);
+                        $('.detalleProdModal').html(data.data);
+
+                        const modal = new bootstrap.Modal(document.getElementById('modalDetalle'));
+                        modal.show();
+                    } else {
+                        mensajeWarning(data.message);
+                    }
+                },
+                error: function () {
+                    setTimeout($.unblockUI, 1);
+                    mensajeWarning("Error de conexión.");
+                },
+                dataType: "json"
+            });
+        }
+
+        $(document).on('change blur', '.orden-input', function () {
+            var elemento = $(this);
+            var id = elemento.attr('ida');
+            var prev = elemento.attr('vl');
+            var texto = elemento.val();
+            if (texto === '' || isNaN(parseInt(texto))) {
+                elemento.val(prev);
+                return;
+            }
+            if (prev == texto) return;
+            pantallaespera();
+            $.ajax({
+                type: 'POST',
+                url: '{{ ruta }}',
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    action: 'act_orden',
+                    id: id,
+                    valor: texto
+                },
+                success: function (data) {
+                    $.unblockUI();
+                    if (data.result === true) {
+                        elemento.attr('vl', data.orden);
+                        location.reload();
+                    } else {
+                        elemento.val(prev);
+                        mensajeWarning(data.mensaje || 'Error al guardar');
+                    }
+                },
+                error: function () {
+                    $.unblockUI();
+                    elemento.val(prev);
+                    mensajeWarning('Error de conexión.');
+                },
+                dataType: 'json'
+            });
+        });
+
+        function eliminarajax(pk, nombre, accion, dict_url_vars = "", titulo = `Estas a punto de eliminar este registro ${nombre}`) {
+            Swal.fire({
+                title: titulo,
+                text: "Esta acción es irreversible",
+                type: 'warning',
+                showCancelButton: true,
+                allowOutsideClick: false,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, deseo hacerlo!',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.value) {
+                    pantallaespera();
+                    $.ajax({
+                        type: 'POST',
+                        url: '{{ request.path }}',
+                        async: false,
+                        data: {
+                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                            action: accion,
+                            id: pk,
+                            dict_url_vars: dict_url_vars,
+                        },
+                        dataType: "json",
+                        beforeSend: function () {
+                            pantallaespera();
+                        }
+                    }).done(function (data) {
+                        setTimeout($.unblockUI, 1);
+                        if (data.error === false) {
+                            location.reload();
+                        }
+                    }).fail(function (jqXHR, textStatus, errorThrown) {
+                        setTimeout($.unblockUI, 1);
+                        mensajeWarning('Error en el servidor');
+                    }).always(function () {
+                    });
+                }
+            })
+        }
+
+        let iconsDataModulo = null;
+        let iconoModuloId = null;
+        let iconoModuloValor = '';
+        const tabsIconoRenderizados = {};
+
+        function cargarIconosJsonModulo() {
+            if (iconsDataModulo) return Promise.resolve(iconsDataModulo);
+            return fetch('/static/js/icons/all-icons-translated.json')
+                .then(r => r.json())
+                .then(data => {
+                    iconsDataModulo = data;
+                    return data;
+                });
+        }
+
+        function renderTabIconoModulo(tipo) {
+            if (tabsIconoRenderizados[tipo] || !iconsDataModulo || !iconsDataModulo[tipo]) return;
+            const cont = document.getElementById(`${tipo}Modulo-container`);
+            const frag = document.createDocumentFragment();
+            iconsDataModulo[tipo].forEach(function (icon) {
+                const div = document.createElement('div');
+                div.className = 'icon-item';
+                div.dataset.icon = icon.class;
+                div.dataset.en = icon.en.toLowerCase();
+                div.dataset.es = icon.es.toLowerCase();
+                div.innerHTML = `<i class="${icon.class}"></i><span class="icon-name">${icon.en} / ${icon.es}</span>`;
+                frag.appendChild(div);
+            });
+            cont.appendChild(frag);
+            tabsIconoRenderizados[tipo] = true;
+        }
+
+        $(document).on('click', '.btn-seleccionar-icono', function () {
+            iconoModuloId = $(this).data('id');
+            iconoModuloValor = $(this).data('icono') || '';
+            pantallaespera();
+            cargarIconosJsonModulo().then(function () {
+                $.unblockUI();
+                $('#txtBuscarIconoModulo').val('');
+                renderTabIconoModulo('iconoir');
+                new bootstrap.Modal(document.getElementById('modalIconsModulo')).show();
+            });
+        });
+
+        $('#modalIconsModulo').on('shown.bs.tab', '[data-bs-toggle="tab"]', function (e) {
+            renderTabIconoModulo($(e.target).data('tipo'));
+        });
+
+        $(document).on('click', '#modalIconsModulo .icon-item', function () {
+            $('#modalIconsModulo .icon-item').removeClass('selected-icon');
+            $(this).addClass('selected-icon');
+            iconoModuloValor = $(this).data('icon');
+        });
+
+        $('#txtBuscarIconoModulo').on('input', function () {
+            const texto = $(this).val().trim();
+            const textoLower = texto.toLowerCase();
+            $('#modalIconsModulo .tab-pane.active .icon-item').each(function () {
+                const $item = $(this);
+                const coincide = $item.data('en').toString().includes(textoLower)
+                    || $item.data('es').toString().includes(textoLower)
+                    || $item.data('icon').toString().toLowerCase().includes(textoLower);
+                $item.toggle(coincide);
+            });
+            $('#modalIconsModulo .icon-item').removeClass('selected-icon');
+            iconoModuloValor = texto;
+        });
+
+        function guardarIconoAjax(id, valor, callback) {
+            pantallaespera();
+            $.ajax({
+                type: 'POST',
+                url: '{{ ruta }}',
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                    action: 'act_icono',
+                    id: id,
+                    valor: valor
+                },
+                dataType: 'json'
+            }).done(function (data) {
+                setTimeout($.unblockUI, 1);
+                if (data.result === true) {
+                    const claseVacia = 'fa-regular fa-image text-muted';
+                    $(`.icono-preview-${id}`).attr('class', `icono-preview-${id} ${valor || claseVacia}`);
+                    $(`.btn-seleccionar-icono[data-id="${id}"]`).data('icono', valor);
+                    if (callback) callback(true);
+                } else {
+                    mensajeWarning((data && data.mensaje) || 'No se pudo guardar el ícono');
+                    if (callback) callback(false);
+                }
+            }).fail(function () {
+                setTimeout($.unblockUI, 1);
+                mensajeWarning('Error de conexión.');
+                if (callback) callback(false);
+            });
+        }
+
+        $('#guardarIconoModulo').on('click', function () {
+            if (!iconoModuloValor) {
+                mensajeWarning('Selecciona o escribe un ícono');
+                return;
+            }
+            guardarIconoAjax(iconoModuloId, iconoModuloValor, function (ok) {
+                if (ok) bootstrap.Modal.getInstance(document.getElementById('modalIconsModulo')).hide();
+            });
+        });
+    </script>
+{% endblock %}

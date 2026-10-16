@@ -1,0 +1,100 @@
+{% extends 'public/base.html' %}
+
+{% block head %}
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="/static/css/public/portal.css?v1.0">
+{% endblock %}
+
+{% block content %}
+<div class="row g-4 g-lg-5">
+    <div class="col-lg-4">
+        <aside class="pt-lado">
+            <p class="pt-eyebrow">{{ portal.nombre|default:"Turno" }}</p>
+            <h1 class="pt-titulo">Hola, {{ cliente.nombres }}.</h1>
+            <p class="pt-desc">Aquí están sus citas. Puede cambiarlas, cancelarlas o agendar una nueva. Guarde este enlace: es personal y no necesita contraseña.</p>
+            {% if productos %}
+                <p class="pt-eyebrow mt-4">Agendar otra cita</p>
+                <ul class="pt-productos">
+                    {% for p in productos %}
+                        <li><a href="/agendar/{{ p.slug }}/"><i class="fas fa-calendar-plus" aria-hidden="true"></i>{{ p.nombre }}</a></li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% if portal.telefono_atencion %}
+                <p class="pt-contacto"><i class="fas fa-phone" aria-hidden="true"></i><a href="tel:{{ portal.telefono_atencion|cut:' ' }}">{{ portal.telefono_atencion }}</a></p>
+            {% endif %}
+        </aside>
+    </div>
+
+    <div class="col-lg-8">
+        <h2 class="pt-paso-titulo">Próximas citas</h2>
+        {% for c in proximas %}
+            <section class="pt-cita-fila" id="cita-{{ c.pk }}">
+                <div class="row g-3 align-items-center">
+                    <div class="col-auto">
+                        <div class="pt-hoja"><span class="pt-hoja-mes">{{ c.inicio|date:"M" }}</span><span class="pt-hoja-dia">{{ c.inicio|date:"j" }}</span></div>
+                    </div>
+                    <div class="col">
+                        <p class="pt-tarjeta-fecha">{{ c.inicio|date:"l j \d\e F"|capfirst }} · {{ c.inicio|time:"H:i" }}</p>
+                        <p class="pt-cita-nombre">{% if c.producto %}{{ c.producto.nombre }}{% else %}{{ c.titulo }}{% endif %} <span class="pt-tag">{{ c.get_estado_display }}</span></p>
+                        <p class="pt-tarjeta-etiqueta">Código {{ c.codigo }}</p>
+                    </div>
+                    <div class="col-lg-auto">
+                        <div class="pt-acciones-fila">
+                            {% if c.enlace_meet %}<a href="{{ c.enlace_meet }}" class="btn btn-success pt-boton-chico" target="_blank" rel="noopener"><i class="fas fa-video" aria-hidden="true"></i>Entrar</a>{% endif %}
+                            {% if c.dias_cambio %}<button type="button" class="btn btn-light pt-boton-chico" data-abrir="pt-cambio-{{ c.pk }}" aria-expanded="false"><i class="fas fa-calendar-alt" aria-hidden="true"></i>Cambiar</button>{% endif %}
+                            <button type="button" class="btn btn-light pt-boton-chico" data-abrir="pt-cancelar-{{ c.pk }}" aria-expanded="false"><i class="fas fa-times" aria-hidden="true"></i>Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+                {% if c.dias_cambio %}
+                    <div class="pt-paso mt-3" id="pt-cambio-{{ c.pk }}" hidden data-pt-agenda data-url-horas="{{ url_horas }}?cita={{ c.pk }}" data-action="reprogramar" data-cita="{{ c.pk }}">
+                        <h3 class="pt-paso-titulo">Elija el nuevo día y hora</h3>
+                        {% include 'public/portal/parciales/selector_dias.html' with dias=c.dias_cambio %}
+                        <div class="pt-horas mt-3" data-horas aria-live="polite"></div>
+                        <form class="pt-form mt-3" data-form-cambio novalidate hidden>
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="reprogramar">
+                            <input type="hidden" name="cita" value="{{ c.pk }}">
+                            <input type="hidden" name="inicio" value="">
+                            <p class="pt-resumen-fecha" data-resumen></p>
+                            <p class="pt-error" data-error role="alert" hidden></p>
+                            <button type="submit" class="btn btn-success pt-boton">Confirmar el cambio</button>
+                        </form>
+                    </div>
+                {% endif %}
+                <div class="pt-paso mt-3" id="pt-cancelar-{{ c.pk }}" hidden>
+                    <form class="pt-form" data-form-cancelar novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="cancelar">
+                        <input type="hidden" name="cita" value="{{ c.pk }}">
+                        <label class="form-label" for="pt-motivo-{{ c.pk }}">¿Por qué cancela? <span class="pt-opcional">(opcional)</span></label>
+                        <input type="text" class="form-control" id="pt-motivo-{{ c.pk }}" name="motivo" maxlength="200">
+                        <p class="pt-error" data-error role="alert" hidden></p>
+                        <button type="submit" class="btn btn-danger pt-boton mt-3">Sí, cancelar esta cita</button>
+                    </form>
+                </div>
+            </section>
+        {% empty %}
+            <p class="pt-vacio">No tiene citas próximas.{% if productos %} Elija un producto a la izquierda para agendar una.{% endif %}</p>
+        {% endfor %}
+
+        {% if pasadas %}
+            <h2 class="pt-paso-titulo mt-5">Historial</h2>
+            <ul class="pt-historial">
+                {% for c in pasadas %}
+                    <li>
+                        <span>{{ c.inicio|date:"d/m/Y H:i" }}</span>
+                        <span>{% if c.producto %}{{ c.producto.nombre }}{% else %}{{ c.titulo }}{% endif %}</span>
+                        <span class="pt-tag">{{ c.get_estado_display }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/public/portal.js?v1.0"></script>
+{% endblock %}

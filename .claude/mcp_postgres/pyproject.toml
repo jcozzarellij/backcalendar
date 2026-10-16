@@ -1,0 +1,10 @@
+[project]
+name = "mcp-postgres-backcalendar"
+version = "0.1.0"
+description = "Servidor MCP para consultar PostgreSQL con escrituras bajo confirmación"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.12",
+    "psycopg[binary]>=3.2",
+    "python-dotenv>=1.0",
+]

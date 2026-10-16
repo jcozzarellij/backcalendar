@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% load templatefunctions %}
+{% block atras %}/seguridad/grupo/{% endblock %}
+{% block content %}
+
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header py-2">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-primary btn-sm" id="btnSeleccionarTodos">
+                                <i class="fa fa-check-square me-1"></i> Marcar todos los campos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body py-2">
+                    <form method="post" enctype="multipart/form-data" action="{{ ruta }}" class="form">
+                        {% csrf_token %}
+                        <input type="hidden" name="pk" value="{{ pk|default:0 }}"/>
+                        <input type="hidden" name="action" value="{{ action }}"/>
+
+                        <div class="row g-1">
+                            {% for field in form %}
+                                {% if field.is_hidden %}
+                                    {{ field }}
+                                {% elif field.name == 'modulos' %}
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label small mb-1" for="id_{{ field.name }}">
+                                                {{ field.label }}
+                                                <label style="cursor: pointer;" class="ms-2">
+                                                    <input type="checkbox" class="form-check-input select-all-modules" id="selectAllModules">
+                                                    <span class="ms-1">Todos los módulos</span>
+                                                </label>
+                                            </label>
+                                            <div id="id_{{ field.name }}" class="border rounded p-3">
+                                                <div class="row">
+                                                    {% for m in modulos_agrupados %}
+                                                        <div class="col-12 mb-3">
+                                                            <div class="fw-bold mb-2 border-bottom pb-1">
+                                                                <i class="{{ m.icono }} me-1"></i>{{ m.nombre }}
+                                                                <label style="cursor: pointer;" class="ms-2 small">
+                                                                    <input type="checkbox" class="form-check-input select-group"
+                                                                           data-group="{{ forloop.counter }}">
+                                                                    <span class="ms-1">Seleccionar grupo</span>
+                                                                </label>
+                                                            </div>
+                                                            <div class="row g-2">
+                                                                {% for u in m.modulos_activos %}
+                                                                    <div class="col-lg-4 col-md-6">
+                                                                        <div class="form-check">
+                                                                            <input type="checkbox"
+                                                                                   class="form-check-input module-checkbox group-{{ forloop.parentloop.counter }}"
+                                                                                   name="modulos"
+                                                                                   value="{{ u.id }}"
+                                                                                   id="id_modulos_{{ forloop.parentloop.counter }}_{{ forloop.counter }}"
+                                                                                   {% if u.id in modulos_seleccionados %}checked{% endif %}
+                                                                                   {% if ver %}disabled{% endif %}>
+                                                                            <label class="form-check-label" for="id_modulos_{{ forloop.parentloop.counter }}_{{ forloop.counter }}">
+                                                                                {{ u.nombre }}
+                                                                                <span class="d-block text-muted small">
+                                                                                    <a href="{{ u.url }}" target="_blank" class="text-primary"> {{ u.url }}</a>
+                                                                                </span>
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+                                                                {% endfor %}
+                                                            </div>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                            <div class="invalid-feedback" id="errorMessage{{ field.name }}"></div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="col-lg-6">
+                                        <div class="mb-2">
+                                            <label class="form-label small mb-1" for="id_{{ field.name }}">{{ field.label }}</label><br>
+                                            {{ field }}
+                                            <div class="invalid-feedback" id="errorMessage{{ field.name }}"></div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <a class="btn btn-danger btn-sm me-1" href="/seguridad/grupo/">
+                                    <i class="fa fa-window-close me-1"></i> Cancelar
+                                </a>
+                                <button {% if action != 'ver' %}type="submit" id="submit"{% else %}disabled{% endif %} class="btn btn-success btn-sm">
+                                    <i class="fa fa-save me-1"></i> Guardar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div><!--end card-body-->
+            </div><!--end card-->
+        </div> <!--end col-->
+    </div>
+
+{% endblock %}
+
+{% block jscript %}
+    {{ form.media }}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script type="text/javascript">
+        $(function() {
+            // Seleccionar todos los módulos
+            $("#selectAllModules").on("click", function() {
+                const isChecked = $(this).prop("checked");
+                $(".module-checkbox").prop("checked", isChecked);
+                updateGroupCheckboxes();
+            });
+
+            // Seleccionar módulos por grupo
+            $(".select-group").on("click", function() {
+                const isChecked = $(this).prop("checked");
+                const groupId = $(this).data("group");
+                $(`.group-${groupId}`).prop("checked", isChecked);
+                updateSelectAllModules();
+            });
+
+            // Actualizar estado de checkboxes de grupo cuando cambia un módulo
+            $(".module-checkbox").on("change", function() {
+                updateGroupCheckboxes();
+                updateSelectAllModules();
+            });
+
+            // Función para actualizar checkboxes de grupo
+            function updateGroupCheckboxes() {
+                $(".select-group").each(function() {
+                    const groupId = $(this).data("group");
+                    const totalInGroup = $(`.group-${groupId}`).length;
+                    const checkedInGroup = $(`.group-${groupId}:checked`).length;
+
+                    $(this).prop("checked", totalInGroup === checkedInGroup);
+                    $(this).prop("indeterminate", checkedInGroup > 0 && checkedInGroup < totalInGroup);
+                });
+            }
+
+            // Función para actualizar checkbox "seleccionar todos los módulos"
+            function updateSelectAllModules() {
+                const totalModules = $(".module-checkbox").length;
+                const checkedModules = $(".module-checkbox:checked").length;
+
+                $("#selectAllModules").prop("checked", totalModules === checkedModules);
+                $("#selectAllModules").prop("indeterminate", checkedModules > 0 && checkedModules < totalModules);
+            }
+
+            // Inicializar estado de los checkboxes
+            updateGroupCheckboxes();
+            updateSelectAllModules();
+
+            // Botón para marcar todos los inputs del formulario
+            $("#btnSeleccionarTodos").on("click", function() {
+                const $button = $(this);
+                const isMarked = $button.data("marked") || false;
+
+                // Toggle el estado
+                $button.data("marked", !isMarked);
+
+                if (!isMarked) {
+                    // Marcar todos los campos
+                    $("form input[type=text], form input[type=number], form input[type=email], form input[type=password], form input[type=date], form input[type=time], form select, form textarea").each(function() {
+                        const $input = $(this);
+                        if (!$input.val()) {
+                            if ($input.is("select")) {
+                                // Para selects, seleccionar la primera opción
+                                $input.find("option:first").prop("selected", true).trigger("change");
+                            } else if ($input.attr("type") === "date") {
+                                // Para fechas, usar la fecha actual
+                                $input.val(new Date().toISOString().split('T')[0]).trigger("change");
+                            } else if ($input.attr("type") === "time") {
+                                // Para horas, usar la hora actual
+                                const now = new Date();
+                                const hours = String(now.getHours()).padStart(2, '0');
+                                const minutes = String(now.getMinutes()).padStart(2, '0');
+                                $input.val(`${hours}:${minutes}`).trigger("change");
+                            } else {
+                                // Para otros campos, usar un texto genérico según el nombre del campo
+                                const fieldName = $input.attr("name") || $input.attr("id") || "";
+                                let placeholder = "Texto automático";
+
+                                if (fieldName.toLowerCase().includes("email")) {
+                                    placeholder = "usuario@ejemplo.com";
+                                } else if (fieldName.toLowerCase().includes("nombre")) {
+                                    placeholder = "Nombre";
+                                } else if (fieldName.toLowerCase().includes("apellido")) {
+                                    placeholder = "Apellido";
+                                } else if (fieldName.toLowerCase().includes("telefono") || fieldName.toLowerCase().includes("teléfono")) {
+                                    placeholder = "9999999999";
+                                } else if (fieldName.toLowerCase().includes("cedula") || fieldName.toLowerCase().includes("cédula")) {
+                                    placeholder = "1234567890";
+                                }
+
+                                $input.val(placeholder).trigger("change");
+                            }
+                        }
+                    });
+
+                    // Marcar todos los checkboxes (incluidos los módulos)
+                    $("form input[type=checkbox]").prop("checked", true).trigger("change");
+
+                    // Actualizar el texto del botón
+                    $button.html('<i class="fa fa-times-circle me-1"></i> Desmarcar todos los campos');
+                    $button.removeClass("btn-primary").addClass("btn-warning");
+                } else {
+                    // Desmarcar todos los campos
+                    $("form input[type=text], form input[type=number], form input[type=email], form input[type=password], form input[type=date], form input[type=time], form select, form textarea").val("").trigger("change");
+
+                    // Desmarcar todos los checkboxes (incluidos los módulos)
+                    $("form input[type=checkbox]").prop("checked", false).trigger("change");
+
+                    // Actualizar el texto del botón
+                    $button.html('<i class="fa fa-check-square me-1"></i> Marcar todos los campos');
+                    $button.removeClass("btn-warning").addClass("btn-primary");
+                }
+            });
+        });
+    </script>
+{% endblock %}

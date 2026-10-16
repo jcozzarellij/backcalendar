@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% block head %}
+    <style>
+        .jstree-anchor {
+            /*enable wrapping*/
+            white-space: normal !important;
+            /*ensure lower nodes move down*/
+            height: auto !important;
+            /*offset icon width*/
+            padding-right: 24px;
+        }
+    </style>
+{% endblock %}
+{% block atras %}{{ request.path }}{% endblock %}
+{% block content %}
+    <div class="card">
+        <div class="card-header py-2">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="card-title mb-0">Listado {{ modulo }}</h5>
+                </div>
+                <div class="col-auto">
+                    <form id="formArbolUrl" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="cambiar_lugar_grupo"/>
+                        {% for c in listado %}
+                            {% for sc in c.modulos_activos %}
+                                <input style="display: none;" type="checkbox"
+                                       id="url_{{ forloop.counter0 }}_{{ forloop.parentloop.counter }}" name="c_modulos"
+                                       value='{"pk_origen": {{ c.pk }}, "is_parent": false, "pk_destino": 0, "pk_modulo": {{ sc.pk }}, "orden": {{ sc.orden }}}'
+                                       checked/>
+                            {% endfor %}
+                        {% endfor %}
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row g-2 mb-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label small mb-1">Filtrar por Grupos</label>
+                    <select id="busqueda" multiple class="form-select select2" data-placeholder="Buscar por Grupos">
+                        {% for c in listado %}
+                            <option value="{{ c.pk }}">{{ c.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small mb-1">Filtrar por Rol de usuario</label>
+                    <select id="busquedaRol" class="form-select select2" data-placeholder="Todos los roles">
+                        <option value="">Todos los roles</option>
+                        {% for r in roles %}
+                            <option value="{{ r.pk }}">{{ r.group.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 text-md-end">
+                    <button type="button" class="btn btn-danger btn-sm" id="btnEliminarUrl" disabled>
+                        <i class="fa fa-trash me-1"></i>Eliminar URL seleccionada
+                    </button>
+                </div>
+            </div>
+            {{ modulos_por_rol|json_script:"rolesModulosData" }}
+
+            <div id="jstree-grupos-urls" class="mt-3">
+                <ul>
+                    {% for c in listado %}
+                        <li data-paraBuscar="{{ c.pk }}"
+                            data-jstree='{"opened":true, "grupo_pk": {{ c.pk }}, "is_parent": true, "icon" : "{{ c.icono }}"}'>
+                            <label class="me-2" for="app_{{ forloop.counter }}">{{ c.nombre }}</label>
+                            <ul>
+                                {% for sc in c.modulos_activos %}
+                                    <li data-modulopk="{{ sc.pk }}"
+                                        data-jstree='{"icon" : "fa fa-link fa-lg  text-blue", "pk_origen": {{ c.pk }}, "is_parent": false, "pk_destino": 0, "pk_modulo": {{ sc.pk }},"input_id": "url_{{ forloop.counter0 }}_{{ forloop.parentloop.counter }}", "orden": {{ sc.orden }}}'>
+                                        {{ sc.nombre }} - ({{ sc.url }})
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block jscript %}
+    <link href="/static/assets/plugins/jstree/dist/themes/default/style.min.css" rel="stylesheet"/>
+    <script src="/static/assets/plugins/jstree/dist/jstree.min.js"></script>
+    <script src="/static/js/urlsymodulos/listado_arbol.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Inicializar Select2
+            $('.select2').select2({
+                width: '100%'
+            });
+
+            // Manejar cambios en el selector de filtro
+            $('#busqueda').change(function() {
+                var seleccionadas = $(this).children('option:selected').toArray();
+                var opciones = [];
+                for (var i = 0; i < seleccionadas.length; i++) {
+                    opciones.push($(seleccionadas[i]).val().toUpperCase())
+                }
+                if (seleccionadas.length > 0) {
+                    $('.jstree-container-ul > li').each(function() {
+                        var currentLiText = $(this).attr('data-paraBuscar').toUpperCase(),
+                            showCurrentLi = opciones.indexOf(currentLiText) !== -1;
+                        $(this).toggle(showCurrentLi);
+                    });
+                } else {
+                    $('.jstree-container-ul > li').each(function() {
+                        $(this).toggle(true);
+                    });
+                }
+            });
+
+            var rolesModulos = JSON.parse(document.getElementById('rolesModulosData').textContent);
+
+            $('#busquedaRol').change(function() {
+                var rolId = $(this).val();
+                var permitidos = rolId ? (rolesModulos[rolId] || []) : null;
+                $('.jstree-container-ul li[data-modulopk]').each(function() {
+                    var pk = parseInt($(this).attr('data-modulopk'), 10);
+                    $(this).toggle(!permitidos || permitidos.indexOf(pk) !== -1);
+                });
+                $('.jstree-container-ul > li').each(function() {
+                    var visibles = $(this).find('li[data-modulopk]:visible').length;
+                    $(this).toggle(!permitidos || visibles > 0);
+                });
+            });
+
+            var seleccionUrl = null;
+            $('#jstree-grupos-urls').on('changed.jstree', function (e, datos) {
+                seleccionUrl = null;
+                if (datos.selected && datos.selected.length === 1) {
+                    var info = readJstreeData(datos.selected[0]);
+                    if (info && !info.is_parent && info.pk_modulo) {
+                        seleccionUrl = {pk: info.pk_modulo, nombre: datos.instance.get_node(datos.selected[0]).text};
+                    }
+                }
+                $('#btnEliminarUrl').prop('disabled', !seleccionUrl);
+            });
+
+            $('#btnEliminarUrl').click(function() {
+                if (!seleccionUrl) return;
+                Swal.fire({
+                    title: '¿Eliminar esta URL del sidebar?',
+                    html: '<div class="small">' + $('<div>').text(seleccionUrl.nombre).html() + '</div>' +
+                          '<div class="small text-muted mt-1">Desaparece del menú de todos los roles (baja lógica — se puede restaurar desde Mantenimiento URLs). No borra la página del código.</div>',
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then(function(result) {
+                    if (!result.value) return;
+                    $.post(window.location.pathname, {
+                        csrfmiddlewaretoken: $('#formArbolUrl input[name=csrfmiddlewaretoken]').val(),
+                        action: 'eliminar_url',
+                        id: seleccionUrl.pk
+                    }, function(res) {
+                        if (res && !res.error) {
+                            mensajeSuccess(res.message || 'URL eliminada.');
+                            setTimeout(function() { window.location.reload(); }, 800);
+                        } else {
+                            mensajeWarning((res && res.message) || 'No se pudo eliminar.');
+                        }
+                    }, 'json').fail(function() {
+                        mensajeWarning('Error de conexión.');
+                    });
+                });
+            });
+        });
+    </script>
+{% endblock %}

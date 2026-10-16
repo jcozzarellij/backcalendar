@@ -1,0 +1,65 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "static/css/seguridad/dashboard.css"
+        ],
+        "createdAt": "2026-10-01T16:10:32.855Z",
+        "reason": "user confirmed: dejar .paralelo-box como esta (borde izquierdo previo a la sesion)"
+      },
+      {
+        "rule": "all-caps-body",
+        "value": "*",
+        "files": [
+          "templates/cursos/horariodocente/listado.html"
+        ],
+        "createdAt": "2026-10-06T21:53:50.204Z",
+        "reason": "Claude: uppercase only on .hc-grilla th (day name + date table headers), short labels, not body text"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "templates/cursos/horariodocente/listado.html"
+        ],
+        "createdAt": "2026-10-06T22:26:33.552Z",
+        "reason": "user asked to mirror the institutional pregrado schedule design (/docencia/horarios, listado_horario.css hor-card border-left)"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "templates/cursos/mihorarioedcon/listado.html"
+        ],
+        "createdAt": "2026-10-06T22:26:33.788Z",
+        "reason": "user asked to mirror the institutional pregrado schedule design (/docencia/horarios, listado_horario.css hor-card border-left)"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "templates/cursos/clasesedcon/listado.html"
+        ],
+        "createdAt": "2026-10-06T22:26:34.028Z",
+        "reason": "user asked to mirror the institutional pregrado schedule design (/docencia/horarios, listado_horario.css hor-card border-left)"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "geist",
+        "createdAt": "2026-10-08T19:58:38.692Z",
+        "reason": "El usuario pidió seguir la referencia de Calendly (Geist); DESIGN.md se regenera al cerrar la landing"
+      },
+      {
+        "rule": "overused-font",
+        "value": "geist",
+        "createdAt": "2026-10-08T20:01:27.651Z",
+        "reason": "El usuario pidio seguir la referencia de Calendly, que usa Geist"
+      }
+    ]
+  }
+}

@@ -1,0 +1,74 @@
+{% extends 'agenda/base_agenda.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
+    <link rel="stylesheet" href="/static/css/agenda/aplicaciones.css?v1.1">
+{% endblock %}
+{% block content %}
+    {% if not google_configurado %}
+        <div class="alert alert-warning d-flex align-items-start gap-2" role="status">
+            <i class="fas fa-triangle-exclamation mt-1" aria-hidden="true"></i>
+            <div>
+                <strong>Google Calendar todavía no está configurado en el sistema.</strong>
+                {% if request.user.is_superuser %}
+                    Carga <code>GOOGLE_OAUTH_CLIENT_ID</code> y <code>GOOGLE_OAUTH_CLIENT_SECRET</code> en <code>credenciales.json</code> y registra en Google Cloud la URI de redirección <code>{{ google_redirect_uri }}</code>.
+                {% else %}
+                    Pide al administrador que active la conexión.
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="row g-3">
+        {% for p in proveedores %}
+            <div class="col-md-6 col-xl-4">
+                <div class="card h-100 apl-tarjeta">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="apl-icono">
+                                    <img src="/static/images/apps/{% if p.clave == 'google' %}google_calendar{% elif p.clave == 'microsoft' %}teams{% else %}zoom{% endif %}.png" alt="" width="40" height="40">
+                                </span>
+                                <h5 class="mb-0">{{ p.nombre }}</h5>
+                            </div>
+                            {% if p.conexion and p.conexion.conectada %}
+                                <span class="badge bg-success">Conectada</span>
+                            {% elif p.conexion %}
+                                <span class="badge bg-danger">Con problema</span>
+                            {% elif p.disponible %}
+                                <span class="badge bg-secondary">Sin conectar</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark">Más adelante</span>
+                            {% endif %}
+                        </div>
+                        {% if p.conexion %}
+                            <p class="mb-1"><strong>{{ p.conexion.cuenta|default:'Cuenta sin identificar' }}</strong></p>
+                            <p class="agenda-sub mb-1">Calendario: {{ p.conexion.calendario_id }}</p>
+                            {% if p.conexion.ultima_verificacion %}<p class="agenda-sub mb-1">Verificada el {{ p.conexion.ultima_verificacion|date:"d/m/Y H:i" }}</p>{% endif %}
+                            {% if p.conexion.ultimo_error %}<p class="text-danger small mb-2">{{ p.conexion.ultimo_error }}</p>{% endif %}
+                            <div class="d-flex flex-wrap gap-2 mt-3">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="accionAgenda({{ p.conexion.pk }}, 'probar')"><i class="fas fa-plug me-1"></i>Probar conexión</button>
+                                {% if not p.conexion.conectada %}
+                                    <a href="?action=conectar_google" class="btn btn-success btn-sm"><i class="fas fa-rotate me-1"></i>Volver a conectar</a>
+                                {% endif %}
+                                <button type="button" class="btn btn-danger btn-sm" onclick="eliminarajax({{ p.conexion.pk }}, '{{ p.conexion.cuenta|escapejs }}', 'desconectar', 'Vas a desconectar {{ p.nombre|escapejs }}')"><i class="fas fa-unlink me-1"></i>Desconectar</button>
+                            </div>
+                        {% elif p.disponible %}
+                            <p class="agenda-sub">Tus citas se crean en este calendario con su videollamada y se consulta tu disponibilidad real.</p>
+                            {% if google_configurado %}
+                                <a href="?action=conectar_google" class="btn btn-success btn-sm mt-2"><i class="fab fa-google me-1"></i>Conectar con Google</a>
+                            {% else %}
+                                <p class="agenda-sub mb-0">Disponible cuando el administrador configure Google.</p>
+                            {% endif %}
+                        {% else %}
+                            <p class="agenda-sub mb-0">Se podrá conectar en una próxima versión.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/agenda/crud.js?v1.1"></script>
+{% endblock %}

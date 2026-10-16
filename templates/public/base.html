@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ titulo }} · {{ nombreempresa|default:"Turno" }}</title>
+    {% if favicon %}<link href="{{ favicon }}" rel="shortcut icon"/>{% endif %}
+    <link href="/static/fonts/fontawesome/css/all.css?v=6.1.1" rel="stylesheet"/>
+    <link href="/static/assets_riz/css/bootstrap.css?v1.1" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="/static/fonts/turno_fuentes.css?v1.2">
+    <link rel="stylesheet" href="/static/css/public/publico.css?v2.1"/>
+    {% block head %}{% endblock %}
+</head>
+<body class="pb-body{% if ventana %} pb-ventana{% endif %}">
+{% if not ventana %}
+<header class="pb-header">
+    <div class="container pb-header-inner">
+        <a href="/" class="pb-marca">
+            {% if logo %}<img src="{{ logo }}" alt="{{ nombreempresa }}">{% else %}<span>{{ nombreempresa|default:"Turno" }}</span>{% endif %}
+        </a>
+        {% block nav_publica %}
+        <nav class="pb-nav">
+            <a href="/privacidad/" class="{% if ruta == '/privacidad/' or ruta == '/terminosycondiciones/' %}is-active{% endif %}">Privacidad</a>
+            <a href="/proteccion-datos/" class="{% if ruta == '/proteccion-datos/' %}is-active{% endif %}">Protección de datos</a>
+            <a href="/login/" class="pb-btn"><i class="fas fa-arrow-right-to-bracket"></i> Iniciar sesión</a>
+        </nav>
+        {% endblock %}
+    </div>
+</header>
+{% endif %}
+
+<main class="pb-main">
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</main>
+
+{% if not ventana %}
+<footer class="pb-footer">
+    <div class="container">
+        <span>{{ nombreempresa|default:"Turno" }}</span>
+        <span>{{ fecha_actual|date:"Y" }}</span>
+    </div>
+</footer>
+{% endif %}
+
+<script src="/static/js/jquery-3.3.1.min.js"></script>
+<script src="/static/assets_riz/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/jquery.blockUI.js"></script>
+<script>
+    function pantallaespera(titulo = 'Procesando', mensaje = 'Por favor espere...') {
+        const logoUrl = '{% if confi and confi.logo_sistema_white %}{{ confi.logo_sistema_white.url }}{% elif logo %}{{ logo }}{% endif %}';
+        const blockMsg = `
+        <div style="text-align:center;">
+            ${logoUrl ? '<img src="' + logoUrl + '" style="height:45px; margin-bottom:15px;">' : ''}
+            <div class="spinner-border text-light" style="width:1.5rem; height:1.5rem;"></div>
+            <div style="margin-top:10px; font-weight:500; color:white;">${titulo}</div>
+            <div style="margin-top:5px; font-size:14px; color:rgba(255,255,255,0.8);">${mensaje}</div>
+        </div>
+        `;
+        $.blockUI({
+            message: blockMsg,
+            css: {padding: '20px', backgroundColor: 'rgba(0, 80, 130, 0.92)', border: 'none', borderRadius: '8px', width: '280px', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', zIndex: 9999999},
+            overlayCSS: {backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 9999990}
+        });
+    }
+</script>
+{% block jscript %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,81 @@
+{% extends 'public/seguridad/base_auth.html' %}
+
+{% block au_eyebrow %}Panel de administración{% endblock %}
+{% block au_title %}Iniciar sesión{% endblock %}
+{% block au_sub %}Accede con tu usuario y contraseña.{% endblock %}
+
+{% block auth_body %}
+    <form action="/login/" method="post" id="frm-logear">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label" for="username">Usuario</label>
+            <input type="text" class="form-control" id="username" name="usuario"
+                   placeholder="Tu nombre de usuario" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+        </div>
+        <div class="mb-1">
+            <div class="d-flex flex-wrap align-items-center justify-content-between">
+                <label class="form-label mb-1" for="userpassword">Contraseña</label>
+                <a class="au-link au-link-chico" href="/restorepass/">¿La olvidaste?</a>
+            </div>
+            <div class="au-pass">
+                <input type="password" class="form-control" name="password"
+                       id="userpassword" placeholder="Tu contraseña" autocomplete="current-password" required>
+                <button type="button" class="au-pass-toggle" aria-label="Mostrar contraseña" aria-pressed="false">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+        </div>
+        <div class="text-end mt-2 mb-3">
+            <a class="au-link au-link-chico" href="/restoreusername/">¿Olvidaste tu usuario?</a>
+        </div>
+        <button class="btn btn-primary" type="submit">
+            Iniciar sesión <i class="fas fa-arrow-right-to-bracket ms-1"></i>
+        </button>
+    </form>
+{% endblock %}
+
+{% block au_links %}
+    <p class="mb-0">¿No tienes acceso? Pídeselo al administrador de la plataforma.</p>
+{% endblock %}
+
+{% block auth_jscript %}
+    <script>
+        $('#frm-logear').on('submit', function (e) {
+            e.preventDefault();
+            var submit = $(this).find('button[type=submit]');
+            if (submit.prop('disabled')) { return; }
+            submit.prop('disabled', true).attr('aria-busy', 'true');
+            var frmData = new FormData($(this)[0]);
+            $.ajax({
+                url: '/login/',
+                data: frmData,
+                method: 'POST',
+                dataType: 'json',
+                cache: false,
+                contentType: false,
+                processData: false,
+                beforeSend: function () {
+                    pantallaespera('Iniciando sesión', 'Verificando tus credenciales...');
+                },
+                success: function (data) {
+                    setTimeout($.unblockUI, 1);
+                    if (data.resp === true) {
+                        window.location = data.redirect || '/panel/';
+                    } else {
+                        mensajeDanger(data.error);
+                    }
+                },
+                complete: function () {
+                    $.unblockUI();
+                    submit.prop('disabled', false).removeAttr('aria-busy');
+                },
+                error: function (jqXHR) {
+                    if (jqXHR.status === 403) {
+                        location.reload();
+                    }
+                    mensajeDanger('Error de conexión.');
+                }
+            });
+        });
+    </script>
+{% endblock %}

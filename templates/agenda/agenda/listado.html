@@ -1,0 +1,120 @@
+{% extends 'agenda/base_agenda.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
+    <link rel="stylesheet" href="/static/css/agenda/calendario.css?v2.0">
+{% endblock %}
+{% block eyebrow %}{{ eyebrow_agenda }}{% endblock %}
+{% block acciones %}
+    <div class="btn-group" role="group" aria-label="Vista">
+        <a href="?vista=dia&fecha={{ fecha_sel|date:'Y-m-d' }}" class="btn btn-sm {% if vista == 'dia' %}btn-primary{% else %}btn-light{% endif %}">Día</a>
+        <a href="?vista=semana&fecha={{ fecha_sel|date:'Y-m-d' }}" class="btn btn-sm {% if vista == 'semana' %}btn-primary{% else %}btn-light{% endif %}">Semana</a>
+        <a href="?vista=mes&fecha={{ fecha_sel|date:'Y-m-d' }}" class="btn btn-sm {% if vista == 'mes' %}btn-primary{% else %}btn-light{% endif %}">Mes</a>
+    </div>
+    <a href="?vista={{ vista }}&fecha={{ anterior|date:'Y-m-d' }}" class="btn btn-light btn-sm" aria-label="Anterior"><i class="fas fa-chevron-left"></i></a>
+    <a href="?vista={{ vista }}&fecha={{ hoy|date:'Y-m-d' }}" class="btn btn-light btn-sm">Hoy</a>
+    <a href="?vista={{ vista }}&fecha={{ siguiente|date:'Y-m-d' }}" class="btn btn-light btn-sm" aria-label="Siguiente"><i class="fas fa-chevron-right"></i></a>
+    <button type="button" class="btn btn-primary btn-sm" id="cal-nueva"><i class="fas fa-plus me-1"></i>Nueva cita</button>
+{% endblock %}
+{% block content %}
+    <div class="row g-3">
+        <div class="col-xl-{% if cola %}9{% else %}12{% endif %}">
+            <div class="card">
+                <div class="card-body">
+                    {% if vista != 'mes' %}
+                        <div class="table-responsive">
+                            <table class="cal-rejilla" data-paso="{{ paso }}">
+                                <thead>
+                                <tr>
+                                    <th scope="col" class="cal-esquina"></th>
+                                    {% for col in columnas %}
+                                        <th scope="col" class="cal-dia {% if col.hoy %}cal-hoy{% endif %}">{{ col.fecha|date:"D"|capfirst }} <span>{{ col.fecha|date:"j" }}</span></th>
+                                    {% endfor %}
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for fila in filas %}
+                                    <tr>
+                                        <th scope="row" class="cal-hora">{{ fila.hora|time:"H:i" }}</th>
+                                        {% for celda in fila.celdas %}
+                                            {% if celda.cita %}
+                                                <td class="cal-celda cal-con-cita" rowspan="{{ celda.filas }}" data-inicio="{{ celda.inicio|date:'Y-m-d\TH:i' }}">
+                                                    <a href="/agenda/citas/{{ celda.cita.pk }}/" class="cal-cita" draggable="{% if celda.cita.estado == 'confirmada' or celda.cita.estado == 'pendiente' %}true{% else %}false{% endif %}"
+                                                       data-pk="{{ celda.cita.pk }}" data-minutos="{{ celda.cita.duracion_min }}" style="background: {{ celda.cita.color_fondo }}; border-left-color: {{ celda.cita.color_borde }}"
+                                                       title="{{ celda.cita.titulo }} · {{ celda.cita.cliente }}">
+                                                        <span class="cal-cita-titulo">{{ celda.cita.titulo }}</span>
+                                                        <span class="cal-cita-sub">{{ celda.cita.inicio|time:"H:i" }}–{{ celda.cita.fin|time:"H:i" }}{% if celda.cita.proyecto %} · {{ celda.cita.proyecto.nombre }}{% endif %}</span>
+                                                    </a>
+                                                </td>
+                                            {% elif not celda.ocupada %}
+                                                <td class="cal-celda {% if celda.en_turno %}cal-libre{% else %}cal-fuera{% endif %}" data-inicio="{{ celda.inicio|date:'Y-m-d\TH:i' }}" title="{{ celda.inicio|time:'H:i' }}{% if not celda.en_turno %} · fuera de turno{% endif %}"></td>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <table class="cal-mes">
+                            <thead>
+                            <tr><th scope="col">Lun</th><th scope="col">Mar</th><th scope="col">Mié</th><th scope="col">Jue</th><th scope="col">Vie</th><th scope="col">Sáb</th><th scope="col">Dom</th></tr>
+                            </thead>
+                            <tbody>
+                            {% for semana in semanas %}
+                                <tr>
+                                    {% for col in semana %}
+                                        <td class="cal-mes-dia {% if col.otro_mes %}cal-otro-mes{% endif %} {% if col.hoy %}cal-hoy{% endif %}">
+                                            <a href="?vista=dia&fecha={{ col.fecha|date:'Y-m-d' }}" class="cal-mes-num">{{ col.fecha|date:"j" }}</a>
+                                            {% for c in col.citas|slice:":3" %}
+                                                <a href="/agenda/citas/{{ c.pk }}/" class="cal-mes-cita" style="background: {{ c.color_fondo }}; border-left-color: {{ c.color_borde }}">{{ c.inicio|time:"H:i" }} {{ c.titulo|truncatechars:22 }}</a>
+                                            {% endfor %}
+                                            {% if col.citas|length > 3 %}<a href="?vista=dia&fecha={{ col.fecha|date:'Y-m-d' }}" class="cal-mes-mas">+{{ col.citas|length|add:"-3" }} más</a>{% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
+                    <div class="cal-leyenda mt-3">
+                        {% for p in proyectos %}<span class="cal-leyenda-item"><span class="cal-pastilla" style="background: {{ p.fondo }}; border-color: {{ p.borde }}"></span>{{ p.nombre }}</span>{% endfor %}
+                        <span class="cal-leyenda-item"><span class="cal-pastilla cal-pastilla-libre"></span>Libre</span>
+                        <span class="cal-leyenda-item"><span class="cal-pastilla cal-pastilla-fuera"></span>Fuera de turno</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if cola %}
+            <div class="col-xl-3">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <h5 class="mb-0">Por asignar</h5>
+                            <span class="mi-contador">{{ cola|length }}</span>
+                        </div>
+                        <p class="agenda-sub mb-3">Arrastra una solicitud a un espacio libre del calendario.</p>
+                        {% for s in cola %}
+                            <article class="cal-cola" draggable="true" data-pk="{{ s.pk }}" data-nombre="{{ s.cliente.nombres }}" aria-label="{{ s.codigo }} de {{ s.cliente.nombres }}">
+                                <div class="d-flex justify-content-between gap-2">
+                                    <span class="agenda-sub">{{ s.codigo }}</span>
+                                    {% if s.producto %}<span class="mi-pildora">{{ s.producto.nombre|truncatechars:16 }}</span>{% endif %}
+                                </div>
+                                <strong>{{ s.motivo|default:s.get_origen_display|truncatechars:40 }}</strong>
+                                <span class="agenda-sub">{{ s.cliente.nombres }}</span>
+                            </article>
+                        {% endfor %}
+                        <a href="/agenda/cola/" class="btn btn-light btn-sm w-100 mt-2">Ver la cola</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    {% include 'agenda/parciales/modal_crud.html' %}
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script src="/static/js/agenda/crud.js?v1.1"></script>
+    <script src="/static/js/agenda/calendario.js?v2.0"></script>
+{% endblock %}

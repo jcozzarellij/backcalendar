@@ -1,0 +1,667 @@
+{% load templatefunctions %}
+<!DOCTYPE html>
+<html lang="es" dir="ltr" data-startbar="light" data-bs-theme="light">
+<head>
+    <meta charset="utf-8"/>
+    <title>{{ titulo }} | {{ nombreempresa }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta content="{{ confi.descripcion }}" name="description"/>
+    <meta name="keywords" content="{{ nombreempresa }}">
+    <link href="{{ favicon }}" rel="shortcut icon"/>
+    <meta name="theme-color" content="#2874A6">
+    <link href="/static/assets_riz/css/bootstrap.min.css?1.8" rel="stylesheet" type="text/css"/>
+    <link href="/static/assets_riz/css/app.min.css?1.6" rel="stylesheet" type="text/css"/>
+    <link href="/static/assets_riz/css/icons.min.css" rel="stylesheet" type="text/css"/>
+
+    <link rel="stylesheet" href="/static/fonts/turno_fuentes.css?v1.2">
+    <link href="/static/base_adicional.css?2.3" rel="stylesheet" type="text/css"/>
+    <link href="/static/base_tablas.css?1.5" rel="stylesheet" type="text/css"/>
+    <meta name="vapid-key" content="{{ vapid_key }}">
+    <meta name="islogged" content="{{ request.user.is_authenticated }}">
+    {% include 'pwa/meta_tags.html' %}
+    {% if request.path == '/panel/' %}
+        <link rel="stylesheet" href="/static/css/pwa/install_bar.css?v={{ version_css }}">
+    {% endif %}
+    <link rel="stylesheet" href="/static/css/pwa/push_optin.css?v={{ version_css }}">
+    <link rel="stylesheet" href="/static/css/core/sin_sidebar.css?v={{ version_css }}">
+    <link rel="stylesheet" href="/static/css/core/interaccion.css?v={{ version_css }}">
+    <link rel="stylesheet" href="/static/css/core/menu_perfil.css?v1.1">
+    {% block head %}{% endblock %}
+    <script>
+        {% if activar_cambio_clave %}
+            window.location.href = "/changepass/";
+        {% endif %}
+    </script>
+</head>
+<body class="{% if ocultar_sidebar %}sin-sidebar{% endif %}{% block body_class %}{% endblock %}" data-alertas-agenda="1">
+{% block cuerpo %}
+
+<div class="topbar d-print-none">
+    <div class="container-xxl">
+        <nav class="topbar-custom d-flex justify-content-between" id="topbar-custom">
+            <ul class="topbar-item list-unstyled d-inline-flex align-items-center mb-0">
+                <li>
+                    <button class="nav-link mobile-menu-btn nav-icon" id="togglemenu">
+                        <i class="iconoir-menu-scale"></i>
+                    </button>
+                </li>
+                <li class="mx-3 welcome-text">
+                    <h3 class="mb-0 fw-bold text-truncate">{{ titulo }}</h3>
+                    {% if descripcion %}
+                        <h6 class="mb-0 fw-normal text-muted text-truncate fs-14">{{ descripcion }}</h6>
+                    {% endif %}
+                </li>
+            </ul>
+            <ul class="topbar-item list-unstyled d-inline-flex align-items-center mb-0">
+                <li class="hide-phone app-search">
+                    <form role="search" action="/agenda/buscar/" method="get">
+                        <input type="search" name="q" class="form-control top-search mb-0"
+                               placeholder="Buscar cliente, cita o código…" aria-label="Buscar cliente, cita o código">
+                        <button type="button" aria-label="Buscar"><i class="iconoir-search"></i></button>
+                    </form>
+                </li>
+                <li class="dropdown topbar-item">
+                    <a class="nav-link dropdown-toggle arrow-none nav-icon position-relative" data-bs-toggle="dropdown"
+                       href="#"
+                       role="button"
+                       aria-haspopup="false" aria-expanded="false">
+                        <i class="icofont-bell-alt {% if totalnot %}text-warning{% endif %}"></i>
+                        {% if totalnot %}
+                            <span class="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle"
+                                  style="font-size:.6rem;">
+                                {% if totalnot > 99 %}99+{% else %}{{ totalnot }}{% endif %}
+                            </span>
+                        {% endif %}
+                    </a>
+                    <div class="dropdown-menu stop dropdown-menu-end dropdown-lg py-0"
+                         style="min-width:320px;max-width:380px;">
+                        <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
+                            <strong class="fs-14">Notificaciones</strong>
+                            {% if totalnot %}
+                                <small class="text-muted">{{ totalnot }} sin leer</small>
+                            {% endif %}
+                        </div>
+                        {% for notif in listnotification %}
+                            <a href="{% if notif.url %}{{ notif.url }}{% else %}/notificaciones/{% endif %}"
+                               class="dropdown-item d-flex align-items-start py-2 border-bottom dp-notif-item"
+                               data-notif-id="{{ notif.id }}"
+                               style="white-space:normal;">
+                                <div class="me-2 flex-shrink-0">
+                                    <span class="badge rounded-circle d-inline-flex align-items-center justify-content-center"
+                                          style="width:32px;height:32px;background:{% if notif.tipo == 4 %}#dc3545{% elif notif.tipo == 3 %}#198754{% elif notif.tipo == 2 %}#0d6efd{% else %}#0dcaf0{% endif %};color:#fff;">
+                                        <i class="fa fa-{% if notif.tipo == 4 %}triangle-exclamation{% elif notif.tipo == 3 %}circle-check{% elif notif.tipo == 2 %}bullhorn{% else %}circle-info{% endif %}"></i>
+                                    </span>
+                                </div>
+                                <div class="flex-grow-1" style="min-width:0;">
+                                    <div class="fw-medium fs-13 text-dark text-truncate">{{ notif.titulo|default:'(sin título)' }}</div>
+                                    <div class="text-muted fs-12"
+                                         style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">{{ notif.cuerpo|striptags|truncatechars:80 }}</div>
+                                    <small class="text-muted fs-11">
+                                        <i class="fa fa-clock me-1"></i>{{ notif.fecha_registro|date:'d/m/Y H:i' }}
+                                    </small>
+                                </div>
+                            </a>
+                        {% empty %}
+                            <div class="ms-3 py-3" style="text-align: center">
+                                <img src="/static/iconos/notificacion.svg" style="width: 120px">
+                                <p class="mb-2 mt-2" style="color: #7C7C7C">Sin notificaciones nuevas</p>
+                            </div>
+                        {% endfor %}
+                        <a href="/notificaciones/" class="dropdown-item text-center text-primary fs-13 py-2 fw-medium">
+                            Ver todas las notificaciones <i class="fi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </li>
+                {% if request.user.is_authenticated %}
+                    <li class="dropdown topbar-item">
+                        <a class="nav-link dropdown-toggle arrow-none nav-icon" data-bs-toggle="dropdown" href="/"
+                           role="button"
+                           aria-haspopup="false" aria-expanded="false">
+                            <img src="{{ request.user.get_foto_gris }}" alt="" class="thumb-lg rounded-circle">
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end py-0 menu-perfil">
+                            <div class="d-flex align-items-center dropdown-item bg-secondary-subtle menu-perfil-cabecera">
+                                <div class="flex-shrink-0">
+                                    <img src="{{ request.user.get_foto_gris }}" alt=""
+                                         class="thumb-md rounded-circle">
+                                </div>
+                                <div class="flex-grow-1 ms-2 align-self-center">
+                                    <h6 class="my-0 fw-medium text-dark fs-13">{{ request.user.get_full_name }}</h6>
+                                    <small class="text-muted mb-0">{{ request.user.groups_str }}</small>
+                                </div>
+                            </div>
+                            <div class="dropdown-divider mt-0"></div>
+                            <small class="text-muted px-3 pt-1 pb-1 d-block">Cuenta</small>
+                            <a class="dropdown-item" href="/perfilpanel/"><i
+                                    class="las la-user fs-18 me-1 align-text-bottom"></i> Perfil</a>
+                            {% if sesion_anterior %}
+                                <a class="dropdown-item" href="/seguridad/regresar-sesion/"><i
+                                        class="las la-sign-in-alt fs-18 me-1 align-text-bottom"></i> Regresar a mi
+                                    sesión</a>
+                            {% endif %}
+                            {% if request.user.is_superuser %}
+                                <a class="dropdown-item" href="/admin"><i
+                                        class="las la-question-circle fs-18 me-1 align-text-bottom"></i> Panel de Administración</a>
+                            {% endif %}
+                            <div class="dropdown-divider mb-0"></div>
+                            <a class="dropdown-item text-danger" href="{% url 'logout_url' %}"><i
+                                    class="las la-power-off fs-18 me-1 align-text-bottom"></i> Cerrar Sesión</a>
+                        </div>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+
+{% if not ocultar_sidebar %}
+<div class="startbar d-print-none">
+        <div class="brand">
+        <a href="/" class="logo marca-panel">
+            <span>
+                <img src="{% if confi.ico %}{{ confi.ico.url }}{% else %}/media/{{ confi.logo_sistema }}{% endif %}" alt="" class="logo-sm marca-panel-icono">
+            </span>
+            <span>
+            <h3 class="logo-lg logo-dark text-black marca-panel-texto">{{ alias }}</h3></span>
+        </a>
+    </div>
+    <div class="startbar-menu">
+        <div class="startbar-collapse" id="startbarCollapse" data-simplebar>
+            <div class="d-flex align-items-start flex-column w-100">
+                <ul class="navbar-nav mb-auto w-100">
+                    <li class="menu-label pt-0 mt-0">
+                        <span>Menu</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/panel/">
+                            <i class="fa fa-home menu-icon"></i>
+                            <span>Panel</span>
+                        </a>
+                    </li>
+
+                    {% for grupo in grupos %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path != '/panel/' and grupo.nombre == group %}active{% endif %}"
+                               href="#sidebar{{ grupo.nombre|cut:" " }}" data-bs-toggle="collapse" role="button"
+                               aria-expanded="{% if request.path != '/panel/' and grupo.nombre == group %}true{% else %}false{% endif %}"
+                               aria-controls="sidebar{{ grupo.nombre|cut:" " }}">
+                                <i class="{{ grupo.icono }} menu-icon"></i>
+                                <span>{{ grupo.nombre }}</span>
+                            </a>
+                            <div class="collapse {% if request.path != '/panel/' and grupo.nombre == group %}show{% endif %}"
+                                 id="sidebar{{ grupo.nombre|cut:" " }}">
+                                <ul class="nav flex-column">
+                                    {% for modulo in grupo.modulos_activos %}
+                                        {% if modulo.id in modulos_id %}
+                                            <li class="nav-item">
+                                                <a class="nav-link {% if ruta_val|startswith:modulo.url %}active{% endif %}"
+                                                   href="{{ modulo.url }}?{{ dict_url_vars_completo }}">{{ modulo.nombre }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="startbar-overlay d-print-none"></div>
+{% endif %}
+
+<div class="page-wrapper">
+    <div class="page-content">
+        <div class="container-xxl">
+                            <div class="row mb-2">
+                    <div class="col-md-8">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0 py-2">
+                                {% for rt in ruta_lista %}
+                                    <li class="breadcrumb-item">
+                                        <a href="{{ rt.0 }}" class="text-muted">{{ rt.1 }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ol>
+                        </nav>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        {% if not request.path == '/panel/' %}
+                            <a href="{% block atras %}{% if request.path == '/panel/' %}/
+
+                                {% else %}{% if not tiene_val_get %}/panel/{% else %}{{ request.path }}{% endif %}{% endif %}{% endblock %}"
+                               class="btn btn-default btn-sm">
+                                <i class="fa fa-arrow-circle-left me-1"></i>Atrás
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+            {% block content %}
+            {% endblock %}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+<div class="modal fade" id="modalPostAjax" tabindex="-1" aria-labelledby="modalPostAjaxLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalPostAjaxLabel"><i class="fas fa-eye icono"></i>
+                    <strong class="accion"></strong></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ ruta }}" method="POST" enctype="multipart/form-data">{% csrf_token %}
+                    <div class="tablaaqui">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/assets_riz/libs/bootstrap/js/bootstrap.bundle.min.js?1"></script>
+<script src="/static/assets_riz/libs/simplebar/simplebar.min.js"></script>
+<script src="/static/assets_riz/js/app.js"></script>
+<script src="/static/assets_riz/js/sidebar-storage.js?v1.2"></script>
+<script src="/static/jquery-3.7.1.min.js"></script>
+
+{% include 'datatable.html' %}
+
+<link rel="stylesheet" href="/static/sweetalert2/sweetalert2.css">
+<script src="/static/sweetalert2/sweetalert2.js"></script>
+<script src="/static/jquery.blockUI.js"></script>
+<link href="/static/select2/select2.min.css?1.3" rel="stylesheet">
+<script src="/static/select2/select2.min.js?1"></script>
+<script src="/static/select2/i18n/es.js"></script>
+<link rel="stylesheet" href="/static/dropify/css/dropify.min.css">
+<script src="/static/dropify/js/dropify.min.js"></script>
+<script src="/static/js/base-admin.js?v=3"></script>
+<script src="/static/validaciones/funciones.js?v=2.2"></script>
+
+<script>
+    {% if request.user.is_authenticated %}
+        const logoutTimeout = setTimeout(
+            window.setInterval(() => location = window.location.href.replaceAll(window.location.origin, ""), ({{ fecha_session_expira|default:'0' }} + 2) * 1000, 500)
+        );
+    {% endif %}
+</script>
+<script>
+    window.onload = function () {
+        {% if messages %}
+            {% for message in messages %}
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    type: '{% if message.tags %}{{ message.tags }}{% endif %}',
+                    title: '{{ message }}',
+                    showConfirmButton: false,
+                    timer: 6000
+                })
+                console.log('{{ message }}')
+            {% endfor %}
+        {% endif %}
+    }
+
+    function eliminarajax(pk, nombre, accion, titulo = `Estas a punto de eliminar este registro ${nombre}`) {
+        Swal.fire({
+            title: `${titulo}`,
+            text: "Esta acción es irreversible",
+            type: 'warning',
+            showCancelButton: true,
+            allowOutsideClick: false,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, deseo hacerlo!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.value) {
+                pantallaespera();
+                $.post("{{ request.path }}", {'action': accion, 'id': pk,}, function (data) {
+                    $.unblockUI();
+                    if (data.error == false) {
+                        location.reload();
+                        $('.modal').modal('hide');
+                    } else {
+                        alertaWarning(data[0].message);
+                    }
+                }, "json");
+            }
+        })
+    }
+
+    if ($('#tabla').length && !$('#tabla tbody td[colspan]').length) {
+        $('#tabla').DataTable({
+            responsive: true,
+            ordering: false,
+            paging: false,
+            searching: false,
+            bInfo: false,
+            dom: 'frtip',
+            language: {
+                "url": '/static/js/i18n/Spanish.json'
+            }
+        });
+    }
+
+    $('.theDataTable').DataTable({
+        responsive: true,
+        bInfo: false,
+        ordering: false,
+        dom: 'frtip',
+        language: {
+            "url": '/static/js/i18n/Spanish.json'
+        }
+    });
+
+    $(document).ready(function () {
+        $('.select2').select2({width: '100%'});
+    });
+
+    function getPromise(url, params) {
+        return new Promise((resolve, reject) => {
+            $.get(url, params, function (data) {
+                resolve(data);
+            }, 'json').fail(function (jqXHR, status, error) {
+                reject({jqXHR: jqXHR, status: status, error: error});
+            });
+        });
+    }
+
+    function postPromise(url, params) {
+        return new Promise(resolve => {
+            $.post(url, params, function (data) {
+                resolve(data);
+            }, 'json');
+        });
+    }
+
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+            }
+        }
+    });
+
+    function pantallaespera(titulo = 'Procesando', mensaje = 'Por favor espere...') {
+        const logoUrl = '/media/{{ confi.logo_sistema }}';
+        const blockMsg = `
+        <div style="text-align:center;">
+            <img src="${logoUrl}" style="height:45px; margin-bottom:15px;">
+            <div class="spinner-border text-light" style="width:1.5rem; height:1.5rem;"></div>
+            <div style="margin-top:10px; font-weight:500; color:white;">${titulo}</div>
+            <div style="margin-top:5px; font-size:14px; color:rgba(255,255,255,0.8);">${mensaje}</div>
+        </div>
+        `;
+        $.blockUI({
+            message: blockMsg,
+            css: {
+                padding: '20px',
+                backgroundColor: 'rgba(33, 37, 41, 0.85)',
+                border: 'none',
+                borderRadius: '8px',
+                width: '280px',
+                left: '50%',
+                top: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 9999999
+            },
+            overlayCSS: {
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 9999990
+            }
+        });
+    }
+
+    function alertaSuccess(mensaje) {
+        console.log(mensaje);
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            type: 'success',
+            title: mensaje,
+            showConfirmButton: false,
+            timer: 6000
+        })
+    }
+
+    function alertaWarning(mensaje) {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            type: 'warning',
+            title: mensaje,
+            showConfirmButton: false,
+            timer: 6000
+        })
+    }
+
+    function alertaDanger(mensaje, timer = 1000) {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            type: 'error',
+            title: mensaje,
+            showConfirmButton: false,
+            timer: timer
+        })
+    }
+
+    function mensajeSuccess(mensaje) {
+        Swal.fire(mensaje, '{{ nombreempresa }}', 'success')
+    }
+
+    function mensajeWarning(mensaje) {
+        Swal.fire(mensaje, '{{ nombreempresa }}', 'warning')
+    }
+
+    function mensajeDanger(mensaje) {
+        Swal.fire(mensaje, '{{ nombreempresa }}', 'error')
+    }
+
+    tooltips = function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('.tl, .tr, .tu, .tb'));
+
+        tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+            var placement = 'top';
+
+            if (tooltipTriggerEl.classList.contains('tl')) {
+                placement = 'left';
+            } else if (tooltipTriggerEl.classList.contains('tr')) {
+                placement = 'right';
+            } else if (tooltipTriggerEl.classList.contains('tb')) {
+                placement = 'bottom';
+            }
+
+            new bootstrap.Tooltip(tooltipTriggerEl, {
+                placement: placement
+            });
+        });
+    };
+
+    tooltips();
+
+</script>
+<script>
+    $('body').on('change', "input[type=date]", function () {
+        setDateToHumanLang(this);
+    });
+    $(function () {
+        $('input[type=date]').toArray().forEach((value, index, array) => {
+            setDateToHumanLang(value);
+        });
+    });
+
+    function setDateToHumanLang(ctr) {
+        let ctrl = $(ctr);
+        if (ctrl.hasClass('hidestring')) {
+            return;
+        }
+        $(ctrl).parent().children('.fechaEnLenguajeHumano').remove();
+        if ($(ctrl).val()) {
+            if ($(ctrl).parent().attr("class") && !($(ctrl).parent().attr("class").indexOf("input-group") >= 0)) {
+                $(ctrl).parent().append(
+                    `
+                        <div class="fechaEnLenguajeHumano">
+                            <small style="font-weight: bold;">
+                                ${new Date(Date.parse($(ctrl).val(), 'YYYY-MM-DD') + 86400 * 1000).toLocaleDateString('es-ES', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                    })}
+                            </small>
+                        </div>
+                    `
+                );
+            }
+        }
+    }
+</script>
+<script>
+    const modalPostAjax = $('#modalPostAjax');
+
+    function ajaxVerModal(modalElem, action, id, icon, tamanio_modal = null, ruta = null, aditionalData = {}, funtionsAfterRender = []) {
+        let dataAjax = {
+            'action': action,
+            'pk': id,
+            "dict_url_vars": '{{ dict_url_vars }}',
+            'dict_url_vars_input': '{{ dict_url_vars_input }}'
+        };
+        for (const [key, value] of Object.entries(aditionalData)) {
+            dataAjax[key] = value;
+        }
+        modalElem.find('.modal-dialog').attr("class", "modal-dialog");
+        pantallaespera()
+        $.ajax({
+            type: "GET",
+            url: ruta ? ruta : "{{ ruta }}",
+            data: dataAjax,
+            success: function (data) {
+                $.unblockUI();
+                if (data.result === true) {
+                    var dataRender = data;
+                    dataRender["idAction"] = id;
+                    console.log(data);
+                    modalElem.find('.icono').attr('class', icon);
+                    modalElem.find('.accion').text(data.titulo);
+                    modalElem.find('.tablaaqui').html(data.data);
+                    modalElem.modal({backdrop: 'static'}).modal('show');
+                    if (tamanio_modal) {
+                        modalElem.find('.modal-dialog').attr("class", `modal-dialog ${tamanio_modal}`);
+                    }
+                    if (typeof data.execJs === "string") {
+                        eval(data.execJs);
+                    }
+                    for (let i = 0; i < funtionsAfterRender.length; i++) {
+                        funtionsAfterRender[i](dataRender);
+                    }
+                } else {
+                    mensajeDanger(data.mensaje);
+                }
+            },
+            error: () => mensajeDanger("Error de conexion."),
+            dataType: "json"
+        });
+    }
+
+    function verModalPostAjax(action, id, icon, tamanio_modal = null, ruta = null, aditionalData = {}, funtionsAfterRender = []) {
+        ajaxVerModal(modalPostAjax, action, id, icon, tamanio_modal, ruta, aditionalData, funtionsAfterRender);
+    }
+
+    modalPostAjax.on('hidden.bs.modal', function (e) {
+        modalPostAjax.find('.tablaaqui').html('');
+    });
+</script>
+<link rel="stylesheet" href="/static/fancyboxv4/fancybox.css?1"/>
+<link rel="stylesheet" href="/static/fancyboxv4/panzoom.css"/>
+<script src="/static/fancyboxv4/fancybox.umd.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelector('html').addEventListener('click', function (e) {
+            const tableHovered = e.target.closest('table.table');
+            if (!tableHovered) return;
+            const tablaTr = Array.prototype.slice.call(tableHovered.querySelectorAll('tr'));
+            tablaTr.forEach((tr, index, value) => {
+                tr.classList.remove("tableRowFocus");
+            });
+            if (tablaTr.indexOf(e.target.closest('tr')) >= 0) {
+                e.target.closest('tr').classList.add("tableRowFocus");
+            }
+        });
+    });
+</script>
+<link rel="stylesheet" href="/static/css/agenda/alerta_flotante.css?v1.0">
+<script src="/static/js/agenda/alerta_flotante.js?v1.0"></script>
+{% block jscript %}
+{% endblock %}
+
+<script>
+    (function () {
+        var CSRF = '{{ csrf_token }}';
+        if (!CSRF) return;
+        document.addEventListener('click', function (ev) {
+            var a = ev.target && ev.target.closest && ev.target.closest('a[data-notif-id]');
+            if (!a) return;
+            var id = a.getAttribute('data-notif-id');
+            if (!id) return;
+            var fd = new FormData();
+            fd.append('csrfmiddlewaretoken', CSRF);
+            fd.append('action', 'check');
+            fd.append('id', id);
+            try {
+                if (navigator.sendBeacon) {
+                    navigator.sendBeacon('/notificaciones/', fd);
+                } else {
+                    fetch('/notificaciones/', {
+                        method: 'POST', body: fd, credentials: 'same-origin',
+                        headers: {'X-Requested-With': 'XMLHttpRequest'},
+                        keepalive: true,
+                    });
+                }
+            } catch (e) {
+            }
+            a.style.opacity = '.5';
+            a.style.pointerEvents = 'none';
+            var badge = document.querySelector('.icofont-bell-alt + .badge');
+            if (badge) {
+                var n = parseInt((badge.textContent || '').replace(/\D/g, ''), 10);
+                if (!isNaN(n) && n > 0) {
+                    var nuevo = n - 1;
+                    badge.textContent = nuevo > 99 ? '99+' : String(nuevo);
+                    if (nuevo <= 0) badge.remove();
+                }
+            }
+        }, true);
+    })();
+</script>
+
+{% if request.path == '/panel/' %}
+    {% include 'pwa/install_bar.html' %}
+{% endif %}
+{% include 'pwa/push_optin.html' %}
+</body>
+</html>

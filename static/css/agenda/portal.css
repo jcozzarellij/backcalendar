@@ -1,0 +1,86 @@
+.po-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    object-fit: contain;
+    background: var(--mi-fondo, #f6f4ef);
+}
+
+.po-logo-vacio {
+    background: var(--po-color, var(--mi-azul, #005082));
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+}
+
+.po-color {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--po-color, #005082);
+    vertical-align: middle;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 1px var(--mi-borde, #e4e1da);
+}
+
+.po-etq {
+    margin: 0 0 2px;
+    font-size: .75rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--mi-gris, #6b7785);
+}
+
+.po-val {
+    margin: 0;
+    color: var(--mi-tinta, #1a2b3c);
+    font-weight: 500;
+}
+
+.po-codigo {
+    font-size: .8rem;
+    color: var(--mi-tinta, #1a2b3c);
+    background: var(--mi-fondo, #f6f4ef);
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.po-producto-sub {
+    margin-left: 1.5rem;
+}
+
+.po-producto-activo {
+    border-color: var(--mi-azul, #005082);
+    background: var(--mi-azul-suave, #e6f0f5);
+}
+
+.po-producto-nombre {
+    font-weight: 600;
+    color: var(--mi-tinta, #1a2b3c);
+    text-decoration: none;
+}
+
+.po-producto-nombre:hover {
+    color: var(--mi-azul, #005082);
+}
+
+.po-compartir {
+    position: sticky;
+    top: 20px;
+}
+
+.po-qr {
+    display: block;
+    width: 140px;
+    height: 140px;
+}
+
+.po-enlace {
+    font-size: .8rem;
+    background: var(--mi-fondo, #f6f4ef);
+}

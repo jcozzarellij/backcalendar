@@ -1,0 +1,24 @@
+{% extends 'public/base.html' %}
+
+{% block head %}
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="/static/css/public/portal.css?v1.0">
+{% endblock %}
+
+{% block content %}
+<section class="pt-paso" aria-labelledby="pt-inc-titulo">
+    <h1 id="pt-inc-titulo" class="pt-paso-titulo">¿Sobre qué quiere su cita?</h1>
+    <ul class="pt-productos pt-productos-grande">
+        {% for p in productos %}
+            <li>
+                <a href="/agendar/{{ p.slug }}/?ventana=1"><i class="fas fa-calendar-plus" aria-hidden="true"></i><span>{{ p.nombre }}{% if p.descripcion %}<small>{{ p.descripcion }}</small>{% endif %}</span></a>
+            </li>
+        {% empty %}
+            <li class="pt-vacio">Todavía no hay productos para agendar.</li>
+        {% endfor %}
+    </ul>
+    {% if portal.telefono_atencion %}
+        <p class="pt-contacto mb-0"><i class="fas fa-phone" aria-hidden="true"></i><a href="tel:{{ portal.telefono_atencion|cut:' ' }}">{{ portal.telefono_atencion }}</a></p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,115 @@
+.turnos-rapidos .btn {
+    margin: 0 0 .35rem .25rem;
+}
+
+.turnos-scroll {
+    max-height: 70vh;
+}
+
+.turnos-rejilla {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: separate;
+    border-spacing: 4px;
+    table-layout: fixed;
+}
+
+.turnos-rejilla thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--bs-body-bg);
+}
+
+.turnos-esquina {
+    width: 4.25rem;
+}
+
+.turnos-cabecera {
+    width: 100%;
+    padding: .3rem .25rem;
+    border: none;
+    border-radius: var(--bs-border-radius-sm);
+    background: transparent;
+    color: var(--turno-tinta);
+    font-weight: 600;
+    font-size: .8rem;
+}
+
+.turnos-hora {
+    font-weight: 500;
+    color: var(--bs-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.turnos-cabecera:hover {
+    background: var(--bs-primary-bg-subtle);
+}
+
+.turnos-celda {
+    display: block;
+    width: 100%;
+    min-height: 2.1rem;
+    padding: 0;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-sm);
+    background: #ffffff;
+    color: transparent;
+    font-size: .72rem;
+    font-variant-numeric: tabular-nums;
+    user-select: none;
+    touch-action: none;
+    transition: background-color .12s ease, border-color .12s ease;
+}
+
+.turnos-celda:hover {
+    background: var(--bs-primary-bg-subtle);
+    border-color: var(--turno-azul);
+    color: var(--turno-azul);
+    cursor: pointer;
+}
+
+.turnos-celda[aria-pressed="true"] {
+    background: var(--turno-azul);
+    border-color: var(--turno-azul);
+    color: #ffffff;
+}
+
+.turnos-celda[aria-pressed="true"]:hover {
+    background: #003a5f;
+    border-color: #003a5f;
+    color: #ffffff;
+}
+
+.turnos-cabecera {
+    cursor: pointer;
+}
+
+.turnos-cabecera:focus-visible,
+.turnos-celda:focus-visible {
+    outline: 3px solid var(--turno-verde);
+    outline-offset: 1px;
+}
+
+.turnos-resumen {
+    padding: .85rem 1rem;
+    border-radius: var(--bs-border-radius);
+    background: var(--bs-primary-bg-subtle);
+    color: var(--turno-tinta);
+}
+
+.turnos-resumen-numero {
+    display: block;
+    font-family: var(--turno-font-titulos);
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    color: var(--turno-azul);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .turnos-celda {
+        transition: none;
+    }
+}

@@ -1,0 +1,30 @@
+<tr class="{% if nivel %}po-sub{% endif %}">
+    <td>
+        {% if nivel %}<i class="fas fa-level-up-alt fa-rotate-90 me-2 text-muted"></i>{% endif %}{{ p.nombre }}
+        <div class="agenda-sub"><code>/agendar/{{ p.slug }}/</code>{% if p.descripcion %} · {{ p.descripcion|truncatechars:70 }}{% endif %}</div>
+    </td>
+    <td>{% if p.equipo %}{{ p.equipo.nombre }}{% elif nivel %}<span class="agenda-sub">Hereda del padre</span>{% else %}<span class="badge bg-warning">Sin equipo</span>{% endif %}</td>
+    <td class="text-center agenda-sub">
+        {% if p.duracion_min %}{{ p.duracion_min }} min{% else %}—{% endif %}
+        · {% if p.antelacion_horas is not None %}{{ p.antelacion_horas }} h{% else %}—{% endif %}
+        · {% if p.ventana_dias %}{{ p.ventana_dias }} d{% else %}—{% endif %}
+    </td>
+    <td class="text-center">{% if p.activo %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-secondary">En pausa</span>{% endif %}</td>
+    <td class="text-center">
+        <div class="dropdown">
+            <button class="btn btn-icon agenda-btn-fila" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Acciones de {{ p.nombre }}">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="formModal({{ p.pk }}, 'Enlace y QR de {{ p.nombre|escapejs }}', 'enlace')"><i class="fas fa-qrcode me-2 text-primary"></i>Enlace y QR</a></li>
+                <li><a class="dropdown-item" href="/agendar/{{ p.slug }}/" target="_blank" rel="noopener"><i class="fas fa-external-link-alt me-2 text-secondary"></i>Ver como cliente</a></li>
+                {% if puede_editar %}
+                    {% if not nivel %}<li><a class="dropdown-item" href="javascript:void(0)" onclick="formModal({{ portal.pk }}, 'Nuevo subproducto de {{ p.nombre|escapejs }}', 'addproducto', {padre: {{ p.pk }}})"><i class="fas fa-plus me-2 text-success"></i>Agregar subproducto</a></li>{% endif %}
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="formModal({{ p.pk }}, 'Editar producto', 'changeproducto')"><i class="fas fa-edit me-2 text-primary"></i>Editar</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="accionAgenda({{ p.pk }}, 'activarproducto')"><i class="fas fa-power-off me-2 text-warning"></i>{% if p.activo %}Pausar{% else %}Activar{% endif %}</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0)" onclick="eliminarajax({{ p.pk }}, '{{ p.nombre|escapejs }}', 'delproducto')"><i class="fas fa-trash me-2 text-danger"></i>Eliminar</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </td>
+</tr>

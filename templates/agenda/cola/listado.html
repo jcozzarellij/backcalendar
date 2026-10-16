@@ -1,0 +1,109 @@
+{% extends 'agenda/base_agenda.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
+    <link rel="stylesheet" href="/static/css/agenda/cola.css?v1.0">
+{% endblock %}
+{% block eyebrow %}Coordinación{% endblock %}
+{% block acciones %}
+    <a href="/agenda/solicitudes/?vista=tablero" class="btn btn-light btn-sm"><i class="fas fa-columns me-1"></i>Ver tablero</a>
+{% endblock %}
+{% block content %}
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <h5 class="mb-0">En cola</h5>
+                <span class="agenda-sub">{{ cola|length }} por asignar</span>
+            </div>
+            {% for s in cola %}
+                <a href="?solicitud={{ s.pk }}" class="co-item {% if actual and s.pk == actual.pk %}activa{% endif %}">
+                    <div class="d-flex justify-content-between gap-2">
+                        <span class="co-codigo">{{ s.codigo }}</span>
+                        <span class="badge bg-warning">En cola</span>
+                    </div>
+                    <strong>{{ s.motivo|default:s.get_origen_display }}</strong>
+                    <span class="agenda-sub">{{ s.cliente.nombres }}{% if s.producto %} · {{ s.producto.nombre }}{% endif %}</span>
+                    <span class="agenda-sub">Registrada {{ s.fecha_registro|date:"D j M · H:i" }}</span>
+                </a>
+            {% empty %}
+                <div class="card"><div class="card-body agenda-vacio text-center">La cola está vacía: todas las solicitudes tienen horario.</div></div>
+            {% endfor %}
+        </div>
+
+        <div class="col-lg-8">
+            {% if actual %}
+                <div class="card">
+                    <div class="card-body">
+                        <p class="co-codigo mb-1">{{ actual.codigo }} · {{ actual.get_origen_display }}</p>
+                        <h4 class="mb-3">{{ actual.motivo|default:actual.get_origen_display }}</h4>
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6 col-lg-3"><p class="co-etq">Solicitante</p><p class="co-val">{{ actual.cliente.nombres }}<br><span class="agenda-sub">{{ actual.cliente.correo }}</span></p></div>
+                            <div class="col-sm-6 col-lg-3"><p class="co-etq">Producto</p><p class="co-val">{{ actual.producto|default:'—' }}</p></div>
+                            <div class="col-sm-6 col-lg-3"><p class="co-etq">Equipo según la regla</p><p class="co-val">{% if equipo %}{{ equipo.nombre }}<br><span class="agenda-sub">{{ responsables|length }} responsable{{ responsables|length|pluralize }}</span>{% else %}<span class="text-warning">Sin equipo: elígelo abajo</span>{% endif %}</p></div>
+                            <div class="col-sm-6 col-lg-3"><p class="co-etq">Ventana de 24 a 48 horas</p><p class="co-val">{{ actual.fecha_registro|date:"j M H:i" }} a {{ actual.ventana_hasta|date:"j M H:i" }}</p></div>
+                            {% if actual.mensaje %}<div class="col-12"><p class="co-etq">Mensaje del cliente</p><p class="co-val">{{ actual.mensaje }}</p></div>{% endif %}
+                            {% if actual.telefono_para_llamar %}<div class="col-12"><p class="co-etq">Pidió que le llamen al</p><p class="co-val"><a href="tel:{{ actual.telefono_para_llamar|cut:' ' }}">{{ actual.telefono_para_llamar }}</a></p></div>{% endif %}
+                            {% if actual.causa_cola %}<div class="col-12"><p class="co-etq">Por qué está en cola</p><p class="co-val">{{ actual.causa_cola }}</p></div>{% endif %}
+                        </div>
+
+                        <form method="post" action="/agenda/solicitudes/" class="co-form" id="co-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="asignar">
+                            <input type="hidden" name="pk" value="{{ actual.pk }}">
+                            <input type="hidden" name="nombres" value="{{ actual.cliente.nombres }}">
+                            <input type="hidden" name="correo" value="{{ actual.cliente.correo }}">
+                            <input type="hidden" name="telefono" value="{{ actual.cliente.telefono }}">
+                            <input type="hidden" name="producto" value="{{ actual.producto_id|default:'' }}">
+                            <input type="hidden" name="titulo" value="{% if actual.producto %}{{ actual.producto.nombre }}{% else %}Cita{% endif %} · {{ actual.cliente.nombres }}">
+                            <h5 class="mb-1">Espacios sugeridos</h5>
+                            <p class="agenda-sub mb-2">Los más cercanos en que coinciden los responsables del equipo.</p>
+                            <div class="co-espacios" role="radiogroup" aria-label="Espacios sugeridos">
+                                {% for h in sugeridos %}
+                                    <label class="co-espacio">
+                                        <input type="radio" name="inicio" value="{{ h|date:'Y-m-d\TH:i' }}" {% if forloop.first %}checked{% endif %}>
+                                        <span>{{ h|date:"D j M · H:i" }} – <span class="co-fin" data-inicio="{{ h|date:'Y-m-d\TH:i' }}"></span></span>
+                                    </label>
+                                {% empty %}
+                                    <p class="agenda-sub mb-0">{% if equipo %}El equipo no tiene espacios comunes en dos semanas: elige un horario a mano.{% else %}Elige el equipo para ver sus espacios.{% endif %}</p>
+                                {% endfor %}
+                            </div>
+                            <div class="row g-3 align-items-end mt-1">
+                                <div class="col-md-4">
+                                    <label class="form-label" for="co-equipo">Equipo</label>
+                                    <select name="equipo" id="co-equipo" class="select2">
+                                        {% for e in equipos %}<option value="{{ e.pk }}" {% if equipo and e.pk == equipo.pk %}selected{% endif %}>{{ e.nombre }} · {{ e.proyecto }}</option>{% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label" for="co-duracion">Duración</label>
+                                    <select name="duracion" id="co-duracion" class="select2">
+                                        <option value="20" {% if duracion == 20 %}selected{% endif %}>20 min</option>
+                                        <option value="40" {% if duracion == 40 %}selected{% endif %}>40 min</option>
+                                        <option value="60" {% if duracion == 60 %}selected{% endif %}>60 min</option>
+                                        <option value="90" {% if duracion == 90 %}selected{% endif %}>90 min</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label" for="co-manual">O un horario a mano</label>
+                                    <input type="datetime-local" class="form-control" id="co-manual" step="600">
+                                </div>
+                            </div>
+                            <p class="agenda-sub mt-3 mb-2">Se crea la cita con videollamada, se bloquea el horario de los responsables y se envía la invitación al cliente.</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-1"></i>Asignar y enviar invitación</button>
+                                <button type="button" class="btn btn-light" onclick="cerrarSolicitud({{ actual.pk }}, '{{ actual.codigo|escapejs }}')">Cerrar sin cita</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card"><div class="card-body agenda-vacio text-center">Nada que asignar por ahora.</div></div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/agenda/crud.js?v1.1"></script>
+    <script src="/static/js/agenda/solicitud.js?v1.0"></script>
+    <script src="/static/js/agenda/cola.js?v1.0"></script>
+{% endblock %}

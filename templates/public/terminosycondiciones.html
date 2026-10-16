@@ -1,0 +1,20 @@
+{% extends 'public/base.html' %}
+
+{% block content %}
+<section class="py-4">
+    <p class="text-uppercase text-muted small mb-1">Legal</p>
+    <h1 class="h3">Términos y condiciones de uso</h1>
+    <p class="text-muted small">Última actualización: {{ fecha|date:"d/m/Y" }}</p>
+    <p>Estas son las reglas para usar la plataforma. Para el tratamiento de datos personales, consulta la
+        <a href="/proteccion-datos/">página de protección de datos</a>.</p>
+    <h2 class="h5 mt-4">1. Acceso</h2>
+    <p>El acceso es personal e intransferible. Cada usuario es responsable de custodiar su contraseña y de la actividad realizada con su cuenta.</p>
+    <h2 class="h5 mt-4">2. Uso aceptable</h2>
+    <p>La plataforma se usa solo para los fines autorizados por la organización. No se permite intentar acceder a información de otros usuarios ni alterar el funcionamiento del servicio.</p>
+    <h2 class="h5 mt-4">3. Cambios</h2>
+    <p>Estos términos pueden actualizarse; la fecha de arriba indica la última versión vigente.</p>
+    <h2 class="h5 mt-4">4. Contacto</h2>
+    <p>Para consultas o soporte, escríbenos a
+        <a href="mailto:{{ confi.email_notificacion|default:confi.email }}">{{ confi.email_notificacion|default:confi.email|default:"el correo del administrador" }}</a>.</p>
+</section>
+{% endblock %}

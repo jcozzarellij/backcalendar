@@ -1,0 +1,9 @@
+{% if dias %}
+    <ul class="pt-todos" data-dias>
+        {% for d in dias %}
+            <li><button type="button" class="pt-dia" data-fecha="{{ d.fecha|date:'Y-m-d' }}" data-texto="{{ d.fecha|date:'l j \d\e F'|capfirst }}">{{ d.fecha|date:"D j M"|capfirst }}<small>{{ d.espacios }}</small></button></li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="pt-vacio">No hay otros horarios libres por ahora. Escríbanos y lo coordinamos.</p>
+{% endif %}

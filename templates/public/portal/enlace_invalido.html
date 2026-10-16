@@ -1,0 +1,19 @@
+{% extends 'public/base.html' %}
+
+{% block head %}
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="/static/css/public/portal.css?v1.0">
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <section class="pt-lado text-center">
+            <p class="pt-eyebrow">Enlace vencido</p>
+            <h1 class="pt-titulo">Este enlace ya no sirve.</h1>
+            <p class="pt-desc">Puede que haya vencido o que ya se haya usado desde otro correo. Busque el correo más reciente de su cita o agende una nueva.</p>
+            <a href="/" class="btn btn-success pt-boton"><i class="fas fa-calendar-plus" aria-hidden="true"></i>Ir a la página de inicio</a>
+        </section>
+    </div>
+</div>
+{% endblock %}

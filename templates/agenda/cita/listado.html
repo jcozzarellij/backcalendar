@@ -1,0 +1,76 @@
+{% extends 'agenda/base_agenda.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
+{% endblock %}
+{% block content %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="GET" class="mb-0">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label" for="criterio">Buscar</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-end-0"><i class="fa fa-search text-muted" aria-hidden="true"></i></span>
+                            <input type="text" id="criterio" class="form-control border-start-0" placeholder="Código, título, cliente o correo" name="criterio" value="{{ criterio|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="estado">Estado</label>
+                        <select id="estado" name="estado" class="select2">
+                            <option value="">Todos</option>
+                            {% for valor, nombre in estados %}
+                                <option value="{{ valor }}" {% if valor == estado %}selected{% endif %}>{{ nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary" aria-label="Buscar"><i class="fas fa-search"></i></button>
+                            {% if url_vars %}<a href="{{ ruta }}" class="btn btn-default" aria-label="Quitar filtros"><i class="fas fa-sync-alt"></i></a>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="tabla" class="table table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th class="text-center">Código</th>
+                        <th>Fecha y hora</th>
+                        <th>Cita</th>
+                        <th>Cliente</th>
+                        <th>Equipo</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Google</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for l in listado %}
+                        <tr>
+                            <td class="text-center"><a href="/agenda/citas/{{ l.pk }}/">{{ l.codigo }}</a></td>
+                            <td>{{ l.inicio|date:"D d M Y H:i" }} – {{ l.fin|time:"H:i" }}</td>
+                            <td><a href="/agenda/citas/{{ l.pk }}/">{{ l.titulo }}</a></td>
+                            <td>{{ l.cliente }}<div class="agenda-sub">{{ l.cliente.correo }}</div></td>
+                            <td>{{ l.equipo.nombre|default:'—' }}{% if l.proyecto %}<div class="agenda-sub">{{ l.proyecto }}</div>{% endif %}</td>
+                            <td class="text-center">
+                                <span class="badge {% if l.estado == 'confirmada' %}bg-success{% elif l.estado == 'pendiente' %}bg-warning{% elif l.estado == 'cancelada' or l.estado == 'no_asistio' %}bg-danger{% else %}bg-secondary{% endif %}">{{ l.get_estado_display }}</span>
+                            </td>
+                            <td class="text-center">
+                                {% if l.sincronizada_google %}<i class="fas fa-check text-success" title="Evento creado en Google"></i>{% elif l.estado == 'cancelada' %}—{% else %}<i class="fas fa-triangle-exclamation text-warning" title="{{ l.error_google|default:'Sin sincronizar' }}"></i>{% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="7" class="text-center agenda-vacio">No hay citas con esos filtros.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% include "paginacion.html" %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

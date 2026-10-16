@@ -1,0 +1,17 @@
+.menu-perfil {
+    min-width: 17.5rem;
+    max-width: calc(100vw - 2rem);
+}
+
+.menu-perfil .dropdown-item {
+    padding: .55rem 1rem;
+}
+
+.menu-perfil .menu-perfil-cabecera {
+    padding: .85rem 1rem;
+}
+
+.menu-perfil .menu-perfil-cabecera h6,
+.menu-perfil .menu-perfil-cabecera small {
+    white-space: normal;
+}

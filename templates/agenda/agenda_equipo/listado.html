@@ -1,0 +1,104 @@
+{% extends 'agenda/base_agenda.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
+    <link rel="stylesheet" href="/static/css/agenda/agenda_equipo.css?v1.2">
+{% endblock %}
+{% block content %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="GET" class="mb-0" id="frm-equipo">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label" for="equipo">Equipo</label>
+                        <select id="equipo" name="equipo" class="select2" onchange="this.form.submit()">
+                            {% for e in equipos %}
+                                <option value="{{ e.pk }}" {% if equipo and e.pk == equipo.pk %}selected{% endif %}>{{ e.nombre }} · {{ e.proyecto }}</option>
+                            {% empty %}
+                                <option value="">Sin equipos visibles</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="fecha">Día</label>
+                        <input type="date" id="fecha" name="fecha" class="form-control" value="{{ fecha_sel|date:'Y-m-d' }}" onchange="this.form.submit()">
+                    </div>
+                    <div class="col-md-5">
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="?equipo={{ equipo.pk }}&fecha={{ anterior|date:'Y-m-d' }}" class="btn btn-light" aria-label="Día anterior"><i class="fas fa-chevron-left"></i></a>
+                            <a href="?equipo={{ equipo.pk }}&fecha={{ fecha }}" class="btn btn-light">Hoy</a>
+                            <a href="?equipo={{ equipo.pk }}&fecha={{ siguiente|date:'Y-m-d' }}" class="btn btn-light" aria-label="Día siguiente"><i class="fas fa-chevron-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                <div>
+                    <h5 class="mb-0">{{ fecha_sel|date:"l j \d\e F \d\e Y"|capfirst }}</h5>
+                    <p class="agenda-sub mb-0">{% if equipo %}{{ equipo }} · turnos de {{ paso }} minutos{% endif %}</p>
+                </div>
+                <div class="ae-leyenda">
+                    <span class="ae-muestra ae-libre"></span>Libre
+                    <span class="ae-muestra ae-cita"></span>Cita
+                    <span class="ae-muestra ae-google"></span>Ocupado en Google
+                    <span class="ae-muestra ae-fuera"></span>Fuera de turno
+                    <span class="ae-muestra ae-comun"></span>Espacio común
+                </div>
+            </div>
+            {% if filas %}
+                <div class="table-responsive ae-scroll">
+                    <table class="ae-rejilla">
+                        <thead>
+                        <tr>
+                            <th scope="col" class="ae-persona-col">Persona</th>
+                            {% for h in horas %}<th scope="col" class="ae-hora">{{ h|time:"H:i" }}</th>{% endfor %}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for f in filas %}
+                            <tr>
+                                <th scope="row" class="ae-persona">
+                                    {{ f.miembro.usuario.get_full_name|default:f.miembro.usuario.username }}
+                                    <span class="agenda-sub d-block">{{ f.miembro.get_rol_display }}</span>
+                                </th>
+                                {% for c in f.celdas %}
+                                    <td class="ae-celda ae-{{ c.estado }}" title="{{ c.hora|time:'H:i' }} · {% if c.cita %}{{ c.cita.titulo }}{% else %}{{ c.estado }}{% endif %}">
+                                        {% if c.cita %}<a href="/agenda/citas/{{ c.cita.pk }}/" class="ae-cita-enlace">{{ c.cita.codigo }}</a>{% endif %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                        <tr class="ae-fila-comun">
+                            <th scope="row" class="ae-persona">Espacio común<span class="agenda-sub d-block">{{ num_comunes }} disponible{{ num_comunes|pluralize }}</span></th>
+                            {% for h in horas %}
+                                {% with hh=h|time:"H:i" %}
+                                    <td class="ae-celda {% if hh in comunes %}ae-comun{% endif %}">
+                                        {% if hh in comunes %}
+                                            <button type="button" class="ae-agendar" data-inicio="{{ h|date:'Y-m-d\TH:i' }}" aria-label="Agendar a las {{ hh }}"><i class="fas fa-plus"></i></button>
+                                        {% endif %}
+                                    </td>
+                                {% endwith %}
+                            {% endfor %}
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="agenda-sub mt-3 mb-0">Toca un espacio común (<i class="fas fa-plus"></i>) para agendar con todos los responsables; se crea el evento con videollamada y se envía la invitación.</p>
+            {% else %}
+                <p class="agenda-sub mb-0">{% if equipo %}El equipo no tiene miembros todavía. Agrégalos en <a href="/agenda/equipos/">Equipos</a>.{% else %}No tienes equipos visibles.{% endif %}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% include 'agenda/parciales/modal_crud.html' %}
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script src="/static/js/agenda/crud.js?v1.1"></script>
+    <script src="/static/js/agenda/agenda_equipo.js?v1.0"></script>
+{% endblock %}

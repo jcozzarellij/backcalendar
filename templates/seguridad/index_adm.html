@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block head %}
+  <link rel="stylesheet" href="/static/stylenew/panel_principal.css?v={{ version_css }}">
+{% endblock %}
+
+{% block content %}
+  <div class="pp-page">
+    <p class="pp-kpi-grupo"><i class="fa fa-users"></i> Usuarios y accesos</p>
+    <div class="pp-kpis">
+      <a class="pp-kpi pp-kpi-link" href="/autenticacion/usuario/">
+        <div class="pp-kpi-icon ic-blue"><i class="fa fa-user"></i></div>
+        <div class="pp-kpi-body">
+          <p class="pp-kpi-label">Usuarios activos</p>
+          <p class="pp-kpi-value">{{ usuarios_activos }}</p>
+          <p class="pp-kpi-hint">{{ usuarios_staff }} con acceso al panel</p>
+        </div>
+      </a>
+      <a class="pp-kpi pp-kpi-link" href="/seguridad/grupo/">
+        <div class="pp-kpi-icon ic-green"><i class="fa fa-user-shield"></i></div>
+        <div class="pp-kpi-body">
+          <p class="pp-kpi-label">Roles</p>
+          <p class="pp-kpi-value">{{ roles_total }}</p>
+          <p class="pp-kpi-hint">Grupos con módulos asignados</p>
+        </div>
+      </a>
+      <a class="pp-kpi pp-kpi-link" href="/seguridad/arbol-de-url/">
+        <div class="pp-kpi-icon ic-purple"><i class="fa fa-sitemap"></i></div>
+        <div class="pp-kpi-body">
+          <p class="pp-kpi-label">Módulos</p>
+          <p class="pp-kpi-value">{{ modulos_total }}</p>
+          <p class="pp-kpi-hint">Pantallas registradas en el menú</p>
+        </div>
+      </a>
+      <a class="pp-kpi pp-kpi-link" href="/seguridad/crons/">
+        <div class="pp-kpi-icon ic-rose"><i class="fa fa-clock"></i></div>
+        <div class="pp-kpi-body">
+          <p class="pp-kpi-label">Tareas programadas</p>
+          <p class="pp-kpi-value">{{ crons_activos }}</p>
+          <p class="pp-kpi-hint">Crons encendidos</p>
+        </div>
+      </a>
+    </div>
+  </div>
+{% endblock %}

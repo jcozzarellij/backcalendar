@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load templatefunctions %}
+{% block atras %}{{ request.path }}{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body py-2">
+                    <form method="post" enctype="multipart/form-data" action="{{ ruta }}" class="form">
+                        {% csrf_token %}
+                        <input type="hidden" name="pk" value="{{ pk|default:0 }}"/>
+                        <input type="hidden" name="action" value="{{ action }}"/>
+                        {{ dict_url_vars_input }}
+
+                        <div class="row g-1">
+                            {% for field in form %}
+                                {% if field.name in form.arr_hidden_input %}
+                                    {{ field }}
+                                {% elif field.name == 'permissions' %}
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label small mb-1" for="id_{{ field.name }}">
+                                                {{ field.label }}
+                                                <label style="cursor: pointer;" class="ms-2">
+                                                    <input type="checkbox" class="form-check-input select-all" id="selectAll">
+                                                    <span class="ms-1">Todos</span>
+                                                </label>
+                                            </label>
+                                            <div id="id_{{ field.name }}" class="border rounded p-3">
+                                                {% for a in permisos %}
+                                                    <div class="mb-3">
+                                                        <h6 class="border-bottom pb-2 mb-2">{{ a.app }}</h6>
+                                                        <div class="row g-3">
+                                                            {% for p in a.modelos %}
+                                                                <div class="col-md-4 col-sm-6">
+                                                                    <div class="fw-bold mb-1">{{ p.nombre }}</div>
+                                                                    <ul class="list-unstyled ps-2">
+                                                                        {% for q in p.permisos %}
+                                                                            <li class="mb-2">
+                                                                                <div class="form-check">
+                                                                                    <input type="checkbox"
+                                                                                           class="form-check-input permission-checkbox"
+                                                                                           name="permissions"
+                                                                                           value="{{ q.id }}"
+                                                                                           id="id_permissions_{{ q.id }}"
+                                                                                           {% if q.id in ch_perms %}checked{% endif %}
+                                                                                           {% if ver %}disabled{% endif %}>
+                                                                                    <label class="form-check-label"
+                                                                                           {% if q.codename == "can_guardar_ubicacion_tracking" %}id="{{ q.codename }}"{% endif %}
+                                                                                           for="id_permissions_{{ q.id }}">
+                                                                                        {% if q.codename == "can_guardar_ubicacion_tracking" %}
+                                                                                            <span class="bg-warning px-1">{% traducir_permiso q.name %}</span>
+                                                                                        {% else %}
+                                                                                            {% traducir_permiso q.name %}
+                                                                                        {% endif %}
+                                                                                    </label>
+                                                                                </div>
+                                                                            </li>
+                                                                        {% endfor %}
+                                                                    </ul>
+                                                                </div>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="invalid-feedback" id="errorMessage{{ field.name }}"></div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="col-lg-12">
+                                        <div class="mb-2">
+                                            <label class="form-label small mb-1" for="id_{{ field.name }}">{{ field.label }}</label><br>
+                                            {{ field }}
+                                            <div class="invalid-feedback" id="errorMessage{{ field.name }}"></div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <a class="btn btn-danger btn-sm me-1" href="{{ ruta }}?{{ dict_url_vars_completo }}">
+                                    <i class="fa fa-window-close me-1"></i> Cancelar
+                                </a>
+                                <button {% if action != 'ver' %}type="submit" id="submit"{% else %}disabled{% endif %} class="btn btn-success btn-sm">
+                                    <i class="fa fa-save me-1"></i> Guardar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div><!--end card-body-->
+            </div><!--end card-->
+        </div> <!--end col-->
+    </div><!--end row-->
+{% endblock %}
+
+{% block jscript %}
+    {{ form.media }}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script type="text/javascript">
+        $(function() {
+            // Inicializar estado del "seleccionar todos" al cargar
+            updateSelectAllCheckbox();
+
+            // Handler para seleccionar/deseleccionar todos
+            $("#selectAll").on("click", function() {
+                const isChecked = $(this).prop("checked");
+                $(".permission-checkbox").prop("checked", isChecked);
+            });
+
+            // Actualizar el estado del "seleccionar todos" cuando se cambia un permiso individual
+            $(".permission-checkbox").on("change", function() {
+                updateSelectAllCheckbox();
+            });
+
+            // Función para actualizar el estado del checkbox "seleccionar todos"
+            function updateSelectAllCheckbox() {
+                const totalCheckboxes = $(".permission-checkbox").length;
+                const checkedCheckboxes = $(".permission-checkbox:checked").length;
+                $("#selectAll").prop("checked", totalCheckboxes === checkedCheckboxes);
+                $("#selectAll").prop("indeterminate", checkedCheckboxes > 0 && checkedCheckboxes < totalCheckboxes);
+            }
+        });
+    </script>
+{% endblock %}

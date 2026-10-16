@@ -1,0 +1,53 @@
+/credenciales.json
+/.idea
+/.idea/**
+/private_key_enc.pem
+/public_key_enc.pem
+/api_google_key.json
+/media/
+/media/**
+!/media/foto_defaultd.png
+!/media/loadmail.gif
+!/media/no-image.webp
+/.vscode
+/.vscode/**
+/vapid.json
+/constantes_vapid.json
+/__pychache__/
+/__pychache__/**
+**/__pycache__/**
+#eliminar archivos de github pero conservar en local
+#git rm --cached archivo.ext
+#git rm --cached -r carpeta
+venv
+backups/
+/staticfiles/
+
+
+# Backups de credenciales (contienen secretos — nunca versionar)
+credenciales.json.bak*
+
+# Entorno virtual y config local de Claude Code
+.venv/
+.claude/settings.local.json
+
+# Migraciones de todas las apps: nunca se versionan (se regeneran en cada entorno)
+**/migrations/*.py
+!**/migrations/__init__.py
+
+# Salidas de Playwright (MCP/plugin): capturas, snapshots, trazas, videos, reportes
+.playwright-mcp/
+.playwright/
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+
+CLAUDE.local.md
+.claude/agents/commit.md
+
+.env
+.env.*
+!.env_template
+*.pem
+*.key

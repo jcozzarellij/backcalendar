@@ -1,0 +1,83 @@
+.af-caja {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 1080;
+    width: min(380px, calc(100vw - 2rem));
+    padding: 1rem 1.1rem;
+    border-radius: var(--bs-border-radius-lg);
+    background: #ffffff;
+    border: 1px solid var(--bs-border-color);
+    box-shadow: var(--bs-box-shadow);
+    animation: af-entrar .3s cubic-bezier(.2, .9, .25, 1) both;
+}
+
+.af-caja[hidden] {
+    display: none;
+}
+
+.af-eyebrow {
+    margin: 0 0 .25rem;
+    font-size: .75rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--bs-secondary);
+}
+
+.af-titulo {
+    margin: 0;
+    font-weight: 600;
+    color: var(--turno-tinta);
+}
+
+.af-faltan {
+    margin: 0 0 .75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--turno-azul);
+    font-variant-numeric: tabular-nums;
+}
+
+.af-faltan.af-ahora {
+    color: var(--bs-danger);
+}
+
+.af-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+.af-cerrar {
+    position: absolute;
+    top: .5rem;
+    right: .5rem;
+    border: 0;
+    background: transparent;
+    color: var(--bs-secondary);
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+}
+
+.af-cerrar:hover {
+    background: var(--bs-body-bg);
+}
+
+@keyframes af-entrar {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .af-caja {
+        animation: none;
+    }
+}

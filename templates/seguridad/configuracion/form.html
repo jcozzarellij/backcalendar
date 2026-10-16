@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load templatefunctions %}
+
+{% block head %}
+    <style>
+        .row [class*='col-'] {
+            background-clip: content-box;
+        }
+    </style>
+{% endblock %}
+
+{% block atras %}{{ request.path }}{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body py-2">
+                    <form method="post" enctype="multipart/form-data" action="{{ ruta }}" class="form">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="change"/>
+
+                        {% for field in form %}{% if field.is_hidden %}{{ field }}{% endif %}{% endfor %}
+
+                        <ul class="nav nav-tabs mb-3" role="tablist">
+                            {% for tab in tabs_config %}
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link {% if forloop.first %}active{% endif %}" id="tabcfg-{{ tab.clave }}-btn"
+                                            data-bs-toggle="tab" data-bs-target="#tabcfg-{{ tab.clave }}" type="button" role="tab">
+                                        <i class="fa {{ tab.icono }} me-1"></i>{{ tab.titulo }}
+                                    </button>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <div class="tab-content">
+                            {% for tab in tabs_config %}
+                                <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="tabcfg-{{ tab.clave }}" role="tabpanel">
+                                    <div class="row g-1">
+                                        {% for field in form %}
+                                            {% if not field.is_hidden and field.name in tab.campos %}
+                                                <div class="col-lg-{{ field.field.widget.attrs.col }}">
+                                                    <div class="mb-2">
+                                                        <label class="form-label small mb-1" for="id_{{ field.name }}">{{ field.label }}</label><br>
+                                                        {{ field }}
+                                                        <div class="invalid-feedback" id="errorMessage{{ field.name }}"></div>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <a class="btn btn-danger btn-sm me-1" href="{{ ruta }}">
+                                    <i class="fa fa-window-close me-1"></i> Cancelar
+                                </a>
+                                <button {% if action != 'ver' %}type="submit" id="submit"{% else %}disabled{% endif %} class="btn btn-success btn-sm">
+                                    <i class="fa fa-save me-1"></i> Guardar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script>
+        (function () {
+            var form = document.querySelector('form.form');
+            if (!form) return;
+            form.setAttribute('novalidate', 'novalidate');
+            $(form).on('submit', function (e) {
+                var malo = null;
+                form.querySelectorAll('input, select, textarea').forEach(function (el) {
+                    if (el.willValidate && !el.checkValidity() && !malo) malo = el;
+                });
+                if (!malo) return;
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                malo.classList.add('is-invalid');
+                var panel = malo.closest('.tab-pane');
+                if (panel && !panel.classList.contains('active')) {
+                    var botonPestania = document.querySelector('[data-bs-target="#' + panel.id + '"]');
+                    if (botonPestania) botonPestania.click();
+                }
+                if (malo.offsetParent !== null) {
+                    malo.focus();
+                    malo.reportValidity();
+                } else {
+                    Swal.fire('Falta completar ' + (malo.name || 'un campo obligatorio'), '', 'error');
+                }
+            });
+        })();
+    </script>
+    <link href="/static/assets/plugins/summernote/dist/summernote.css" rel="stylesheet"/>
+    <script src="/static/assets/plugins/summernote/dist/summernote.min.js"></script>
+    <script>
+        var handleSummernote = function () {
+            $('#id_sobrenosotros').summernote({
+                placeholder: 'Ingrese Términos y Condiciones',
+                height: '200px'
+            });
+        };
+
+        var FormSummernote = function () {
+            "use strict";
+            return {
+                init: function () {
+                    handleSummernote();
+                }
+            };
+        }();
+
+        $(document).ready(function () {
+            FormSummernote.init();
+        });
+
+        $(function () {
+            $('form.form input[type=file]').dropify({
+                messages: {
+                    default: 'Arrastre y suelte una imagen o haga clic aquí.',
+                    replace: 'Arrastre y suelte una imagen o haga clic aquí para reemplazarla.',
+                    remove: 'Eliminar',
+                    error: 'No se pudo cargar la imagen.'
+                },
+                error: {
+                    fileSize: 'La imagen supera el máximo de 8 MB. Reduzca su peso e intente de nuevo.',
+                    fileExtension: 'Formato no permitido. Use jpg, jpeg, png, tiff, webp o jfif.'
+                },
+                errorsPosition: 'outside',
+                errorTimeout: 8000,
+                imgFileExtensions: ["jpg", "jpeg", "png", "tiff", "webp", "jfif"]
+            });
+        });
+    </script>
+    {{ form.media }}
+{% endblock %}

@@ -1,0 +1,82 @@
+{% if total_pendientes %}
+<div class="row g-2">
+    <input type="hidden" name="action" value="extraer_urls">
+    <div class="col-12">
+        <div class="asignacion-info mb-3">
+            <div class="small text-muted">Vista previa de extracción</div>
+            <div class="fw-semibold">{{ total_pendientes }} URL(s) del sistema todavía no registradas</div>
+            <div class="small text-muted">Desmarcá las que no quieras registrar y confirmá. Después asignales Grupo y Rol desde el listado.</div>
+        </div>
+    </div>
+    <div class="col-12">
+        {% for g in grupos_urls %}
+        <div class="mb-3">
+            <label class="asignacion-item fw-semibold" for="extr_grupo_{{ forloop.counter }}">
+                <input class="form-check-input extr-toggle-grupo" type="checkbox" id="extr_grupo_{{ forloop.counter }}"
+                       data-grupo="{{ forloop.counter }}" checked>
+                <span class="asignacion-item-text">
+                    {{ g.nombre }}
+                    <span class="badge bg-light text-dark border">{{ g.urls|length }}</span>
+                    <span class="small text-muted">{{ g.base }}</span>
+                </span>
+            </label>
+            <div class="asignacion-list ms-4">
+                {% for m in g.urls %}
+                <label class="asignacion-item" for="extr_url_{{ forloop.parentloop.counter }}_{{ forloop.counter }}">
+                    <input class="form-check-input extr-url extr-url-grupo-{{ forloop.parentloop.counter }}" type="checkbox"
+                           name="c_urls" value="{{ m.url }}"
+                           id="extr_url_{{ forloop.parentloop.counter }}_{{ forloop.counter }}" checked>
+                    <span class="asignacion-item-text">
+                        {{ m.nombre }}
+                        <span class="small text-muted d-block">{{ m.url }}</span>
+                    </span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="border-top my-3"></div>
+
+<div class="d-flex justify-content-between align-items-center">
+    <span class="small text-muted"><span id="extr-contador">{{ total_pendientes }}</span> seleccionada(s)</span>
+    <div>
+        <button type="button" class="btn btn-danger btn-sm me-1" data-bs-dismiss="modal">
+            <i class="fa fa-window-close me-1"></i>Cancelar
+        </button>
+        <button type="submit" class="btn btn-success btn-sm">
+            <i class="fa fa-download me-1"></i>Registrar seleccionadas
+        </button>
+    </div>
+</div>
+
+<script>
+(function () {
+    function actualizarContador() {
+        document.getElementById('extr-contador').textContent =
+            document.querySelectorAll('.extr-url:checked').length;
+    }
+    document.querySelectorAll('.extr-toggle-grupo').forEach(function (toggle) {
+        toggle.addEventListener('change', function () {
+            document.querySelectorAll('.extr-url-grupo-' + toggle.dataset.grupo).forEach(function (chk) {
+                chk.checked = toggle.checked;
+            });
+            actualizarContador();
+        });
+    });
+    document.querySelectorAll('.extr-url').forEach(function (chk) {
+        chk.addEventListener('change', actualizarContador);
+    });
+})();
+</script>
+{% else %}
+<div class="alert alert-success mb-3">
+    <i class="fa fa-check-circle me-1"></i>
+    Todas las URLs del sistema ya están registradas — no hay nada nuevo para extraer.
+</div>
+<div class="d-flex justify-content-end">
+    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+</div>
+{% endif %}

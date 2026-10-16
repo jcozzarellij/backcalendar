@@ -1,0 +1,123 @@
+.md-hora {
+    font-family: var(--turno-font-titulos);
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--turno-azul);
+    font-variant-numeric: tabular-nums;
+}
+
+.md-kpi {
+    margin: 0;
+    font-family: var(--turno-font-titulos);
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.1;
+    color: var(--turno-tinta);
+    font-variant-numeric: tabular-nums;
+}
+
+.md-agenda {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.md-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: .7rem .25rem;
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.md-item:first-child {
+    border-top: 0;
+}
+
+.md-item-hora {
+    flex: 0 0 7.5rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--bs-secondary);
+}
+
+.md-item-cuerpo {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.md-item-cuerpo a {
+    font-weight: 600;
+    color: var(--turno-tinta);
+    text-decoration: none;
+}
+
+.md-item-libre .md-item-hora {
+    color: var(--bs-success-text-emphasis);
+}
+
+.md-pendiente,
+.md-alerta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .6rem 0;
+    border-top: 1px solid var(--bs-border-color);
+}
+
+.md-pendiente:first-of-type,
+.md-alerta:first-of-type {
+    border-top: 0;
+}
+
+.md-alerta {
+    display: block;
+}
+
+.md-guia {
+    border: 1px solid var(--bs-primary-border-subtle);
+}
+
+.md-pasos {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.md-paso {
+    display: flex;
+    gap: .75rem;
+    align-items: flex-start;
+    height: 100%;
+    padding: .9rem 1rem;
+    border-radius: var(--bs-border-radius);
+    background: var(--bs-body-bg);
+    color: var(--turno-tinta);
+    text-decoration: none;
+    transition: background-color .12s ease;
+}
+
+.md-paso:hover {
+    background: var(--bs-primary-bg-subtle);
+    color: var(--turno-tinta);
+}
+
+.md-paso-num {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    background: var(--turno-azul);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: .85rem;
+}
+
+.md-paso-ok .md-paso-num {
+    background: var(--bs-success);
+}

@@ -1,0 +1,26 @@
+{% extends 'email/emailbase.html' %}
+
+{% block titulo %}Su cita quedó agendada{% endblock %}
+{% block content %}
+    <div style="color:#424245; line-height:1.5; font-family:Arial,'Helvetica Neue',Helvetica,sans-serif; padding:10px 10px 0">
+        <p style="margin:0 0 14px; font-size:16px; color:#1d1d1f">Hola, {{ cliente.nombres }}.</p>
+        <p style="margin:0 0 18px; font-size:15px">Su cita sobre <strong>{{ producto.nombre|default:cita.titulo }}</strong> quedó confirmada. Estos son los datos:</p>
+        <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%; border:1px solid #d2d2d7; border-radius:12px; border-collapse:separate; margin:0 0 18px">
+            <tr><td style="padding:10px 14px; font-size:14px; color:#6e6e73; width:40%">Fecha</td><td style="padding:10px 14px; font-size:15px; color:#1d1d1f"><strong>{{ fecha_larga }}</strong></td></tr>
+            <tr><td style="padding:10px 14px; font-size:14px; color:#6e6e73">Hora</td><td style="padding:10px 14px; font-size:15px; color:#1d1d1f"><strong>{{ hora }} a {{ hora_fin }}</strong> (hora de Ecuador)</td></tr>
+            <tr><td style="padding:10px 14px; font-size:14px; color:#6e6e73">Código de la cita</td><td style="padding:10px 14px; font-size:15px; color:#1d1d1f"><strong>{{ cita.codigo }}</strong></td></tr>
+            {% if cita.equipo %}<tr><td style="padding:10px 14px; font-size:14px; color:#6e6e73">Le atiende</td><td style="padding:10px 14px; font-size:15px; color:#1d1d1f">Equipo de {{ cita.equipo.nombre }}</td></tr>{% endif %}
+        </table>
+        {% if cita.enlace_meet %}
+            <p style="margin:0 0 10px; font-size:15px">El día de la cita entre por este enlace:</p>
+            <p style="margin:0 0 18px"><a href="{{ cita.enlace_meet }}" style="display:inline-block; background:#67BD01; color:#1d1d1f; font-weight:600; font-size:15px; padding:12px 22px; border-radius:999px; text-decoration:none">Entrar a la videollamada</a></p>
+        {% else %}
+            <p style="margin:0 0 18px; font-size:15px">El enlace de la videollamada le llegará en un correo aparte, junto con la invitación a su calendario.</p>
+        {% endif %}
+        <p style="margin:0 0 10px; font-size:15px">Si necesita cambiar la fecha o cancelar, use este enlace:</p>
+        <p style="margin:0 0 18px"><a href="{{ url_cita }}" style="display:inline-block; background:#005082; color:#ffffff; font-weight:600; font-size:15px; padding:12px 22px; border-radius:999px; text-decoration:none">Ver o cambiar mi cita</a></p>
+        <p style="margin:0 0 6px; font-size:14px; color:#6e6e73">Todas sus citas, en un solo lugar y sin contraseña:</p>
+        <p style="margin:0 0 18px; font-size:14px"><a href="{{ url_cliente }}" style="color:#005082">{{ url_cliente }}</a></p>
+        <p style="margin:0; font-size:13px; color:#6e6e73">Estos enlaces son personales. No los comparta.</p>
+    </div>
+{% endblock %}

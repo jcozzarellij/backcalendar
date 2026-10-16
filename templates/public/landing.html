@@ -1,0 +1,148 @@
+{% extends 'public/base.html' %}
+
+{% block head %}
+    <meta name="description" content="Agende su cita por videollamada con el equipo de Exducere Online: elija el producto y nosotros le atendemos a la hora acordada.">
+    <link rel="stylesheet" href="/static/css/public/landing.css?v3.3">
+{% endblock %}
+
+{% block content %}
+<section class="ld-hero{% if confi.fondo_landing %} ld-hero-foto{% endif %}" aria-labelledby="ld-titulo"{% if confi.fondo_landing %} style="background-image:url('{{ confi.fondo_landing.url }}')"{% endif %}>
+    <div class="container ld-hero-cuerpo">
+        <div class="row align-items-center g-4 g-lg-5">
+            <div class="col-lg-7 ld-hero-texto">
+                <p class="ld-hero-eyebrow">Turno de Exducere Online</p>
+                <h1 id="ld-titulo" class="ld-titulo">Su cita, a la hora acordada.</h1>
+                <p class="ld-bajada">Elija el producto que le interesa y le atendemos por videollamada. Usted recibe el día, la hora y el enlace para entrar.</p>
+                <a href="#ld-productos" class="btn btn-success ld-boton"><i class="fas fa-arrow-down" aria-hidden="true"></i>Elegir producto</a>
+                <p class="ld-hero-pie">Sin registro ni contraseña. Solo su nombre y su correo.</p>
+            </div>
+            <div class="col-lg-5 ld-hero-lado">
+                <article class="ld-turno" aria-label="Ejemplo de cómo llega su cita">
+                    <p class="ld-turno-tag-fila"><span class="ld-turno-tag">Ejemplo</span></p>
+                    <div class="row g-3 align-items-center">
+                        <div class="col-auto">
+                            <div class="ld-hoja">
+                                <span class="ld-hoja-mes">{{ fecha_ejemplo|date:"M" }}</span>
+                                <span class="ld-hoja-dia">{{ fecha_ejemplo|date:"j" }}</span>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <p class="ld-turno-fecha">{{ fecha_ejemplo|date:"l j \d\e F"|capfirst }}</p>
+                            <p class="ld-turno-hora">2:20 de la tarde</p>
+                        </div>
+                    </div>
+                    <p class="ld-turno-con"><i class="fas fa-video" aria-hidden="true"></i>Videollamada con el equipo de {{ producto_ejemplo }}</p>
+                    <div class="row g-3 align-items-center ld-turno-pie">
+                        <div class="col-auto">
+                            <img src="/static/images/turno/qr_ejemplo.svg" alt="Código QR de ejemplo" class="ld-turno-qr" width="88" height="88">
+                        </div>
+                        <div class="col">
+                            <p class="ld-turno-etiqueta">Código de su cita</p>
+                            <p class="ld-turno-codigo">QW-7K2M-91</p>
+                        </div>
+                    </div>
+                </article>
+                <p class="ld-turno-nota">Así llega su cita, por correo y a su calendario.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="ld-seccion" aria-labelledby="ld-pasos-titulo">
+    <h2 id="ld-pasos-titulo" class="ld-h2">Tres pasos y queda agendado</h2>
+    <p class="ld-intro">No hace falta llamar ni esperar una respuesta: usted elige y el sistema confirma al instante.</p>
+    <ol class="ld-pasos row g-3">
+        <li class="col-md-4">
+            <div class="ld-paso">
+                <h3>Elija el producto</h3>
+                <p>Sobre qué quiere conversar: cada producto tiene su propio equipo.</p>
+            </div>
+        </li>
+        <li class="col-md-4">
+            <div class="ld-paso">
+                <h3>Elija el día y la hora</h3>
+                <p>Le mostramos solo los horarios libres del equipo, con un día de anticipación.</p>
+            </div>
+        </li>
+        <li class="col-md-4">
+            <div class="ld-paso">
+                <h3>Reciba su videollamada</h3>
+                <p>La cita llega a su correo y a su calendario con el enlace para entrar.</p>
+            </div>
+        </li>
+    </ol>
+</section>
+
+<section class="ld-seccion" id="ld-productos" aria-labelledby="ld-productos-titulo">
+    <h2 id="ld-productos-titulo" class="ld-h2">¿Sobre qué producto quiere su cita?</h2>
+    <p class="ld-intro">Elija el producto y agende su cita; si quiere conocerlo antes, cada uno tiene su sitio.</p>
+    {% if productos %}
+        <ul class="ld-lista">
+            {% for p in productos %}
+                <li class="ld-fila">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-lg">
+                            <h3 class="ld-fila-nombre">{{ p.nombre }}</h3>
+                            {% if p.descripcion %}<p class="ld-fila-desc">{{ p.descripcion }}</p>{% endif %}
+                            {% if p.subproductos_activos %}
+                                <p class="ld-fila-sub">
+                                    {% for s in p.subproductos_activos %}<span>{{ s.nombre }}</span>{% endfor %}
+                                </p>
+                            {% endif %}
+                        </div>
+                        <div class="col-lg-auto">
+                            <div class="ld-fila-acciones">
+                                <a href="/agendar/{{ p.slug }}/" class="btn btn-success ld-boton ld-boton-fila">
+                                    <i class="fas fa-calendar-check" aria-hidden="true"></i>Agendar cita
+                                </a>
+                                {% if p.sitio_web %}
+                                    <a href="{{ p.sitio_web }}" class="btn btn-primary ld-boton ld-boton-fila" target="_blank" rel="noopener">
+                                        Ver sitio<i class="fas fa-arrow-up-right-from-square ms-2" aria-hidden="true"></i><span class="visually-hidden"> de {{ p.nombre }} (se abre en otra pestaña)</span>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="ld-vacio">Todavía no hay productos publicados. Vuelva pronto.</p>
+    {% endif %}
+    {% if portal.telefono_atencion %}
+        <p class="ld-contacto">
+            <i class="fas fa-phone" aria-hidden="true"></i>¿Prefiere hablar con una persona? Llámenos al
+            <a href="tel:{{ portal.telefono_atencion|cut:' ' }}">{{ portal.telefono_atencion }}</a>.
+        </p>
+    {% endif %}
+</section>
+
+<section class="ld-seccion" aria-labelledby="ld-integra-titulo">
+    <h2 id="ld-integra-titulo" class="ld-h2">Funciona con las herramientas que ya usa</h2>
+    <p class="ld-intro">La cita se crea en el calendario del equipo y la videollamada queda lista en el mismo evento.</p>
+    <ul class="ld-integraciones">
+        <li><i class="fab fa-google" aria-hidden="true"></i>Google Calendar</li>
+        <li><i class="fas fa-video" aria-hidden="true"></i>Google Meet</li>
+        <li><i class="fas fa-envelope" aria-hidden="true"></i>Correo de confirmación y recordatorios</li>
+    </ul>
+</section>
+
+<section class="ld-banda" aria-labelledby="ld-empresa-titulo">
+    <div class="row g-4 align-items-center">
+        <div class="col-lg-7">
+            <img src="/static/images/turno/logo_turno_blanco.png" alt="Turno de Exducere Online" class="ld-banda-logo" width="200" height="59">
+            <h2 id="ld-empresa-titulo" class="ld-h2 ld-banda-titulo">Turno, también para su empresa</h2>
+            <ul class="ld-banda-lista">
+                <li>Sus clientes eligen día y hora en un portal con su marca.</li>
+                <li>Cada cita se crea en Google Calendar con su videollamada.</li>
+                <li>Su equipo ve el día, los turnos y las citas en un solo lugar.</li>
+            </ul>
+        </div>
+        <div class="col-lg-5 text-lg-end">
+            <a href="https://exducereonline.com" class="btn btn-success ld-boton" target="_blank" rel="noopener">
+                Conocer Exducere Online<i class="fas fa-arrow-up-right-from-square ms-2" aria-hidden="true"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

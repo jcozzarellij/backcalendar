@@ -1,0 +1,98 @@
+{% extends 'agenda/base_agenda.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
+{% endblock %}
+{% block content %}
+    {% include 'agenda/parciales/filtro_busqueda.html' with placeholder_busqueda='Equipo o proyecto' %}
+
+    {% if puede_crear %}
+    <div class="row align-items-center mb-3">
+        <div class="col-md-12">
+            <button type="button" onclick="formModal(0, 'Nuevo equipo', 'add')" class="btn btn-success btn-sm">
+                <i class="fas fa-plus-circle me-2"></i>Nuevo equipo
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="tabla" class="table table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>Equipo</th>
+                        <th>Líder</th>
+                        <th>Miembros</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Acción</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for l in listado %}
+                        <tr>
+                            <td>
+                                {{ l.nombre }}
+                                <div class="agenda-sub">{{ l.proyecto.nombre }}</div>
+                            </td>
+                            <td>{{ l.lider|default:'Sin líder' }}</td>
+                            <td>
+                                {% if l.miembros_activos %}
+                                    <ul class="agenda-miembros">
+                                        {% for m in l.miembros_activos %}
+                                            <li class="agenda-miembro">
+                                                <span>{{ m.usuario }}</span>
+                                                <span class="badge {% if m.rol == 'responsable' %}bg-primary{% else %}bg-secondary{% endif %}">{{ m.get_rol_display }}</span>
+                                                <button type="button" class="btn btn-light btn-sm" title="Cambiar a {% if m.rol == 'responsable' %}en copia{% else %}responsable{% endif %}"
+                                                        aria-label="Cambiar rol de {{ m.usuario }}" onclick="accionAgenda({{ m.pk }}, 'rolmiembro')">
+                                                    <i class="fas fa-exchange-alt"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-light btn-sm" title="Quitar del equipo"
+                                                        aria-label="Quitar a {{ m.usuario }} del equipo" onclick="eliminarajax({{ m.pk }}, '{{ m.usuario|escapejs }}', 'delmiembro', 'Vas a quitar a {{ m.usuario|escapejs }} del equipo')">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    <span class="agenda-sub">Sin miembros todavía</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if l.activo %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-secondary">En pausa</span>{% endif %}
+                            </td>
+                            <td class="text-center">
+                                <div class="dropdown">
+                                    <button class="btn btn-icon agenda-btn-fila" type="button" data-bs-toggle="dropdown"
+                                            aria-expanded="false" aria-label="Acciones de {{ l.nombre }}">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="formModal({{ l.pk }}, 'Agregar miembro a {{ l.nombre|escapejs }}', 'addmiembro')"><i class="fas fa-user-plus me-2 text-success"></i>Agregar miembro</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="formModal({{ l.pk }}, 'Editar equipo', 'change')"><i class="fas fa-edit me-2 text-primary"></i>Editar</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="eliminarajax({{ l.pk }}, '{{ l.nombre|escapejs }}', 'delete')"><i class="fas fa-trash me-2 text-danger"></i>Eliminar</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center agenda-vacio">
+                                Todavía no hay equipos. Crea uno con «Nuevo equipo» y luego agrega sus miembros.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% include "paginacion.html" %}
+            </div>
+        </div>
+    </div>
+
+    {% include 'agenda/parciales/modal_crud.html' %}
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script src="/static/js/agenda/crud.js?v1.1"></script>
+{% endblock %}

@@ -1,0 +1,54 @@
+.pa-grupo {
+    margin: 0 0 .5rem;
+    font-weight: 600;
+}
+
+.pa-fila {
+    padding: .8rem 0;
+    border-top: 1px solid var(--mi-borde, #e4e1da);
+}
+
+.pa-fila:first-of-type {
+    border-top: 0;
+}
+
+.pa-fila .form-label {
+    font-weight: 500;
+}
+
+.pa-control {
+    justify-content: flex-end;
+}
+
+.pa-control .form-control {
+    flex: 0 1 7rem;
+    text-align: right;
+    font-family: var(--mi-mono, monospace);
+}
+
+.pa-control .select2 {
+    flex: 1 1 auto;
+}
+
+.pa-codigo {
+    font-size: .8rem;
+    color: var(--mi-tinta, #1a2b3c);
+    background: var(--mi-fondo, #f6f4ef);
+    padding: 2px 8px;
+    border-radius: 6px;
+    word-break: break-all;
+}
+
+.pa-historial {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: .6rem 0;
+    border-top: 1px solid var(--mi-borde, #e4e1da);
+    font-size: .9rem;
+}
+
+.pa-historial:first-of-type {
+    border-top: 0;
+    padding-top: 0;
+}

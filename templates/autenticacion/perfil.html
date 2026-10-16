@@ -1,0 +1,779 @@
+{% extends 'base.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/stylenew/perfilpanel.css?v={{ version_css }}">
+{% endblock %}
+{% block content %}
+
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h4 class="card-title">Información Personal</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="align-self-center mb-6 mb-lg-0">
+                        <div class="d-flex align-items-center flex-row flex-wrap">
+                            <div class="position-relative me-3">
+                                <a href="{{ request.user.get_foto_gris }}" data-fancybox="profile-image"
+                                   data-caption="Foto de perfil">
+                                    <img src="{{ request.user.get_foto_gris }}" alt="" height="120"
+                                         class="rounded-circle">
+                                </a>
+                                <a href="#"
+                                   class="thumb-md justify-content-center d-flex align-items-center bg-primary text-white rounded-circle position-absolute end-0 bottom-0 border border-3 border-card-bg"
+                                   data-bs-toggle="modal" data-bs-target="#modalUpdatePhoto">
+                                    <i class="fas fa-camera"></i>
+                                </a>
+                            </div>
+                            <div class="">
+                                <h5 class="fw-semibold fs-22 mb-1">{{ request.user.get_full_name }}</h5>
+                                <p class="mb-0 text-primary fw-medium">@{{ request.user.username }}</p>
+                                <p class="mb-0 text-muted fw-medium">{{ request.user.groups_str }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <ul class="list-unstyled mt-3">
+                        <li class=""><i class="las la-birthday-cake me-2 text-secondary fs-22 align-middle"></i> <b>
+                            Fecha Nacimiento </b> : {{ request.user.fecha_nacimiento }}
+                        </li>
+                        <li class="mt-2"><i class="las la-phone me-2 text-secondary fs-22 align-middle"></i> <b>
+                            Teléfonos </b> : {{ request.user.telefono_formateado }}
+                        </li>
+                        <li class="mt-2"><i class="las la-envelope text-secondary fs-22 align-middle me-2"></i> <b>
+                            Email </b> : {{ request.user.email }}
+                        </li>
+                        <li class="mt-2"><i class="las la-map-marked text-secondary fs-22 align-middle me-2"></i> <b>
+                            Ciudad </b> : {{ request.user.ciudad|default_if_none:'SIN REGISTRAR' }}
+                        </li>
+                        <li class="mt-2"><i class="las la-map-marked text-secondary fs-22 align-middle me-2"></i> <b>
+                            Provincia </b> : {{ request.user.ciudad.provincia|default:'SIN REGISTRAR' }}
+                        </li>
+                        <li class="mt-2"><i class="las la-map-marked text-secondary fs-22 align-middle me-2"></i> <b>
+                            País </b> : {{ request.user.ciudad.provincia.pais|default:'SIN REGISTRAR' }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <ul class="nav nav-tabs mb-3" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link fw-medium active" data-bs-toggle="tab" href="#editprofile" role="tab"
+                       aria-selected="true"><i class="iconoir-edit-pencil"></i> Editar Perfil</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-medium" data-bs-toggle="tab" href="#audilog" role="tab"
+                       aria-selected="false"><i class="iconoir-eye"></i> Auditoria (Ultimas 10 Actividades)</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-medium" data-bs-toggle="tab" href="#changepass" role="tab"
+                       aria-selected="false"><i class="iconoir-lock"></i> Cambiar Contraseña</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-medium" data-bs-toggle="tab" href="#lastconection" role="tab"
+                       aria-selected="false"><i class="iconoir-info-circle"></i> Ultima Conexión</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-medium" data-bs-toggle="tab" href="#pushnotifs" role="tab"
+                       aria-selected="false"><i class="iconoir-bell"></i> Notificaciones push</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-medium" data-bs-toggle="tab" href="#sesionesactivas" role="tab"
+                       aria-selected="false"><i class="iconoir-laptop"></i> Sesiones activas</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane p-3" id="audilog" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">Auditorias</h4>
+                        </div>
+                        <div class="card-body pt-0">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                    <tr>
+                                        <th class="column-title" style="text-align: center">Fecha</th>
+                                        <th class="column-title" style="text-align: center">Hora</th>
+                                        <th class="column-title" style="text-align: center">Registro</th>
+                                        <th class="column-title" style="text-align: center">Acción</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for p in auditoria %}
+                                        <tr>
+                                            <td style="text-align: center">{{ p.action_time|date:"SHORT_DATE_FORMAT" }}</td>
+                                            <td style="text-align: center">{{ p.action_time|date:"H:i" }}</td>
+                                            <td style="text-align: center">{{ p.change_message }}</td>
+                                            <td style="text-align: center">
+                                                {% if p.action_flag == 2 %}
+                                                    <i class="iconoir-edit-pencil"></i> Edit
+                                                {% elif p.action_flag == 1 %}
+                                                    <i class="iconoir-plus-circle"></i> Add
+                                                {% elif p.action_flag == 3 %}
+                                                    <i class="iconoir-trash"></i> Delete
+                                                {% else %}
+                                                    <div class="badge badge-default"
+                                                         style="font-size: 15px;">{{ p.accion }}</div>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="10">Sin Actividad</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane p-3 active" id="editprofile" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">Nombre de usuario</h4>
+                        </div>
+                        <div class="card-body pt-0">
+                            <form name="frmUsername" id="frmUsername" method="POST" action="{{ request.path }}"
+                                  enctype="multipart/form-data"> {% csrf_token %}
+                                <input type="hidden" name="action" value="changeusername">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Nombre de usuario</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">@</span>
+                                        <input class="form-control" type="text" name="username" maxlength="150"
+                                               minlength="4" required value="{{ request.user.username }}"
+                                               autocomplete="off">
+                                    </div>
+                                    <small class="form-text text-muted">Único en la plataforma. Letras, números, punto,
+                                        guion y guion bajo, sin espacios.</small>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-12">
+                                        <button class="btn btn-primary" type="submit">Guardar usuario</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h4 class="card-title">Información Personal</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body pt-0">
+                            <form name="frmPersonInformation" id="frmPersonInformation" method="POST"
+                                  action="{{ request.path }}"
+                                  enctype="multipart/form-data"> {% csrf_token %}
+                                <input type="hidden" name="action" value="changeperfil">
+                                <div class="row">
+                                    {% for field in formPersona %}
+                                        {% with col=field.field.widget.attrs.col|default:"12" %}
+                                            <div class="col-md-{{ col }}">
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label">{{ field.label|safe }}</label>
+                                                    <div>
+                                                        {% if field.name == 'telefono' %}
+                                                            <div class="input-group">
+                                                                <span class="input-group-text"><i
+                                                                        class="las la-phone"></i></span>
+                                                                {{ field }}
+                                                            </div>
+                                                        {% elif field.name == 'email' %}
+                                                            <div class="input-group">
+                                                                <span class="input-group-text"><i class="las la-at"></i></span>
+                                                                {{ field }}
+                                                            </div>
+                                                        {% elif field.name == 'fecha_nacimiento' %}
+                                                            <div class="input-group">
+                                                                <span class="input-group-text"><i
+                                                                        class="la la-birthday-cake"></i></span>
+                                                                {{ field }}
+                                                            </div>
+                                                        {% else %}
+                                                            {{ field }}
+                                                        {% endif %}
+
+                                                        {% if field.errors %}
+                                                            <div class="invalid-feedback" style="display: block;">
+                                                                {{ field.errors }}
+                                                            </div>
+                                                        {% endif %}
+
+                                                        {% if field.help_text %}
+                                                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endwith %}
+                                    {% endfor %}
+                                </div>
+
+                                <div class="form-group row mt-3">
+                                    <div class="col-12">
+                                        <a class="btn btn-danger" href="{{ request.path }}">Cancelar</a>
+                                        <button class="btn btn-primary" type="submit">Guardar cambios</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">Configuración Adicional</h4>
+                        </div>
+                        <div class="card-body pt-0">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="email_notificacion"
+                                        {% if request.user.notificar_por_correo %} checked {% endif %}>
+                                <label class="form-check-label" for="Email_Notifications">
+                                    Notificaciones por correo electrónico
+                                </label>
+                                <span class="form-text text-muted fs-12 mt-0">¿Desea recibir actualizaciones en su correo?</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane p-3" id="changepass" role="tabpanel">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">Cambiar contraseña</h4>
+                        </div>
+                        <div class="card-body pt-0">
+                            <form name="frmPass" id="frmPass" method="POST" action="{{ request.path }}"
+                                  enctype="multipart/form-data"> {% csrf_token %}
+                                <input name="action" value="changepass" type="hidden">
+                                <div class="form-group mb-3 row">
+                                    <label class="col-xl-3 col-lg-3 text-end mb-lg-0 align-self-center form-label">Contraseña
+                                        actual</label>
+                                    <div class="col-lg-9 col-xl-8">
+                                        <div class="input-group">
+                                            <input class="form-control password" type="password" name="clave_actual"
+                                                   id="clave_actual" placeholder="Ingrese su nueva actual" required>
+                                            <button type="button" class="btn btn-secondary togglePassword">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group mb-3 row">
+                                    <label class="col-xl-3 col-lg-3 text-end mb-lg-0 align-self-center form-label">Nueva
+                                        contraseña</label>
+                                    <div class="col-lg-9 col-xl-8">
+                                        <div class="input-group">
+                                            <input class="form-control password" type="password" name="clave"
+                                                   id="clave" placeholder="Ingrese su nueva contraseña" required>
+                                            <button type="button" class="btn btn-secondary togglePassword">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-lg-9 col-xl-8 offset-lg-3">
+                                        <a class="btn btn-danger" href="{{ request.path }}">Cancelar</a>
+                                        <button class="btn btn-primary" type="submit">Guardar cambios</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane p-3" id="lastconection" role="tabpanel">
+                    {{ request.user.last_login }}
+                </div>
+
+                <div class="tab-pane p-2" id="pushnotifs" role="tabpanel">
+                    <div class="card card-compact">
+                        <div class="card-header py-2 px-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                            <h6 class="card-title mb-0"><i class="iconoir-bell me-1"></i> Notificaciones push</h6>
+                            <div class="d-flex flex-wrap gap-1 align-items-center">
+                                <span class="badge bg-light text-dark border small" id="pushPermStatus">Permiso: <span id="pushPermVal">—</span></span>
+                                <button type="button" class="btn btn-primary btn-sm" id="btnProbarPush" title="Enviar una notificación de prueba a tus dispositivos">
+                                    <i class="iconoir-bell"></i> Probar push
+                                </button>
+                                {% if push_subscriptions %}
+                                    <button type="button" class="btn btn-danger btn-sm" id="btnEliminarTodasPush" title="Eliminar todas las conexiones push de tu cuenta">
+                                        <i class="iconoir-trash"></i> Eliminar todas
+                                    </button>
+                                {% endif %}
+                                <button type="button" class="btn btn-success btn-sm" id="btnEnablePush">
+                                    <i class="iconoir-bell"></i> Activar en este dispositivo
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body py-2 px-3">
+                            <p class="text-muted small mb-2">
+                                Navegadores y dispositivos que pueden recibir notificaciones push de tu cuenta. Funciona en Android, escritorio (Chrome/Edge/Firefox/Safari) e iOS 16.4+ con la app instalada en pantalla de inicio.
+                            </p>
+                            <div class="table-responsive">
+                                <table class="theDataTable table table-sm table-striped table-hover compact-table mb-0">
+                                    <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Navegador</th>
+                                        <th>Host</th>
+                                        <th>Endpoint</th>
+                                        <th class="text-end">Acción</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for sub in push_subscriptions %}
+                                        <tr data-sub-id="{{ sub.id }}">
+                                            <td>{{ sub.id }}</td>
+                                            <td><span class="badge bg-info text-dark">{{ sub.browser }}</span></td>
+                                            <td><code class="small">{{ sub.host }}</code></td>
+                                            <td><code class="small text-muted">{{ sub.endpoint_preview }}</code></td>
+                                            <td class="text-end">
+                                                <button type="button" class="btn btn-danger btn-sm"
+                                                        onclick="eliminarPushSub({{ sub.id }})">
+                                                    <i class="iconoir-trash"></i> Revocar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane p-2" id="sesionesactivas" role="tabpanel">
+                    <div class="card card-compact">
+                        <div class="card-header py-2 px-3">
+                            <h6 class="card-title mb-0"><i class="iconoir-laptop me-1"></i> Sesiones activas</h6>
+                        </div>
+                        <div class="card-body py-2 px-3">
+                            <p class="text-muted small mb-2">
+                                Cada dispositivo que inició sesión con tu cuenta. Revocá cualquier sesión para forzar el login otra vez en ese dispositivo.
+                            </p>
+                            <div class="table-responsive">
+                                <table class="theDataTable table table-sm table-striped table-hover compact-table mb-0">
+                                    <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Dispositivo</th>
+                                        <th>IP</th>
+                                        <th>Ubicación</th>
+                                        <th>Conectado</th>
+                                        <th>Expira</th>
+                                        <th class="text-end">Acción</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for s in active_sessions %}
+                                        <tr data-session-id="{{ s.id }}" class="{% if s.is_current %}sesion-actual{% endif %}{% if not s.vigente %} sesion-expirada{% endif %}">
+                                            <td>
+                                                {{ s.id }}
+                                                {% if s.is_current %}
+                                                    <span class="badge bg-success ms-1"><i class="iconoir-check me-1"></i>Actual</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="small">{{ s.dispositivo }}</td>
+                                            <td><code class="small">{{ s.ip }}</code></td>
+                                            <td class="small">{{ s.areageografica }}</td>
+                                            <td class="small">{{ s.fecha_conexion|date:"d/m/Y H:i" }}</td>
+                                            <td class="small">
+                                                {% if s.expira %}
+                                                    {{ s.expira|date:"d/m/Y H:i" }}
+                                                    {% if s.vigente %}
+                                                        <span class="badge bg-success-soft text-success ms-1">Vigente</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary ms-1">Expirada</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    —
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end">
+                                                <button type="button" class="btn btn-danger btn-sm"
+                                                        onclick="eliminarSessionUser({{ s.id }}, {{ s.is_current|yesno:'true,false' }})">
+                                                    <i class="iconoir-log-out"></i> Revocar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalUpdatePhoto" tabindex="-1" aria-labelledby="modalUpdatePhotoLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalUpdatePhotoLabel">Actualizar foto de perfil</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formUpdatePhoto" method="POST" action="{{ request.path }}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="updatephoto">
+
+                        <div class="text-center mb-4">
+                            <img id="previewImage" src="{{ request.user.get_foto_gris }}" class="rounded-circle mb-3"
+                                 style="width: 150px; height: 150px; object-fit: cover;">
+
+                            <div class="mb-3">
+                                <label for="photoInput" class="form-label">Seleccionar nueva imagen</label>
+                                <input class="form-control" type="file" id="photoInput" name="foto" accept="image/*"
+                                       required>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script src="/static/feather.min.js"></script>
+    <script>
+        feather.replace({
+            'aria-hidden': 'true'
+        });
+        $(".togglePassword").click(function (e) {
+            e.preventDefault();
+            var type = $(this).parent().parent().find(".password").attr("type");
+            if (type == "password") {
+                $(this).find("i").removeClass("fa-eye").addClass("fa-eye-slash");
+                $(this).parent().parent().find(".password").attr("type", "text");
+            } else if (type == "text") {
+                $(this).find("i").removeClass("fa-eye-slash").addClass("fa-eye");
+                $(this).parent().parent().find(".password").attr("type", "password");
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Al cargar la página, verificar si hay un tab guardado en localStorage
+            let activeTab = localStorage.getItem('activeProfileTab');
+
+            if (activeTab) {
+                // Si hay un tab guardado, activarlo
+                const tabToActivate = document.querySelector(`a[href="${activeTab}"]`);
+                if (tabToActivate) {
+                    const tab = new bootstrap.Tab(tabToActivate);
+                    tab.show();
+                }
+            }
+
+            // Añadir event listener a todos los tabs
+            document.querySelectorAll('.nav-link').forEach(function (tabLink) {
+                tabLink.addEventListener('click', function (event) {
+                    // Guardar el id del tab activo en localStorage
+                    localStorage.setItem('activeProfileTab', this.getAttribute('href'));
+                });
+            });
+        });
+    </script>
+    <script>
+        $(function () {
+
+            var paisper = {{ request.user.ciudad.provincia.pais.id|default:1 }};
+            var provper = {{ request.user.ciudad.provincia.id|default:'0' }};
+            var cantonper = {{ request.user.ciudad.id|default:'0' }};
+
+            function cargar_provincia(id) {
+                $('#id_provincia, #id_ciudad').empty().append('<option value="">---------</option>').val(0).trigger("change");
+                var control = $(this);
+                pantallaespera();
+                $.ajax({
+                    type: "GET",
+                    url: "/consultas",
+                    data: {'action': 'provincias', 'id': id},
+                    success: function (data) {
+                        $.unblockUI();
+                        if (data.result === 'ok') {
+                            estaselec = false;
+                            for (elemento in data.lista) {
+                                selecc = '';
+                                if (estaselec === false) {
+                                    idprov = parseInt(data.lista[elemento][0]);
+                                    if (provper === idprov) {
+                                        estaselec = true;
+                                        selecc = 'selected';
+                                    }
+                                }
+                                $('#id_provincia').append('<option value="' + data.lista[elemento][0] + '" ' + selecc + '>' + data.lista[elemento][1] + '</option>');
+                            }
+                            $("#id_provincia").val(provper).trigger("change");
+                        } else {
+                            $("#id_provincia").val(0).trigger("change");
+                            {#mensajeWarning(data.mensaje);#}
+                        }
+                    },
+                    error: function () {
+                        $.unblockUI();
+                        $("#id_provincia").val(0).trigger("change");
+                        mensajeWarning("Error de conexion.");
+                    },
+                    dataType: "json"
+                });
+            }
+
+            $('#id_pais').on('change', function () {
+                var id = parseInt($("#id_pais").val());
+                cargar_provincia(id)
+            })
+
+            $('#id_provincia').change(function () {
+                $('#id_ciudad').empty().append('<option value="">---------</option>').val(0).trigger("change");
+                var id = parseInt($("#id_provincia").val());
+                if (id > 0) {
+                    pantallaespera();
+                    $.ajax({
+                        type: "GET",
+                        url: "/consultas",
+                        data: {'action': 'cantones', 'id': id},
+                        success: function (data) {
+                            $.unblockUI();
+                            if (data.result === 'ok') {
+                                estaselec = false;
+                                for (elemento in data.lista) {
+                                    selecc = '';
+                                    if (estaselec === false) {
+                                        idcanton = parseInt(data.lista[elemento][0]);
+                                        if (cantonper === idcanton) {
+                                            estaselec = true;
+                                            selecc = 'selected';
+                                        }
+                                    }
+                                    $('#id_ciudad').append('<option value="' + data.lista[elemento][0] + '" ' + selecc + '>' + data.lista[elemento][1] + '</option>');
+                                }
+                                $("#id_ciudad").val(cantonper).trigger("change");
+                            } else {
+                                $("#id_ciudad").val(0).trigger("change");
+                                {#mensajeWarning(data.mensaje);#}
+                            }
+                        },
+                        error: function () {
+                            $.unblockUI();
+                            $("#id_ciudad").val(0).trigger("change");
+                            mensajeWarning("Error de conexion.");
+                        },
+                        dataType: "json"
+                    });
+                }
+            });
+        })
+
+        const _CSRF = '{{ csrf_token }}';
+        const _RUTA = '{{ request.path }}';
+        const _VAPID = '{{ vapid_key|escapejs }}';
+
+        function _csrfPost(data) {
+            return $.ajax({
+                type: 'POST',
+                url: _RUTA,
+                data: Object.assign({csrfmiddlewaretoken: _CSRF}, data),
+                dataType: 'json'
+            });
+        }
+
+        function _swalConfirm(title, text, confirmText) {
+            return new Promise(function(resolve) {
+                if (typeof Swal === 'undefined') {
+                    resolve(window.confirm(title));
+                    return;
+                }
+                Swal.fire({
+                    title: title,
+                    text: text || '',
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: confirmText || 'Yes',
+                    cancelButtonText: 'Cancel'
+                }).then(function(r) { resolve(!!r.value); });
+            });
+        }
+
+        window.eliminarPushSub = function(id) {
+            _swalConfirm('¿Revocar esta suscripción?', 'Este dispositivo dejará de recibir notificaciones push.', 'Sí, revocar').then(function(ok) {
+                if (!ok) return;
+                _csrfPost({action: 'delete_push_subscription', id: id}).done(function(arr) {
+                    const r = Array.isArray(arr) ? arr[0] : arr;
+                    if (r && r.error === false) {
+                        if (typeof mensajeSuccess === 'function') mensajeSuccess(r.message || 'Suscripción eliminada.');
+                        $('tr[data-sub-id="' + id + '"]').fadeOut(250, function() { $(this).remove(); });
+                    } else if (typeof mensajeWarning === 'function') {
+                        mensajeWarning((r && r.message) || 'No se pudo eliminar.');
+                    }
+                });
+            });
+        };
+
+        window.eliminarSessionUser = function(id, isCurrent) {
+            const title = isCurrent ? '¿Cerrar sesión en ESTE dispositivo?' : '¿Revocar esta sesión?';
+            const text = isCurrent ? 'Vas a cerrar sesión en este navegador.' : 'Ese dispositivo tendrá que volver a iniciar sesión.';
+            _swalConfirm(title, text, 'Sí, revocar').then(function(ok) {
+                if (!ok) return;
+                _csrfPost({action: 'delete_session_user', id: id}).done(function(arr) {
+                    const r = Array.isArray(arr) ? arr[0] : arr;
+                    if (r && r.error === false) {
+                        if (r.logout) {
+                            window.location.href = '/login/';
+                            return;
+                        }
+                        if (typeof mensajeSuccess === 'function') mensajeSuccess(r.message || 'Sesión revocada.');
+                        $('tr[data-session-id="' + id + '"]').fadeOut(250, function() { $(this).remove(); });
+                    } else if (typeof mensajeWarning === 'function') {
+                        mensajeWarning((r && r.message) || 'No se pudo revocar.');
+                    }
+                });
+            });
+        };
+
+        $('#btnEliminarTodasPush').on('click', function() {
+            const $btn = $(this);
+            _swalConfirm('¿Eliminar todas las conexiones push?', 'Todos tus dispositivos dejarán de recibir notificaciones push.', 'Sí, eliminar todas').then(function(ok) {
+                if (!ok) return;
+                const orig = $btn.html();
+                $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin me-1"></i> Eliminando...');
+                _csrfPost({action: 'delete_all_push_subscriptions'}).done(function(arr) {
+                    const r = Array.isArray(arr) ? arr[0] : arr;
+                    if (r && r.error === false) {
+                        if (typeof mensajeSuccess === 'function') mensajeSuccess(r.message || 'Conexiones eliminadas.');
+                        setTimeout(function() { location.reload(); }, 600);
+                    } else {
+                        $btn.prop('disabled', false).html(orig);
+                        if (typeof mensajeWarning === 'function') mensajeWarning((r && r.message) || 'No se pudo eliminar.');
+                    }
+                }).fail(function() {
+                    $btn.prop('disabled', false).html(orig);
+                    if (typeof mensajeWarning === 'function') mensajeWarning('Error de red al eliminar las conexiones.');
+                });
+            });
+        });
+
+        $('#btnProbarPush').on('click', function() {
+            const $btn = $(this);
+            const orig = $btn.html();
+            $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin me-1"></i> Enviando...');
+            _csrfPost({
+                action: 'probar_push',
+                titulo: '🔔 Notificación de prueba',
+                cuerpo: '✅ Esta es una notificación de prueba para tu cuenta.'
+            }).done(function(arr) {
+                const r = Array.isArray(arr) ? arr[0] : arr;
+                if (r && r.error === false) {
+                    if (typeof mensajeSuccess === 'function') mensajeSuccess(r.message || 'Enviada.');
+                } else if (typeof mensajeWarning === 'function') {
+                    mensajeWarning((r && r.message) || 'No se pudo enviar la notificación.');
+                }
+            }).fail(function() {
+                if (typeof mensajeWarning === 'function') mensajeWarning('Error de red al probar el push.');
+            }).always(function() {
+                $btn.prop('disabled', false).html(orig);
+            });
+        });
+
+        (function() {
+            const $btn = $('#btnEnablePush');
+            const $permVal = $('#pushPermVal');
+            const PERM_LABEL = {granted: 'Concedido', denied: 'Bloqueado', default: 'Sin pedir'};
+            function _refreshPermLabel() {
+                if (!('Notification' in window)) { $permVal.text('No soportado'); return; }
+                const p = Notification.permission || 'default';
+                $permVal.text(PERM_LABEL[p] || p);
+            }
+            _refreshPermLabel();
+
+            const supported = ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window);
+            if (!supported || !_VAPID) {
+                $btn.prop('disabled', true).attr('title', 'Push no soportado en este navegador/dispositivo.');
+                return;
+            }
+
+            function urlB64ToUint8Array(b64) {
+                const padding = '='.repeat((4 - b64.length % 4) % 4);
+                const base64 = (b64 + padding).replace(/-/g, '+').replace(/_/g, '/');
+                const raw = atob(base64);
+                const out = new Uint8Array(raw.length);
+                for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+                return out;
+            }
+
+            function getCookie(name) {
+                const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+                return m ? m.pop() : '';
+            }
+
+            async function _sendSub(sub) {
+                const browser = (navigator.userAgent.match(/(firefox|edg|chrome|safari|trident)/ig) || ['chrome'])[0].toLowerCase();
+                await fetch('/webpush/save_information', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({status_type: 'subscribe', subscription: sub.toJSON(), browser: browser})
+                });
+            }
+
+            $btn.on('click', async function() {
+                $btn.prop('disabled', true);
+                try {
+                    const perm = await Notification.requestPermission();
+                    _refreshPermLabel();
+                    if (perm !== 'granted') {
+                        if (typeof mensajeWarning === 'function') mensajeWarning('Permiso denegado. Habilitá las notificaciones en la configuración del navegador.');
+                        $btn.prop('disabled', false);
+                        return;
+                    }
+                    let reg;
+                    try {
+                        reg = await navigator.serviceWorker.ready;
+                    } catch (e) {
+                        try { reg = await navigator.serviceWorker.register('/serviceworker.js', {scope: '/'}); reg = await navigator.serviceWorker.ready; } catch (e2) {}
+                    }
+                    if (!reg) {
+                        if (typeof mensajeWarning === 'function') mensajeWarning('El service worker no está listo.');
+                        $btn.prop('disabled', false);
+                        return;
+                    }
+                    let sub = await reg.pushManager.getSubscription();
+                    if (!sub) {
+                        sub = await reg.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: urlB64ToUint8Array(_VAPID)
+                        });
+                    }
+                    await _sendSub(sub);
+                    if (typeof mensajeSuccess === 'function') mensajeSuccess('Notificaciones activadas en este dispositivo.');
+                    setTimeout(function() { location.reload(); }, 600);
+                } catch (e) {
+                    if (typeof mensajeWarning === 'function') mensajeWarning('No se pudo activar: ' + (e && e.message ? e.message : 'error desconocido'));
+                    $btn.prop('disabled', false);
+                }
+            });
+        })();
+    </script>
+{% endblock %}

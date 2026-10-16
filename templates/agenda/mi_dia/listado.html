@@ -1,0 +1,151 @@
+{% extends 'agenda/base_agenda.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
+    <link rel="stylesheet" href="/static/css/agenda/mi_dia.css?v1.2">
+{% endblock %}
+{% block eyebrow %}{{ hoy_agenda|date:"l j \d\e F \d\e Y" }}{% endblock %}
+{% block subtitulo %}{% endblock %}
+{% block acciones %}
+    <button type="button" class="btn btn-primary" onclick="formModal(0, 'Nueva cita', 'agendar', {}, '/agenda/mi-agenda/')"><i class="fas fa-plus me-1"></i>Nueva cita</button>
+{% endblock %}
+{% block content %}
+    {% if google and not google.conectada or not google %}
+        <div class="alert alert-warning d-flex align-items-center gap-2" role="status">
+            <i class="fas fa-calendar-xmark" aria-hidden="true"></i>
+            <div>Tu Google Calendar no está conectado: tus citas no se crean en tu calendario. <a href="/agenda/aplicaciones/">Conectarlo en Conexiones</a>.</div>
+        </div>
+    {% endif %}
+
+    {% if guia %}
+        <div class="card mb-3 md-guia">
+            <div class="card-body">
+                <div class="d-flex flex-wrap align-items-start justify-content-between gap-2">
+                    <div>
+                        <h5 class="mb-1">Bienvenido a Turno. Tres pasos y queda todo listo.</h5>
+                        <p class="agenda-sub mb-0">Esta guía desaparece cuando la cierres; cada paso te lleva a su pantalla.</p>
+                    </div>
+                    <button type="button" class="btn btn-light btn-sm" id="md-cerrar-guia"><i class="fas fa-check me-1"></i>Ya la vi</button>
+                </div>
+                <ol class="md-pasos row g-3 mt-1">
+                    <li class="col-md-4">
+                        <a href="/agenda/aplicaciones/" class="md-paso {% if guia.google %}md-paso-ok{% endif %}">
+                            <span class="md-paso-num">{% if guia.google %}<i class="fas fa-check"></i>{% else %}1{% endif %}</span>
+                            <span><strong>Conecta tu Google Calendar</strong><br><span class="agenda-sub">Para que cada cita llegue a tu calendario con su videollamada.</span></span>
+                        </a>
+                    </li>
+                    <li class="col-md-4">
+                        <a href="/agenda/mis-turnos/" class="md-paso {% if guia.horarios %}md-paso-ok{% endif %}">
+                            <span class="md-paso-num">{% if guia.horarios %}<i class="fas fa-check"></i>{% else %}2{% endif %}</span>
+                            <span><strong>Declara tus horarios</strong><br><span class="agenda-sub">Los espacios en que atiendes; el portal solo ofrece esos.</span></span>
+                        </a>
+                    </li>
+                    <li class="col-md-4">
+                        <a href="/agenda/alertas/" class="md-paso {% if guia.equipo %}md-paso-ok{% endif %}">
+                            <span class="md-paso-num">{% if guia.equipo %}<i class="fas fa-check"></i>{% else %}3{% endif %}</span>
+                            <span><strong>Elige cómo avisarte</strong><br><span class="agenda-sub">{% if guia.equipo %}Ya estás en un equipo. {% endif %}Minutos de aviso, push y correo.</span></span>
+                        </a>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="row g-3">
+        <div class="col-xl-8">
+            <div class="card mb-3 md-proxima">
+                <div class="card-body">
+                    {% if proxima %}
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                            <span class="agenda-sub">Próxima cita</span>
+                            <span class="badge {% if proxima.estado == 'confirmada' %}bg-success{% else %}bg-warning{% endif %}">{{ proxima.get_estado_display }}</span>
+                        </div>
+                        <p class="md-hora mb-1 mi-hora">{{ proxima.inicio|time:"H:i" }} – {{ proxima.fin|time:"H:i" }} <span class="agenda-sub">{{ proxima.duracion_min }} min</span></p>
+                        <h4 class="mb-1">{{ proxima.titulo }}</h4>
+                        <p class="agenda-sub mb-3">{{ proxima.cliente }}{% if proxima.proyecto %} · {{ proxima.proyecto }}{% endif %}{% if proxima.equipo %} · {{ proxima.equipo.nombre }}{% endif %} · {{ proxima.codigo }}</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if proxima.enlace_meet %}<a href="{{ proxima.enlace_meet }}" target="_blank" rel="noopener" class="btn btn-success btn-sm"><i class="fas fa-video me-1"></i>Unirse a la videollamada</a>{% endif %}
+                            <a href="/agenda/citas/{{ proxima.pk }}/#reprogramar" class="btn btn-light btn-sm">Reprogramar</a>
+                            <a href="/agenda/citas/{{ proxima.pk }}/" class="btn btn-light btn-sm">Ver detalle</a>
+                        </div>
+                    {% else %}
+                        <span class="agenda-sub">Próxima cita</span>
+                        <h4 class="mb-1">Sin citas pendientes hoy</h4>
+                        <p class="agenda-sub mb-0">Cuando se asigne una cita aparecerá aquí con su videollamada.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="mb-3">Agenda de hoy</h5>
+                    {% if agenda %}
+                        <ul class="md-agenda">
+                            {% for a in agenda %}
+                                <li class="md-item {% if not a.cita %}md-item-libre{% endif %}">
+                                    <span class="md-item-hora">{{ a.inicio|time:"H:i" }} – {{ a.fin|time:"H:i" }}</span>
+                                    {% if a.cita %}
+                                        <span class="md-item-cuerpo">
+                                            <a href="/agenda/citas/{{ a.cita.pk }}/">{{ a.cita.titulo }}</a>
+                                            <span class="agenda-sub">{{ a.cita.cliente }}{% if a.cita.proyecto %} · {{ a.cita.proyecto }}{% endif %}</span>
+                                        </span>
+                                        <span class="badge {% if a.cita.estado == 'confirmada' %}bg-success{% elif a.cita.estado == 'cerrada' %}bg-secondary{% elif a.cita.estado == 'pendiente' %}bg-warning{% else %}bg-primary{% endif %}">{{ a.cita.get_estado_display }}</span>
+                                    {% else %}
+                                        <span class="md-item-cuerpo agenda-sub">Espacio libre</span>
+                                        <a href="/agenda/mi-agenda/?fecha={{ fecha }}" class="btn btn-light btn-sm">Agendar</a>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="agenda-sub mb-0">Hoy no tienes turnos declarados ni citas. Define tu semana en <a href="/agenda/mis-turnos/">Horarios</a>.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="mi-tarjeta-kpi mb-3"><strong>{{ citas_hoy }}</strong><span>Citas hoy</span></div>
+            <div class="mi-tarjeta-kpi mb-3"><strong>{{ pendientes_total }}</strong><span>Cierres pendientes</span></div>
+            <a href="/agenda/cola/" class="mi-tarjeta-kpi mb-3 text-decoration-none {% if en_cola %}atencion{% endif %}"><strong>{{ en_cola }}</strong><span>Solicitudes en cola por asignar</span></a>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="mb-1">Cierres pendientes</h5>
+                    <p class="agenda-sub mb-3">Registra el resumen, si pidió proforma y el tipo de reunión.</p>
+                    {% for c in pendientes %}
+                        <div class="md-pendiente">
+                            <div>
+                                <strong>{{ c.titulo }}</strong>
+                                <div class="agenda-sub">{{ c.inicio|date:"D d M H:i" }} · {{ c.cliente }}</div>
+                            </div>
+                            <a href="/agenda/citas/{{ c.pk }}/#cierre" class="btn btn-primary btn-sm">Registrar cierre</a>
+                        </div>
+                    {% empty %}
+                        <p class="agenda-sub mb-0">Estás al día.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="mb-3">Alertas</h5>
+                    {% for n in alertas %}
+                        <div class="md-alerta">
+                            <strong>{{ n.titulo }}</strong>
+                            <div class="agenda-sub">{{ n.cuerpo|truncatechars:90 }}</div>
+                            {% if n.url %}<a href="{{ n.url }}" class="small">Abrir</a>{% endif %}
+                        </div>
+                    {% empty %}
+                        <p class="agenda-sub mb-0">Sin alertas nuevas.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% include 'agenda/parciales/modal_crud.html' %}
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script src="/static/js/agenda/crud.js?v1.1"></script>
+    <script src="/static/js/agenda/mi_dia.js?v1.0"></script>
+{% endblock %}

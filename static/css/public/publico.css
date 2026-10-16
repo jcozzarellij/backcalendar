@@ -1,0 +1,229 @@
+:root {
+    --app-azul: #005082;
+    --app-azul-2: #0a6aa6;
+    --app-acento: #67BD01;
+    --app-tinta: #1d1d1f;
+    --app-texto: #3d4c5c;
+    --app-muted: #5b6b7a;
+    --app-fondo: #ffffff;
+    --app-borde: #d2d2d7;
+    --lnd-gold: #005082;
+    --lnd-navy: #005082;
+    --lnd-body: #3d4c5c;
+    --lnd-bg: #ffffff;
+    --lnd-r: 12px;
+}
+
+.pb-body {
+    margin: 0;
+    background: var(--app-fondo);
+    color: var(--app-texto);
+    font-family: 'Geist', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.pb-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #ffffff;
+    border-bottom: 1px solid var(--app-borde);
+}
+
+
+
+
+
+
+.pb-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+
+.pb-marca {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    color: var(--app-azul);
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.pb-marca img {
+    max-height: 40px;
+}
+
+.pb-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+}
+
+.pb-nav a {
+    color: var(--app-muted);
+    font-size: 1rem;
+    font-weight: 500;
+    text-decoration: none;
+    padding: 8px 0;
+    border-bottom: 2px solid transparent;
+}
+
+.pb-nav a:hover,
+.pb-nav a.is-active {
+    color: var(--app-azul);
+    border-bottom-color: var(--app-acento);
+}
+
+.pb-nav a.pb-btn {
+    background: var(--app-azul);
+    color: #ffffff;
+    min-height: 44px;
+    padding: 9px 20px;
+    border-radius: 999px;
+    border-bottom: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.pb-nav a.pb-btn:hover {
+    background: var(--app-azul-2);
+}
+
+.pb-nav a:focus-visible {
+    outline: 2px solid var(--app-acento);
+    outline-offset: 2px;
+}
+
+.pb-main {
+    flex: 1 1 auto;
+    padding: 36px 0 60px;
+}
+
+.pb-footer {
+    border-top: 1px solid var(--app-borde);
+    padding: 18px 0;
+    font-size: .9rem;
+    color: var(--app-muted);
+}
+
+.pb-footer .container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.lnd-page-head h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--app-tinta);
+    margin: 0 0 12px;
+}
+
+.lnd-page-head p {
+    color: var(--app-muted);
+    max-width: 720px;
+}
+
+.lnd-eyebrow {
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--app-azul-2);
+    margin: 0 0 10px;
+}
+
+.lnd-page-body {
+    margin-top: 28px;
+}
+
+.lnd-prose {
+    background: #ffffff;
+    border: 1px solid var(--app-borde);
+    border-radius: 14px;
+    padding: 28px 32px;
+    line-height: 1.65;
+}
+
+.lnd-prose h2 {
+    font-size: 1.25rem;
+    color: var(--app-tinta);
+}
+
+.lnd-prose a {
+    color: var(--app-azul);
+}
+
+@media (max-width: 575.98px) {
+    .lnd-prose {
+        padding: 20px 16px;
+    }
+
+    .lnd-page-head h1 {
+        font-size: 1.5rem;
+    }
+}
+
+.pb-ventana .pb-main {
+    padding: 16px 0 24px;
+}
+
+.pt-productos-grande a {
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--app-borde);
+}
+
+.pt-productos-grande a small {
+    display: block;
+    color: var(--app-muted);
+    font-size: .9em;
+}
+
+.pb-idiomas {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.pb-idioma {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 4px 14px;
+    border: 1px solid var(--app-borde);
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--app-tinta);
+    font-size: .9rem;
+    text-decoration: none;
+}
+
+.pb-idioma:hover {
+    background: #f5f5f7;
+    color: var(--app-tinta);
+}
+
+.pb-idioma.activo {
+    background: var(--app-azul);
+    border-color: var(--app-azul);
+    color: #ffffff;
+}
+
+.pb-idioma img {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}

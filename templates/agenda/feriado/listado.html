@@ -1,0 +1,82 @@
+{% extends 'agenda/base_agenda.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
+{% endblock %}
+{% block content %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="GET" class="mb-0">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label" for="anio">Año</label>
+                        <select id="anio" name="anio" class="select2" onchange="this.form.submit()">
+                            {% for a in anios %}
+                                <option value="{{ a }}" {% if a == anio %}selected{% endif %}>{{ a }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row align-items-center mb-3">
+        <div class="col-md-12">
+            <button type="button" onclick="formModal(0, 'Nuevo feriado', 'add')" class="btn btn-success btn-sm">
+                <i class="fas fa-plus-circle me-2"></i>Nuevo feriado
+            </button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="tabla" class="table table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th class="text-center">Fecha</th>
+                        <th>Feriado</th>
+                        <th>Aplica a</th>
+                        <th class="text-center">Acción</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for l in listado %}
+                        <tr>
+                            <td class="text-center">{{ l.fecha|date:"D d M Y" }}</td>
+                            <td>{{ l.nombre }}</td>
+                            <td>{% if l.equipo %}{{ l.equipo }}{% else %}<span class="badge bg-primary">Todos</span>{% endif %}</td>
+                            <td class="text-center">
+                                <div class="dropdown">
+                                    <button class="btn btn-icon agenda-btn-fila" type="button" data-bs-toggle="dropdown"
+                                            aria-expanded="false" aria-label="Acciones de {{ l.nombre }}">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="formModal({{ l.pk }}, 'Editar feriado', 'change')"><i class="fas fa-edit me-2 text-primary"></i>Editar</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="eliminarajax({{ l.pk }}, '{{ l.nombre|escapejs }}', 'delete')"><i class="fas fa-trash me-2 text-danger"></i>Eliminar</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center agenda-vacio">
+                                No hay feriados cargados para {{ anio }}. Agrégalos con «Nuevo feriado» para que nadie reciba citas esos días.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% include "paginacion.html" %}
+            </div>
+        </div>
+    </div>
+
+    {% include 'agenda/parciales/modal_crud.html' %}
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script src="/static/js/agenda/crud.js?v1.1"></script>
+{% endblock %}

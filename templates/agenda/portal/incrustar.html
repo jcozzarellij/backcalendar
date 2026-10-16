@@ -1,0 +1,14 @@
+<p class="agenda-sub mb-3">Pega este código en el sitio del portal. El visitante agenda sin salir de la página y la cita entra igual que desde el portal. Solo funciona en los sitios listados en «Sitios donde se puede incrustar» del portal{% if not sitios %} — <strong>hoy no hay ninguno</strong>: edita el portal y agrégalos, uno por línea (por ejemplo <code>https://exducereonline.com</code>){% endif %}.</p>
+<label class="form-label small mb-1" for="po-iframe">Opción 1 · Ventana dentro de la página</label>
+<textarea class="form-control font-monospace mb-3" id="po-iframe" rows="3" readonly>&lt;iframe src="{{ url }}" title="Agendar una cita" style="width:100%;min-height:720px;border:0;border-radius:16px" loading="lazy"&gt;&lt;/iframe&gt;</textarea>
+<label class="form-label small mb-1" for="po-boton">Opción 2 · Botón «Agendar cita» que abre la ventana</label>
+<textarea class="form-control font-monospace mb-3" id="po-boton" rows="6" readonly>&lt;a href="{{ url }}" target="_blank" rel="noopener" style="display:inline-block;background:#67BD01;color:#1d1d1f;font-weight:600;padding:14px 26px;border-radius:999px;text-decoration:none"&gt;Agendar cita&lt;/a&gt;</textarea>
+<div class="d-flex flex-wrap gap-2">
+    <button type="button" class="btn btn-primary btn-sm" onclick="copiarEnlace('po-iframe')"><i class="fas fa-copy me-1"></i>Copiar ventana</button>
+    <button type="button" class="btn btn-primary btn-sm" onclick="copiarEnlace('po-boton')"><i class="fas fa-copy me-1"></i>Copiar botón</button>
+    <a href="{{ url }}" target="_blank" rel="noopener" class="btn btn-light btn-sm"><i class="fas fa-external-link-alt me-1"></i>Ver la ventana</a>
+</div>
+<div class="border-top my-3"></div>
+<div class="d-flex justify-content-end">
+    <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal"><i class="fa fa-window-close me-1"></i>Cerrar</button>
+</div>

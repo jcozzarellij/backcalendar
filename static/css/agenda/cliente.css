@@ -1,0 +1,113 @@
+.cl-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cl-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--mi-borde, #e4e1da);
+    border-radius: 10px;
+    background: var(--mi-papel, #ffffff);
+    color: var(--mi-tinta, #1a2b3c);
+    text-decoration: none;
+}
+
+.cl-item > span:first-child {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.cl-item strong {
+    font-size: .92rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cl-item:hover {
+    border-color: var(--mi-azul, #005082);
+    color: var(--mi-tinta, #1a2b3c);
+}
+
+.cl-item.activo {
+    border-color: var(--mi-azul, #005082);
+    background: var(--mi-azul-suave, #e6f0f5);
+}
+
+.cl-kpi-caja {
+    padding: 10px 12px;
+    border: 1px solid var(--mi-borde, #e4e1da);
+    border-radius: 10px;
+}
+
+.cl-kpi-caja strong {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.1;
+    color: var(--mi-tinta, #1a2b3c);
+    font-variant-numeric: tabular-nums;
+}
+
+.cl-kpi-caja span {
+    font-size: .8rem;
+    color: var(--mi-gris, #6b7785);
+}
+
+.cl-sesion {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--mi-borde, #e4e1da);
+}
+
+.cl-sesion:first-of-type {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.cl-sesion-num {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--mi-fondo, #f6f4ef);
+    color: var(--mi-gris, #6b7785);
+    font-weight: 600;
+    font-size: .85rem;
+}
+
+.cl-sesion-prox {
+    background: var(--mi-azul, #005082);
+    color: #ffffff;
+}
+
+.cl-dato {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+    border-top: 1px solid var(--mi-borde, #e4e1da);
+    font-size: .9rem;
+    color: var(--mi-tinta, #1a2b3c);
+}
+
+.cl-dato:first-of-type {
+    border-top: 0;
+}
+
+.cl-dato > span:first-child {
+    color: var(--mi-gris, #6b7785);
+    flex: 0 0 auto;
+}

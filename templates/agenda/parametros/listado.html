@@ -1,0 +1,129 @@
+{% extends 'agenda/base_agenda.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
+    <link rel="stylesheet" href="/static/css/agenda/parametros.css?v2.0">
+{% endblock %}
+{% block eyebrow %}Líder general{% endblock %}
+{% block content %}
+    <div class="row g-3">
+        <div class="col-xl-8">
+            {% if grupos_parametros %}
+                <form method="post" action="{{ ruta }}" class="form" id="frm-parametros">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="guardar">
+                    {% for g in grupos_parametros %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="pa-grupo">{{ g.nombre }}</h5>
+                                {% for p in g.parametros %}
+                                    <div class="pa-fila">
+                                        <div class="row g-2 align-items-center">
+                                            <div class="col-md-8">
+                                                <label class="form-label mb-0" for="valor_{{ p.pk }}">{{ p.etiqueta }}</label>
+                                                {% if p.descripcion %}<div class="agenda-sub">{{ p.descripcion }}</div>{% endif %}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="input-group pa-control">
+                                                    {% if p.tipo == 'booleano' %}
+                                                        <select name="valor_{{ p.pk }}" id="valor_{{ p.pk }}" class="select2" {% if not p.editable or not puede_editar %}disabled{% endif %}>
+                                                            <option value="1" {% if p.valor in '1,true,si,sí,on' %}selected{% endif %}>Sí</option>
+                                                            <option value="0" {% if p.valor not in '1,true,si,sí,on' %}selected{% endif %}>No</option>
+                                                        </select>
+                                                    {% elif p.tipo == 'entero' %}
+                                                        <input type="number" min="0" step="1" class="form-control pa-numero" name="valor_{{ p.pk }}" id="valor_{{ p.pk }}" value="{{ p.valor|default_if_none:'' }}" {% if not p.editable or not puede_editar %}readonly{% endif %}>
+                                                    {% else %}
+                                                        <input type="text" class="form-control" name="valor_{{ p.pk }}" id="valor_{{ p.pk }}" value="{{ p.valor|default_if_none:'' }}" {% if not p.editable or not puede_editar %}readonly{% endif %}>
+                                                    {% endif %}
+                                                    {% if p.unidad %}<span class="input-group-text">{{ p.unidad }}</span>{% endif %}
+                                                    {% if p.editable and puede_editar and p.valor != p.valor_default %}
+                                                        <button type="button" class="btn btn-light" title="Volver a {{ p.valor_default }}" aria-label="Restaurar {{ p.etiqueta }} a su valor por defecto" onclick="accionAgenda({{ p.pk }}, 'restaurar')"><i class="fas fa-undo"></i></button>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {% if puede_editar %}
+                        <div class="d-flex justify-content-end mb-3">
+                            <button type="submit" class="btn btn-primary"><i class="fa fa-save me-1"></i>Guardar cambios</button>
+                        </div>
+                    {% endif %}
+                </form>
+            {% else %}
+                <div class="card mb-3"><div class="card-body agenda-vacio text-center">Todavía no hay parámetros de agenda. Corre <code>python scripts/seed_parametros_agenda.py</code>.</div></div>
+            {% endif %}
+
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="pa-grupo">Google Workspace</h5>
+                    <div class="pa-fila">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-8"><strong>Cliente OAuth</strong><div class="agenda-sub">ID y secreto del cliente en <code>credenciales.json</code>; cada persona conecta su propio calendario en Conexiones.</div></div>
+                            <div class="col-md-4 text-md-end">{% if google_configurado %}<span class="badge bg-success">Configurado</span>{% else %}<span class="badge bg-warning">Falta configurar</span>{% endif %}</div>
+                        </div>
+                    </div>
+                    <div class="pa-fila">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-8"><strong>Estado de las conexiones</strong><div class="agenda-sub">Calendarios del equipo conectados y vigentes.</div></div>
+                            <div class="col-md-4 text-md-end"><span class="badge {% if google_conectadas %}bg-success{% else %}bg-secondary{% endif %}">{{ google_conectadas }} de {{ google_total }} conectadas</span></div>
+                        </div>
+                    </div>
+                    <div class="pa-fila">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-8"><strong>URI de redirección</strong><div class="agenda-sub">Debe estar registrada tal cual en Google Cloud.</div></div>
+                            <div class="col-md-4 text-md-end"><code class="pa-codigo">{{ google_redirect }}</code></div>
+                        </div>
+                    </div>
+                    <div class="pa-fila">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-8"><strong>Zona horaria</strong><div class="agenda-sub">Las fechas se guardan y se muestran en esta zona.</div></div>
+                            <div class="col-md-4 text-md-end"><code class="pa-codigo">{{ zona_horaria }}</code></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="pa-grupo">Alertas y correo</h5>
+                    <div class="pa-fila">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-8"><strong>Notificaciones push</strong><div class="agenda-sub">Clave VAPID en <code>credenciales.json</code>; cada persona activa las suyas desde la campana.</div></div>
+                            <div class="col-md-4 text-md-end">{% if push_configurado %}<span class="badge bg-success">Configurado</span>{% else %}<span class="badge bg-warning">Falta configurar</span>{% endif %}</div>
+                        </div>
+                    </div>
+                    <div class="pa-fila">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-8"><strong>Remitente de avisos</strong><div class="agenda-sub">Cuenta desde la que salen las confirmaciones y los recordatorios.</div></div>
+                            <div class="col-md-4 text-md-end"><code class="pa-codigo">{{ remitente|default:'Sin configurar' }}</code></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="pa-grupo">Historial de cambios</h5>
+                    {% for h in historial %}
+                        <div class="pa-historial">
+                            <strong>{{ h.change_message|cut:"Configuración de la agenda · " }}</strong>
+                            <span class="agenda-sub">{{ h.user.get_full_name|default:h.user.username }} · {{ h.action_time|date:"D j M, H:i" }}</span>
+                        </div>
+                    {% empty %}
+                        <p class="agenda-sub mb-0">Todavía nadie cambió la configuración.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script src="/static/js/agenda/crud.js?v1.1"></script>
+{% endblock %}

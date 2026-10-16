@@ -1,0 +1,15 @@
+PWA_APP_NAME = 'Turno'
+PWA_APP_SHORT_NAME = 'Turno'
+PWA_APP_DESCRIPTION = 'Turno de Exducere Online: agenda de citas del equipo.'
+PWA_APP_THEME_COLOR = '#005082'
+PWA_APP_BACKGROUND_COLOR = '#E6F0F5'
+PWA_APP_DISPLAY = 'standalone'
+PWA_APP_ORIENTATION = 'any'
+PWA_APP_START_URL = '/panel/'
+PWA_APP_SCOPE = '/'
+PWA_APP_LANG = 'es-ES'
+PWA_APP_DIR = 'auto'
+
+PWA_APP_SCREENSHOTS = []
+
+PWA_INSTALL_COOLDOWN_HOURS = 10

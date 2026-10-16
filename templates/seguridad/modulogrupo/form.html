@@ -1,0 +1,358 @@
+{% extends 'base.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/iconos_selector.css">
+    <style>
+        .jstree-anchor {
+            white-space: normal !important;
+            height: auto !important;
+            padding-right: 24px;
+        }
+        .modal-xl-custom {
+            max-width: 95% !important;
+            width: 95%;
+        }
+    </style>
+{% endblock %}
+{% block atras %}{{ request.path }}{% endblock %}
+
+{% block content %}
+
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body py-2">
+                    <form method="post" enctype="multipart/form-data" action="{{ ruta }}" class="form">
+                        {% csrf_token %}
+                        <input type="hidden" name="pk" value="{{ pk|default:0 }}"/>
+                        <input type="hidden" name="action" value="{{ action }}"/>
+                        {{ dict_url_vars_input }}
+
+                        <div class="row g-1">
+                            {% for field in form %}
+                                {% if field.is_hidden %}
+                                    {{ field }}
+                                {% else %}
+                                    <div class="col-lg-12">
+                                        <div class="mb-2">
+                                            <label class="form-label small mb-1"
+                                                   for="id_{{ field.name }}">{{ field.label }}</label><br>
+                                            {% if field.name == 'icono' %}
+                                                <div class="input-group">
+                                                    {{ field }}
+                                                    <button id="buscarIcono" type="button"
+                                                            class="btn btn-primary">
+                                                        <i class="fas fa-search me-1"></i> Buscar Ícono
+                                                    </button>
+                                                </div>
+                                            {% else %}
+                                                {{ field }}
+                                            {% endif %}
+                                            {% if field.help_text %}
+                                                <div class="small text-muted mt-1">{{ field.help_text }}</div>
+                                            {% endif %}
+                                            <div class="invalid-feedback" id="errorMessage{{ field.name }}"></div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label class="form-label small mb-1" for="id_url_aplicaciones">URLs de
+                                        Aplicaciones</label>
+
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-md-6">
+                                            <select id="busqueda" multiple class="form-select select2"
+                                                    data-placeholder="Buscar por Aplicación">
+                                                {% for c in urls_sistema %}
+                                                    <option value="{{ c.nombre }}">{{ c.nombre }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="input-group">
+                                                <span class="input-group-text border-end-0">
+                                                    <i class="fa fa-search text-muted"></i>
+                                                </span>
+                                                <input type="text" id="buscarPorNombre"
+                                                       class="form-control border-start-0"
+                                                       placeholder="Buscar por nombre...">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Checkboxes ocultos -->
+                                    {% for c in urls_sistema %}
+                                        {% if c.sub_urls %}
+                                            {% for sc in c.sub_urls %}
+                                                {% with '/'|add:c.url|add:sc.url as link_modulo %}
+                                                    {% autoescape on %}
+                                                        <input style="display: none;"
+                                                               id="url_{{ forloop.counter }}_{{ forloop.parentloop.counter }}"
+                                                               type="checkbox" name="c_modulos"
+                                                               value='{{ sc.dicValue }}'
+                                                               {% if link_modulo in modulos_seleccionados %}checked{% endif %}>
+                                                    {% endautoescape %}
+                                                {% endwith %}
+                                            {% endfor %}
+                                        {% else %}
+                                            {% with '/'|add:c.url as link_modulo %}
+                                                {% autoescape on %}
+                                                    <input style="display: none;" id="url_{{ forloop.counter }}"
+                                                           type="checkbox"
+                                                           name="c_modulos"
+                                                           value='{"nombre": "{{ c.nombre }}", "url": "/{{ c.url }}", "orden": {{ forloop.counter0 }}}'
+                                                           {% if link_modulo in modulos_seleccionados %}checked{% endif %}>
+                                                {% endautoescape %}
+                                            {% endwith %}
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    <!-- Árbol de URLs -->
+                                    <div id="jstree-modulos-urls" class="border rounded p-3 mt-1">
+                                        {% autoescape on %}
+                                            <ul>
+                                                {% for c in urls_sistema %}
+                                                    <li data-paraBuscar="{{ c.nombre }}"
+                                                        data-nombre="{{ c.nombre|lower }}"
+                                                        data-jstree='{"opened":true, "dnd":false}'>
+                                                        <label class="me-2"
+                                                               for="app_{{ forloop.counter }}">{{ c.nombre }}
+                                                            ({{ c.url }})</label>
+                                                        {% if c.sub_urls %}
+                                                            <ul>
+                                                                {% for sc in c.sub_urls %}
+                                                                    {% with '/'|add:c.url|add:sc.url as link_modulo %}
+                                                                        <li data-nombre="{{ sc.nombre|lower }}"
+                                                                            data-jstree='{{ sc.dicJsTree }}'>
+                                                                            {{ sc.nombre }} - (/{{ c.url }}{{ sc.url }})
+                                                                        </li>
+                                                                    {% endwith %}
+                                                                {% endfor %}
+                                                            </ul>
+                                                        {% endif %}
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% endautoescape %}
+                                    </div>
+                                    <div class="invalid-feedback" id="errorMessageurl_aplicaciones"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <a class="btn btn-danger btn-sm me-1" href="{{ ruta }}?{{ dict_url_vars_completo }}">
+                                    <i class="fa fa-window-close me-1"></i> Cancelar
+                                </a>
+                                <button {% if action != 'ver' %}type="submit" id="submit"{% else %}disabled{% endif %}
+                                        class="btn btn-success btn-sm">
+                                    <i class="fa fa-save me-1"></i> Guardar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div><!--end card-body-->
+            </div><!--end card-->
+        </div>
+    </div>
+
+    <!-- Modal para selección de iconos -->
+    <div class="modal fade" id="modalIcons" tabindex="-1" aria-labelledby="modalIconsLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl-custom modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalIconsLabel">Seleccione un ícono</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="input-group">
+                            <span class="input-group-text border-end-0">
+                                <i class="fa fa-search text-muted"></i>
+                            </span>
+                                <input id="txtBuscarIcono" type="search" class="form-control border-start-0"
+                                       placeholder="Buscar ícono..."/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nav nav-tabs mb-3" role="tablist">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-iconoir"
+                                type="button">Iconoir
+                        </button>
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-icofont" type="button">
+                            Icofont
+                        </button>
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-lineawesome" type="button">
+                            Line Awesome
+                        </button>
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-fontawesome" type="button">
+                            Font Awesome
+                        </button>
+                    </div>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="tab-iconoir" role="tabpanel">
+                            <div id="iconoir-container" class="icon-grid"></div>
+                        </div>
+                        <div class="tab-pane fade" id="tab-icofont" role="tabpanel">
+                            <div id="icofont-container" class="icon-grid"></div>
+                        </div>
+                        <div class="tab-pane fade" id="tab-lineawesome" role="tabpanel">
+                            <div id="lineawesome-container" class="icon-grid"></div>
+                        </div>
+                        <div class="tab-pane fade" id="tab-fontawesome" role="tabpanel">
+                            <div id="fontawesome-container" class="icon-grid"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+                        <i class="fa fa-window-close me-1"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm" id="seleccionarIcono">
+                        <i class="fa fa-check me-1"></i> Seleccionar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block jscript %}
+    {{ form.media }}
+    <script src="/static/js/forms.js?version=2"></script>
+    <link href="/static/assets/plugins/jstree/dist/themes/default/style.min.css" rel="stylesheet"/>
+    <script src="/static/assets/plugins/jstree/dist/jstree.min.js"></script>
+    <script src="/static/validaciones/funciones.js?v=2.2"></script>
+    <script src="/static/js/urlsymodulos/urlsymodulos.js"></script>
+    <script src="/static/js/icons/all-icons-translated.json"></script>
+    <script>
+        $(document).ready(function () {
+            // Inicializar Select2
+            $('.select2').select2({
+                width: '100%'
+            });
+
+            // Manejar cambios en el selector de aplicación
+            $('#busqueda').change(function () {
+                filtrarArbol();
+            });
+
+            // Manejar cambios en la búsqueda por nombre
+            $('#buscarPorNombre').on('input', function () {
+                filtrarArbol();
+            });
+
+            // Función para filtrar el árbol
+            function filtrarArbol() {
+                // Obtener aplicaciones seleccionadas
+                const appSeleccionadas = $('#busqueda').children('option:selected').toArray();
+                const opciones = [];
+                for (let i = 0; i < appSeleccionadas.length; i++) {
+                    opciones.push($(appSeleccionadas[i]).val().toUpperCase());
+                }
+
+                // Obtener texto de búsqueda
+                const textoBusqueda = $('#buscarPorNombre').val().toLowerCase();
+
+                // Aplicar filtros
+                $('.jstree-container-ul > li').each(function () {
+                    // Filtro por aplicación
+                    let mostrarPorApp = true;
+                    if (opciones.length > 0) {
+                        const appText = $(this).attr('data-paraBuscar').toUpperCase();
+                        mostrarPorApp = opciones.indexOf(appText) !== -1;
+                    }
+
+                    // Filtro por nombre (buscar en los hijos también)
+                    let mostrarPorNombre = true;
+                    if (textoBusqueda) {
+                        const nombreApp = $(this).attr('data-nombre');
+                        let encontrado = nombreApp && nombreApp.includes(textoBusqueda);
+
+                        // Buscar en los hijos
+                        if (!encontrado) {
+                            // Primero mostrar todos los hijos para poder buscar
+                            $(this).find('li').each(function () {
+                                const nombreHijo = $(this).attr('data-nombre');
+                                if (nombreHijo && nombreHijo.includes(textoBusqueda)) {
+                                    encontrado = true;
+                                    return false; // Salir del bucle
+                                }
+                            });
+                        }
+
+                        mostrarPorNombre = encontrado;
+                    }
+
+                    // Mostrar si cumple ambos filtros
+                    $(this).toggle(mostrarPorApp && mostrarPorNombre);
+                });
+            }
+
+            let iconoSeleccionado = '';
+
+            // Cargar los íconos desde el JSON
+            fetch('/static/js/icons/all-icons-translated.json')
+                .then(res => res.json())
+                .then(data => {
+                    const tipos = ['iconoir', 'icofont', 'lineawesome', 'fontawesome'];
+                    tipos.forEach(tipo => {
+                        const contenedor = $(`#${tipo}-container`);
+                        contenedor.empty();
+                        data[tipo].forEach(icon => {
+                            contenedor.append(`
+                                <div class="icon-item" data-icon="${icon.class}" data-en="${icon.en.toLowerCase()}" data-es="${icon.es.toLowerCase()}">
+                                    <i class="${icon.class}"></i>
+                                    <span class="icon-name">${icon.en} / ${icon.es}</span>
+                                </div>
+                            `);
+                        });
+                    });
+
+                    // Evento para seleccionar ícono
+                    $('.icon-item').on('click', function () {
+                        $('.icon-item').removeClass('selected-icon');
+                        $(this).addClass('selected-icon');
+                        iconoSeleccionado = $(this).data('icon');
+                    });
+                });
+
+            // Mostrar modal
+            $('#buscarIcono').on('click', function () {
+                const modal = new bootstrap.Modal(document.getElementById('modalIcons'));
+                modal.show();
+            });
+
+            // Buscar íconos
+            $('#txtBuscarIcono').on('input', function () {
+                const texto = $(this).val().toLowerCase();
+                $('.icon-item').each(function () {
+                    const nombreEn = $(this).data('en');
+                    const nombreEs = $(this).data('es');
+                    const dataIcon = $(this).data('icon').toLowerCase();
+                    const mostrar = nombreEn.includes(texto) || nombreEs.includes(texto) || dataIcon.includes(texto);
+                    $(this).toggle(mostrar);
+                });
+            });
+
+            // Seleccionar ícono y cerrar
+            $('#seleccionarIcono').on('click', function () {
+                if (iconoSeleccionado) {
+                    $('#id_icono').val(iconoSeleccionado);
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('modalIcons'));
+                    modal.hide();
+                } else {
+                    mensajeWarning('Por favor seleccione un ícono');
+                }
+            });
+
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends 'agenda/base_agenda.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
+{% endblock %}
+{% block content %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="GET" class="mb-0">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label" for="criterio">Buscar</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-end-0"><i class="fa fa-search text-muted" aria-hidden="true"></i></span>
+                            <input type="text" id="criterio" class="form-control border-start-0" placeholder="Referencia, cliente, correo o motivo" name="criterio" value="{{ criterio|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="estado">Estado</label>
+                        <select id="estado" name="estado" class="select2">
+                            <option value="" {% if not estado %}selected{% endif %}>Todos</option>
+                            {% for valor, nombre in estados %}
+                                <option value="{{ valor }}" {% if valor == estado %}selected{% endif %}>{{ nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary" aria-label="Buscar"><i class="fas fa-search"></i></button>
+                            {% if url_vars %}<a href="{{ ruta }}" class="btn btn-default" aria-label="Quitar filtros"><i class="fas fa-sync-alt"></i></a>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row align-items-center mb-3">
+        <div class="col-md-8 d-flex flex-wrap gap-2">
+            <button type="button" onclick="formModal(0, 'Nueva solicitud', 'add')" class="btn btn-success btn-sm">
+                <i class="fas fa-plus-circle me-2"></i>Nueva solicitud
+            </button>
+            <div class="btn-group" role="group" aria-label="Vista">
+                <a href="{{ ruta }}" class="btn btn-primary btn-sm"><i class="fas fa-list me-1"></i>Tabla</a>
+                <a href="{{ ruta }}?vista=tablero" class="btn btn-light btn-sm"><i class="fas fa-columns me-1"></i>Tablero</a>
+            </div>
+        </div>
+        <div class="col-md-4 text-md-end agenda-sub">{{ en_cola }} en cola</div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="tabla" class="table table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>Referencia</th>
+                        <th>Cliente</th>
+                        <th>Producto · equipo</th>
+                        <th>Motivo</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Acción</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for l in listado %}
+                        <tr>
+                            <td>
+                                {{ l.codigo }}
+                                <div class="agenda-sub">{{ l.fecha_registro|date:"d/m/Y H:i" }} · {{ l.get_origen_display }}</div>
+                            </td>
+                            <td>
+                                {{ l.cliente.nombres }}
+                                <div class="agenda-sub">{{ l.cliente.correo }}{% if l.telefono_para_llamar %} · <i class="fas fa-phone"></i> {{ l.telefono_para_llamar }}{% elif l.cliente.telefono %} · {{ l.cliente.telefono }}{% endif %}</div>
+                            </td>
+                            <td>
+                                {{ l.producto|default:'—' }}
+                                <div class="agenda-sub">{{ l.equipo.nombre|default:'Sin equipo' }}</div>
+                            </td>
+                            <td>
+                                {{ l.motivo|default:'—' }}
+                                {% if l.mensaje %}<div class="agenda-sub">{{ l.mensaje|truncatechars:90 }}</div>{% endif %}
+                                {% if l.causa_cola %}<div class="agenda-sub"><i class="fas fa-info-circle"></i> {{ l.causa_cola }}</div>{% endif %}
+                            </td>
+                            <td class="text-center">
+                                <span class="badge {% if l.estado == 'en_cola' %}bg-warning{% elif l.estado == 'asignada' %}bg-primary{% elif l.estado == 'cancelada' %}bg-danger{% elif l.estado == 'cerrada' or l.estado == 'realizada' %}bg-success{% else %}bg-secondary{% endif %}">{{ l.get_estado_display }}</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="dropdown">
+                                    <button class="btn btn-icon agenda-btn-fila" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Acciones de {{ l.codigo }}">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        {% if l.estado == 'en_cola' %}
+                                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="formModal({{ l.pk }}, 'Asignar horario a {{ l.cliente.nombres|escapejs }}', 'asignar')"><i class="fas fa-calendar-check me-2 text-success"></i>Asignar horario</a></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="cerrarSolicitud({{ l.pk }}, '{{ l.codigo|escapejs }}')"><i class="fas fa-check me-2 text-secondary"></i>Cerrar sin cita</a></li>
+                                        {% endif %}
+                                        {% for c in l.citas.all %}
+                                            <li><a class="dropdown-item" href="/agenda/citas/{{ c.pk }}/"><i class="fas fa-video me-2 text-primary"></i>Ver cita {{ c.codigo }}</a></li>
+                                        {% endfor %}
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="formModal({{ l.pk }}, 'Editar solicitud', 'change')"><i class="fas fa-edit me-2 text-primary"></i>Editar</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="eliminarajax({{ l.pk }}, '{{ l.codigo|escapejs }}', 'delete')"><i class="fas fa-trash me-2 text-danger"></i>Eliminar</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center agenda-vacio">
+                                {% if estado == 'en_cola' %}La cola está vacía: no hay pedidos esperando horario.{% else %}No hay solicitudes con esos filtros.{% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% include "paginacion.html" %}
+            </div>
+        </div>
+    </div>
+
+    {% include 'agenda/parciales/modal_crud.html' %}
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script src="/static/js/agenda/crud.js?v1.1"></script>
+    <script src="/static/js/agenda/solicitud.js?v1.0"></script>
+{% endblock %}

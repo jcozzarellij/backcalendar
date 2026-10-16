@@ -1,0 +1,176 @@
+{% extends 'public/base.html' %}
+
+{% block head %}
+    <meta name="description" content="Agende su cita por videollamada sobre {{ nombre_producto }}.">
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="/static/css/public/portal.css?v2.0">
+{% endblock %}
+
+{% block nav_publica %}
+    <nav class="pb-idiomas" aria-label="Idioma">
+        <a href="?idioma=es{% if ventana %}&ventana=1{% endif %}" class="pb-idioma {% if idioma == 'es' %}activo{% endif %}" hreflang="es"><img src="/static/images/banderas/es.svg" alt="" width="20" height="20">Español</a>
+        <a href="?idioma=en{% if ventana %}&ventana=1{% endif %}" class="pb-idioma {% if idioma == 'en' %}activo{% endif %}" hreflang="en"><img src="/static/images/banderas/en.svg" alt="" width="20" height="20">English</a>
+        <a href="?idioma=pt{% if ventana %}&ventana=1{% endif %}" class="pb-idioma {% if idioma == 'pt' %}activo{% endif %}" hreflang="pt"><img src="/static/images/banderas/pt.svg" alt="" width="20" height="20">Português</a>
+    </nav>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4 g-lg-5" id="pt-portal" data-t-buscando="{{ t.buscando }}" data-t-sin-horas="{{ t.sin_horas }}" data-t-elegir="{{ t.elegir_primero }}" data-t-conexion="{{ t.error_conexion }}" data-t-guardado="{{ t.guardado }}" data-t-ocupado="{{ t.ocupado }}" data-t-paso="{{ t.paso }}" data-t-de="{{ t.de }}">
+    <div class="col-lg-8">
+        <div class="pt-tarjeta-paso" id="pt-paso-dia" data-pt-agenda data-url-horas="{{ url_horas }}" data-action="reservar" data-apartar="1" data-t2-titulo="{{ t.paso2_titulo }}" data-t2-sub="{{ t.paso2_sub }}" data-t3-titulo="{{ t.paso3_titulo }}" data-t3-sub="{{ t.paso3_sub }}">
+            <div class="pt-progreso" aria-hidden="true"><span class="activo"></span><span></span><span></span><span></span></div>
+            <p class="pt-paso-num" id="pt-paso-num">{{ t.paso }} 1 {{ t.de }} 4</p>
+            <h1 class="pt-paso-titulo-grande" id="pt-titulo-paso">{{ t.paso1_titulo }}</h1>
+            <p class="pt-paso-sub-grande" id="pt-sub-paso">{{ t.paso1_sub }}</p>
+
+            <section id="pt-bloque-dia">
+                {% if dias %}
+                    <p class="pt-etiqueta">{{ t.fechas_proximas }}</p>
+                    <div class="row g-3 pt-destacadas">
+                        {% for d in destacadas %}
+                            <div class="col-sm-4">
+                                <button type="button" class="pt-dia pt-dia-grande" data-fecha="{{ d.valor }}" data-texto="{{ d.fecha|date:'l j \d\e F'|capfirst }}">
+                                    <span class="pt-hoja"><span class="pt-hoja-mes">{{ d.fecha|date:"M" }}</span><span class="pt-hoja-dia">{{ d.fecha|date:"j" }}</span></span>
+                                    <span class="pt-dia-texto">{{ d.fecha|date:"l"|capfirst }}<small>{{ d.espacios }} {{ t.horarios }} {{ t.libres }}</small></span>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="pt-calendario">
+                    <p class="pt-etiqueta"><i class="far fa-calendar" aria-hidden="true"></i>{{ t.otra_fecha }}</p>
+                    <div class="pt-mes-cabecera">
+                        {% if mes_anterior %}<a href="?mes={{ mes_anterior|date:'Y-m' }}{% if ventana %}&ventana=1{% endif %}" class="pt-mes-nav" aria-label="{{ t.mes_anterior }}"><i class="fas fa-chevron-left"></i></a>{% else %}<span class="pt-mes-nav" aria-hidden="true"></span>{% endif %}
+                        <strong>{{ mes|date:"F Y"|capfirst }}</strong>
+                        {% if mes_siguiente %}<a href="?mes={{ mes_siguiente|date:'Y-m' }}{% if ventana %}&ventana=1{% endif %}" class="pt-mes-nav" aria-label="{{ t.mes_siguiente }}"><i class="fas fa-chevron-right"></i></a>{% else %}<span class="pt-mes-nav" aria-hidden="true"></span>{% endif %}
+                    </div>
+                    <table class="pt-mes" role="grid">
+                        <thead><tr><th>Lun</th><th>Mar</th><th>Mié</th><th>Jue</th><th>Vie</th><th>Sáb</th><th>Dom</th></tr></thead>
+                        <tbody>
+                        {% for semana in semanas %}
+                            <tr>
+                                {% for d in semana %}
+                                    <td>
+                                        {% if d.cupo and not d.otro_mes %}
+                                            <button type="button" class="pt-dia pt-dia-mes" data-fecha="{{ d.fecha|date:'Y-m-d' }}" data-texto="{{ d.fecha|date:'l j \d\e F'|capfirst }}">
+                                                <span class="pt-mes-num">{{ d.fecha|date:"j" }}</span>
+                                                <small>{{ d.cupo }} {{ t.libres }}</small>
+                                            </button>
+                                        {% elif not d.otro_mes %}
+                                            <span class="pt-dia-mes pt-dia-vacio"><span class="pt-mes-num">{{ d.fecha|date:"j" }}</span></span>
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    <p class="pt-leyenda"><span class="pt-leyenda-caja pt-leyenda-libre"></span>{{ t.dias_con_horarios }} <span class="pt-leyenda-caja"></span>{{ t.sin_horarios }}</p>
+                    <p class="agenda-nota">{{ t.hasta }} {{ tope|date:"l j \d\e F"|lower }}.</p>
+                </div>
+
+                <div class="pt-llamar">
+                    <p class="pt-llamar-titulo">{{ t.llamar_titulo }}</p>
+                    <form id="pt-form-llamar" class="pt-form" novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="llamar">
+                        <input type="hidden" name="nombres" value="">
+                        <input type="hidden" name="correo" value="">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-5">
+                                <label class="form-label" for="pt-ll-telefono">{{ t.su_telefono }}</label>
+                                <input type="tel" class="form-control" id="pt-ll-telefono" name="telefono" autocomplete="tel" required maxlength="40">
+                            </div>
+                            <div class="col-md-7">
+                                <button type="button" class="btn btn-primary pt-boton-oscuro" id="pt-abrir-llamar">{{ t.pedir_llamada }}</button>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-1" id="pt-ll-datos" hidden>
+                            <div class="col-md-6">
+                                <label class="form-label" for="pt-ll-nombres">{{ t.nombre }}</label>
+                                <input type="text" class="form-control" id="pt-ll-nombres" autocomplete="name" maxlength="200">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="pt-ll-correo">{{ t.correo }}</label>
+                                <input type="email" class="form-control" id="pt-ll-correo" autocomplete="email">
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary pt-boton-oscuro">{{ t.pedir_llamada }}</button>
+                            </div>
+                        </div>
+                        <p class="pt-error" id="pt-ll-error" role="alert" hidden></p>
+                        <p class="pt-exito" id="pt-ll-exito" role="status" hidden></p>
+                    </form>
+                </div>
+            </section>
+
+            <section id="pt-bloque-hora" hidden>
+                <div class="pt-horas" id="pt-horas" aria-live="polite"></div>
+                <button type="button" class="btn btn-light pt-boton-chico mt-3" id="pt-volver-dia"><i class="fas fa-arrow-left" aria-hidden="true"></i>{{ t.cambiar }}: {{ t.dia|lower }}</button>
+            </section>
+
+            <section id="pt-bloque-datos" hidden>
+                <form id="pt-form" class="pt-form" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reservar">
+                    <input type="hidden" name="ventana" value="{% if ventana %}1{% else %}0{% endif %}">
+                    <input type="hidden" name="inicio" id="pt-inicio" value="">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="pt-nombres">{{ t.nombre }}</label>
+                            <input type="text" class="form-control" id="pt-nombres" name="nombres" autocomplete="name" required maxlength="200">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="pt-correo">{{ t.correo }}</label>
+                            <input type="email" class="form-control" id="pt-correo" name="correo" autocomplete="email" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="pt-telefono">{{ t.telefono }} <span class="pt-opcional">{{ t.opcional }}</span></label>
+                            <input type="tel" class="form-control" id="pt-telefono" name="telefono" autocomplete="tel" maxlength="40">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="pt-mensaje">{{ t.mensaje }} <span class="pt-opcional">{{ t.opcional }}</span></label>
+                            <textarea class="form-control" id="pt-mensaje" name="mensaje" rows="3" maxlength="2000"></textarea>
+                        </div>
+                    </div>
+                    <p class="pt-nota" id="pt-apartado" hidden></p>
+                    <p class="pt-error" id="pt-error" role="alert" hidden></p>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <button type="submit" class="btn btn-primary pt-boton pt-boton-oscuro">{{ t.confirmar }}</button>
+                        <button type="button" class="btn btn-light pt-boton-chico" id="pt-volver-hora"><i class="fas fa-arrow-left" aria-hidden="true"></i>{{ t.cambiar }}: {{ t.hora|lower }}</button>
+                    </div>
+                    <p class="pt-nota">{{ t.nota_confirmar }}</p>
+                </form>
+            </section>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <aside class="pt-resumen-oscuro" aria-live="polite">
+            <p class="pt-resumen-titulo">{{ t.su_cita }}</p>
+            <p class="pt-resumen-etq">{{ t.producto }}</p>
+            <p class="pt-resumen-val">{{ nombre_producto }}</p>
+            <p class="pt-resumen-detalle">{{ tiempos.duracion }} {{ t.minutos_video }}</p>
+            <div class="pt-resumen-linea"></div>
+            <p class="pt-resumen-etq"><i class="far fa-calendar" aria-hidden="true"></i>{{ t.dia }}</p>
+            <p class="pt-resumen-val" id="pt-res-dia">{{ t.por_elegir }}</p>
+            <p class="pt-resumen-etq"><i class="far fa-clock" aria-hidden="true"></i>{{ t.hora }}</p>
+            <p class="pt-resumen-val" id="pt-res-hora">{{ t.por_elegir }}</p>
+            {% if equipo %}<p class="pt-resumen-detalle mt-3">{{ t.con_equipo }} {{ portal.nombre }}</p>{% endif %}
+        </aside>
+        <section class="pt-tarjeta-paso pt-ayuda">
+            <h2 class="pt-ayuda-titulo">{{ t.ayuda_titulo }}</h2>
+            <p class="mb-2">{{ t.ayuda_texto }}</p>
+            {% if telefono %}<a href="tel:{{ telefono|cut:' ' }}" class="pt-ayuda-tel">{{ telefono }}</a>{% endif %}
+        </section>
+        <p class="pt-enlaces">
+            <a href="/{% if ventana %}incrustar/{{ portal.slug }}/{% endif %}">{{ t.ver_productos }}</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/public/portal.js?v2.0"></script>
+{% endblock %}

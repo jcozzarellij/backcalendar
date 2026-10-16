@@ -1,0 +1,80 @@
+{% extends 'agenda/base_agenda.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
+    <link rel="stylesheet" href="/static/css/agenda/alertas.css?v1.0">
+{% endblock %}
+{% block content %}
+    <div class="row g-3">
+        <div class="col-xl-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                        <div class="btn-group" role="group" aria-label="Filtro de alertas">
+                            <a href="?solo=nuevas" class="btn btn-sm {% if solo == 'nuevas' %}btn-primary{% else %}btn-light{% endif %}">Nuevas{% if nuevas %} <span class="badge bg-light text-dark">{{ nuevas }}</span>{% endif %}</a>
+                            <a href="?solo=todas" class="btn btn-sm {% if solo == 'todas' %}btn-primary{% else %}btn-light{% endif %}">Todas</a>
+                        </div>
+                        {% if nuevas %}<button type="button" class="btn btn-light btn-sm" onclick="accionAgenda(0, 'leertodas')"><i class="fas fa-check-double me-1"></i>Marcar todas como leídas</button>{% endif %}
+                    </div>
+                    {% for n in listado %}
+                        <div class="al-fila {% if not n.leido %}al-nueva{% endif %}">
+                            <div class="row g-2 align-items-center">
+                                <div class="col-auto"><span class="al-icono {% if n.prioridad == 3 %}al-icono-alta{% elif n.prioridad == 2 %}al-icono-media{% endif %}"><i class="fas {% if 'Google' in n.titulo %}fa-plug{% elif 'tarde' in n.titulo %}fa-clock{% elif 'asignaron' in n.titulo %}fa-user-plus{% else %}fa-bell{% endif %}"></i></span></div>
+                                <div class="col">
+                                    <p class="mb-0 fw-semibold">{{ n.titulo }}</p>
+                                    <p class="mb-0 agenda-sub">{{ n.cuerpo }}</p>
+                                    <p class="mb-0 agenda-sub">{{ n.fecha_registro|date:"d/m/Y H:i" }}</p>
+                                </div>
+                                <div class="col-auto">
+                                    {% if n.url %}<a href="{{ n.url }}" class="btn btn-primary btn-sm" onclick="leerAlerta({{ n.pk }})">Abrir</a>{% endif %}
+                                    {% if not n.leido %}<button type="button" class="btn btn-light btn-sm" onclick="accionAgenda({{ n.pk }}, 'leer')" aria-label="Marcar como leída"><i class="fas fa-check"></i></button>{% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="agenda-vacio text-center mb-0">{% if solo == 'nuevas' %}Sin alertas nuevas. Cuando una cita esté por empezar o te asignen una, aparece aquí.{% else %}Todavía no hay alertas.{% endif %}</p>
+                    {% endfor %}
+                    {% include "paginacion.html" %}
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="mb-1">Cómo quiero que me avisen</h5>
+                    <p class="agenda-sub mb-3">Solo para ti. El cliente recibe sus propios recordatorios.</p>
+                    <form method="post" action="{{ ruta }}" class="form">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="preferencias">
+                        <div class="mb-3">
+                            <label class="form-label small mb-1" for="aviso_previo_min">Avisarme antes de la cita</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="aviso_previo_min" name="aviso_previo_min" min="1" max="120" value="{{ pref.aviso_previo_min }}">
+                                <span class="input-group-text">minutos</span>
+                            </div>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="alerta_pantalla" name="alerta_pantalla" value="1" {% if pref.alerta_pantalla %}checked{% endif %}>
+                            <label class="form-check-label" for="alerta_pantalla">Alerta en pantalla mientras uso el panel</label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="alerta_push" name="alerta_push" value="1" {% if pref.alerta_push %}checked{% endif %}>
+                            <label class="form-check-label" for="alerta_push">Notificación push en el teléfono o navegador</label>
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="alerta_correo" name="alerta_correo" value="1" {% if pref.alerta_correo %}checked{% endif %}>
+                            <label class="form-check-label" for="alerta_correo">Correo cuando me asignan una cita</label>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-sm"><i class="fa fa-save me-1"></i>Guardar</button>
+                    </form>
+                    <p class="agenda-sub mt-3 mb-0">Para el push, activa las notificaciones del navegador desde el ícono de la campana.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script src="/static/js/agenda/crud.js?v1.1"></script>
+    <script src="/static/js/agenda/alertas_centro.js?v1.0"></script>
+{% endblock %}

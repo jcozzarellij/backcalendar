@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/seguridad/crons.css?v1.0">
+{% endblock %}
+{% block content %}
+
+    <div class="row g-2 mb-3 cron-kpis">
+        <div class="col-md-3 col-6">
+            <div class="cron-kpi"><span class="cron-kpi-lbl">Tareas</span><span class="cron-kpi-val">{{ resumen.total }}</span></div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="cron-kpi cron-kpi-ok"><span class="cron-kpi-lbl">Saludables</span><span class="cron-kpi-val">{{ resumen.ok }}</span></div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="cron-kpi cron-kpi-mal"><span class="cron-kpi-lbl">Caídas / con error</span><span class="cron-kpi-val">{{ resumen.caidos|add:resumen.error }}</span></div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="cron-kpi cron-kpi-off"><span class="cron-kpi-lbl">Apagadas</span><span class="cron-kpi-val">{{ resumen.apagados }}</span></div>
+        </div>
+    </div>
+
+    <div class="alert alert-info small d-flex align-items-start gap-2">
+        <i class="fa fa-circle-info mt-1"></i>
+        <div>
+            Apagar una tarea tiene efecto <strong>inmediato</strong> (el cron se dispara igual pero
+            el script no hace nada). Cambiar el <strong>horario</strong> se aplica al crontab real en
+            la próxima sincronización (hasta 15 min). «Caída» = debió ejecutarse según su periodicidad
+            y no hay registro reciente.
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                    <tr>
+                        <th>Tarea</th>
+                        <th>Periodicidad</th>
+                        <th class="text-center">Estado</th>
+                        <th>Última ejecución</th>
+                        <th class="text-center">Activa</th>
+                        <th class="text-center">Horario</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for t in tareas %}
+                        <tr class="cron-fila cron-estado-{{ t.estado }}">
+                            <td>
+                                <div class="cron-nombre"><i class="bi {{ t.icono }}"></i> {{ t.nombre }}</div>
+                                <div class="cron-desc">{{ t.descripcion|truncatechars:120 }}</div>
+                            </td>
+                            <td><code class="cron-sched">{{ t.schedule }}</code></td>
+                            <td class="text-center">
+                                {% if t.estado == 'ok' %}<span class="cron-badge ok"><i class="fa fa-circle-check"></i> Saludable</span>
+                                {% elif t.estado == 'caido' %}<span class="cron-badge caido"><i class="fa fa-triangle-exclamation"></i> Caída</span>
+                                {% elif t.estado == 'error' %}<span class="cron-badge error"><i class="fa fa-xmark"></i> Con error</span>
+                                {% elif t.estado == 'apagado' %}<span class="cron-badge off"><i class="fa fa-power-off"></i> Apagada</span>
+                                {% else %}<span class="cron-badge nunca"><i class="fa fa-clock"></i> Sin correr aún</span>{% endif %}
+                            </td>
+                            <td class="small">
+                                {% if t.ultima_ejecucion %}
+                                    {{ t.ultima_ejecucion|date:'d/M H:i' }} <span class="text-muted">· hace {{ t.hace }}</span>
+                                    {% if t.ultimo_detalle %}<div class="cron-detalle">{{ t.ultimo_detalle|truncatechars:70 }}</div>{% endif %}
+                                {% else %}<span class="text-muted">—</span>{% endif %}
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="cron-switch {% if t.activo %}on{% else %}off{% endif %}"
+                                        onclick="toggleCron({{ t.pk }}, '{{ t.nombre|escapejs }}', {{ t.activo|yesno:'true,false' }})"
+                                        title="{% if t.activo %}Desactivar{% else %}Activar{% endif %}">
+                                    <span class="cron-switch-dot"></span>
+                                </button>
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-primary" onclick="editarHorario({{ t.pk }})" title="Cambiar horario">
+                                    <i class="fa fa-calendar-days"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="6" class="text-center text-muted py-3">No hay tareas registradas. Corré <code>scripts/seed_tareas_cron.py</code>.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalHorario" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post" action="{{ ruta }}" class="form" id="formHorario">
+                    {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title"><i class="fa fa-calendar-days me-2"></i>Horario de la tarea</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="modalHorarioBody">
+                        <div class="text-center text-muted py-4"><i class="fa fa-spinner fa-spin me-2"></i>Cargando…</div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block jscript %}
+    <script>
+        var modalHorario = new bootstrap.Modal(document.getElementById('modalHorario'));
+
+        function toggleCron(id, nombre, activa) {
+            Swal.fire({
+                title: activa ? '¿Desactivar «' + nombre + '»?' : '¿Activar «' + nombre + '»?',
+                text: activa ? 'El cron se dispara igual pero no hará nada hasta reactivarlo.'
+                             : 'Volverá a ejecutar su trabajo en la próxima corrida.',
+                type: 'warning', showCancelButton: true,
+                confirmButtonText: activa ? 'Sí, desactivar' : 'Sí, activar', cancelButtonText: 'Cancelar'
+            }).then(function (r) {
+                if (!r.value) return;
+                pantallaespera();
+                $.post('{{ ruta }}', {action: 'toggle', id: id, csrfmiddlewaretoken: '{{ csrf_token }}'}, function (data) {
+                    setTimeout($.unblockUI, 1);
+                    var res = Array.isArray(data) ? data[0] : data;
+                    if (res && !res.error) { window.location.reload(); }
+                    else { mensajeWarning((res && res.message) || 'Intente nuevamente'); }
+                }, 'json').fail(function () { setTimeout($.unblockUI, 1); mensajeWarning('Error de conexión.'); });
+            });
+        }
+
+        function editarHorario(id) {
+            document.getElementById('modalHorarioBody').innerHTML =
+                '<div class="text-center text-muted py-4"><i class="fa fa-spinner fa-spin me-2"></i>Cargando…</div>';
+            modalHorario.show();
+            $.get('{{ ruta }}', {action: 'editar', id: id}, function (data) {
+                var res = Array.isArray(data) ? data[0] : data;
+                if (res && !res.error && res.html) { document.getElementById('modalHorarioBody').innerHTML = res.html; }
+                else { document.getElementById('modalHorarioBody').innerHTML = '<div class="alert alert-warning mb-0">' + ((res && res.message) || 'No se pudo cargar.') + '</div>'; }
+            }, 'json');
+        }
+
+        $(document).on('submit', '#formHorario', function (ev) {
+            ev.preventDefault();
+            pantallaespera();
+            $.post('{{ ruta }}', $(this).serialize(), function (data) {
+                setTimeout($.unblockUI, 1);
+                var res = Array.isArray(data) ? data[0] : data;
+                if (res && !res.error) { window.location.reload(); }
+                else { mensajeWarning((res && res.message) || 'Revise la expresión.'); }
+            }, 'json').fail(function () { setTimeout($.unblockUI, 1); mensajeWarning('Error de conexión.'); });
+        });
+    </script>
+{% endblock %}

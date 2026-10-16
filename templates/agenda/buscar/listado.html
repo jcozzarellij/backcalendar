@@ -1,0 +1,56 @@
+{% extends 'agenda/base_agenda.html' %}
+{% block head %}
+    <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
+{% endblock %}
+{% block content %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <form method="GET" class="mb-0">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-8">
+                        <label class="form-label" for="q">¿Qué buscas?</label>
+                        <div class="input-group">
+                            <span class="input-group-text border-end-0"><i class="fa fa-search text-muted" aria-hidden="true"></i></span>
+                            <input type="search" id="q" class="form-control border-start-0" name="q" value="{{ texto }}" placeholder="Nombre, correo, teléfono o código (QW-…, REQ-…, CL-…)" autofocus>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-search me-1"></i>Buscar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if texto %}
+        <p class="agenda-sub mb-3">{{ total }} resultado{{ total|pluralize }} para «{{ texto }}»</p>
+        <div class="row g-3">
+            <div class="col-lg-4">
+                <div class="card h-100"><div class="card-body">
+                    <h5 class="mb-3"><i class="fas fa-id-card me-2 text-primary"></i>Clientes</h5>
+                    {% for c in clientes %}
+                        <div class="agenda-resultado"><a href="/agenda/clientes/{{ c.pk }}/">{{ c.nombres }}</a><div class="agenda-sub">{{ c.correo }}{% if c.telefono %} · {{ c.telefono }}{% endif %} · {{ c.codigo }}</div></div>
+                    {% empty %}<p class="agenda-sub mb-0">Ningún cliente coincide.</p>{% endfor %}
+                </div></div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card h-100"><div class="card-body">
+                    <h5 class="mb-3"><i class="fas fa-video me-2 text-primary"></i>Citas</h5>
+                    {% for c in citas %}
+                        <div class="agenda-resultado"><a href="/agenda/citas/{{ c.pk }}/">{{ c.codigo }} · {{ c.titulo }}</a><div class="agenda-sub">{{ c.inicio|date:"d/m/Y H:i" }} · {{ c.cliente }} · {{ c.get_estado_display }}</div></div>
+                    {% empty %}<p class="agenda-sub mb-0">Ninguna cita coincide.</p>{% endfor %}
+                </div></div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card h-100"><div class="card-body">
+                    <h5 class="mb-3"><i class="fas fa-inbox me-2 text-primary"></i>Solicitudes</h5>
+                    {% for s in solicitudes %}
+                        <div class="agenda-resultado"><a href="/agenda/solicitudes/?criterio={{ s.codigo }}&estado=">{{ s.codigo }} · {{ s.cliente.nombres }}</a><div class="agenda-sub">{{ s.fecha_registro|date:"d/m/Y" }} · {{ s.motivo|default:s.get_origen_display }} · {{ s.get_estado_display }}</div></div>
+                    {% empty %}<p class="agenda-sub mb-0">Ninguna solicitud coincide.</p>{% endfor %}
+                </div></div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card"><div class="card-body agenda-vacio text-center">Escribe al menos dos letras. También puedes buscar desde la lupa de arriba en cualquier pantalla.</div></div>
+    {% endif %}
+{% endblock %}
