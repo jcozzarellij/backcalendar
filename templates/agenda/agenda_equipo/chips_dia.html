@@ -1,0 +1,12 @@
+{% for b in celda.items %}
+    {% if b.tipo == 'cita' and b.cita %}
+        <a href="/agenda/citas/{{ b.cita.pk }}/" class="ae-chip ae-cita" title="{{ b.cita.titulo }}">{{ b.inicio|time:"H:i" }} {{ b.cita.codigo }}</a>
+    {% elif b.tipo == 'reunion' %}
+        <span class="ae-chip ae-reunion{% if b.reunion.pendiente %} ae-pendiente{% endif %}" title="Reunión: {{ b.reunion.titulo }}{% if b.reunion.pendiente %} (pendiente de sincronizar){% endif %}">{{ b.inicio|time:"H:i" }} Reunión</span>
+    {% elif b.tipo == 'google' %}
+        <span class="ae-chip ae-google" title="Ocupado en Google">{{ b.inicio|time:"H:i" }} Ocupado</span>
+    {% else %}
+        <span class="ae-chip ae-manual" title="Bloqueado">{{ b.inicio|time:"H:i" }} Bloqueado</span>
+    {% endif %}
+{% endfor %}
+<span class="ae-libre-total">{% if celda.con_turno %}{{ celda.libre }}{% else %}Sin turno{% endif %}</span>

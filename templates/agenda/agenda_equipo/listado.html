@@ -1,12 +1,13 @@
 {% extends 'base.html' %}
 {% block head %}
     <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
-    <link rel="stylesheet" href="/static/css/agenda/agenda_equipo.css?v1.2">
+    <link rel="stylesheet" href="/static/css/agenda/agenda_equipo.css?v1.4">
 {% endblock %}
 {% block content %}
     <div class="card mb-3">
         <div class="card-body">
             <form method="GET" class="mb-0" id="frm-equipo">
+                <input type="hidden" name="vista" value="{{ vista }}">
                 <div class="row g-3 align-items-end">
                     <div class="col-md-4">
                         <label class="form-label" for="equipo">Equipo</label>
@@ -19,14 +20,21 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label" for="fecha">Día</label>
+                        <label class="form-label" for="fecha">Fecha</label>
                         <input type="date" id="fecha" name="fecha" class="form-control" value="{{ fecha_sel|date:'Y-m-d' }}" onchange="this.form.submit()">
                     </div>
                     <div class="col-md-5">
                         <div class="d-flex flex-wrap gap-2">
-                            <a href="?equipo={{ equipo.pk }}&fecha={{ anterior|date:'Y-m-d' }}" class="btn btn-light" aria-label="Día anterior"><i class="fas fa-chevron-left"></i></a>
-                            <a href="?equipo={{ equipo.pk }}&fecha={{ fecha }}" class="btn btn-light">Hoy</a>
-                            <a href="?equipo={{ equipo.pk }}&fecha={{ siguiente|date:'Y-m-d' }}" class="btn btn-light" aria-label="Día siguiente"><i class="fas fa-chevron-right"></i></a>
+                            <div class="btn-group" role="group" aria-label="Vista">
+                                <a href="?equipo={{ equipo.pk }}&vista=dia&fecha={{ fecha_sel|date:'Y-m-d' }}" class="btn {% if vista == 'dia' %}btn-primary{% else %}btn-light{% endif %}">Día</a>
+                                <a href="?equipo={{ equipo.pk }}&vista=semana&fecha={{ fecha_sel|date:'Y-m-d' }}" class="btn {% if vista == 'semana' %}btn-primary{% else %}btn-light{% endif %}">Semana</a>
+                                <a href="?equipo={{ equipo.pk }}&vista=mes&fecha={{ fecha_sel|date:'Y-m-d' }}" class="btn {% if vista == 'mes' %}btn-primary{% else %}btn-light{% endif %}">Mes</a>
+                            </div>
+                            <div class="ae-navegar" role="group" aria-label="Navegar">
+                                <a href="?equipo={{ equipo.pk }}&vista={{ vista }}&fecha={{ anterior|date:'Y-m-d' }}" class="btn btn-light" aria-label="Anterior"><i class="fas fa-chevron-left"></i></a>
+                                <a href="?equipo={{ equipo.pk }}&vista={{ vista }}&fecha={{ hoy|date:'Y-m-d' }}" class="btn btn-light">Hoy</a>
+                                <a href="?equipo={{ equipo.pk }}&vista={{ vista }}&fecha={{ siguiente|date:'Y-m-d' }}" class="btn btn-light" aria-label="Siguiente"><i class="fas fa-chevron-right"></i></a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -38,18 +46,30 @@
         <div class="card-body">
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
                 <div>
-                    <h5 class="mb-0">{{ fecha_sel|date:"l j \d\e F \d\e Y"|capfirst }}</h5>
-                    <p class="agenda-sub mb-0">{% if equipo %}{{ equipo }} · turnos de {{ paso }} minutos{% endif %}</p>
+                    <h5 class="mb-0">
+                        {% if vista == 'dia' %}{{ fecha_sel|date:"l j \d\e F \d\e Y"|capfirst }}
+                        {% elif vista == 'semana' %}Semana del {{ desde|date:"j \d\e F" }} al {{ hasta|date:"j \d\e F \d\e Y" }}
+                        {% else %}{{ fecha_sel|date:"F \d\e Y"|capfirst }}{% endif %}
+                    </h5>
+                    <p class="agenda-sub mb-0">
+                        {% if equipo %}{{ equipo }} · {% if por_persona %}reparte las citas: cada una va a una persona{% else %}atiende completo: asisten todos los responsables{% endif %}{% endif %}
+                    </p>
                 </div>
-                <div class="ae-leyenda">
-                    <span class="ae-muestra ae-libre"></span>Libre
-                    <span class="ae-muestra ae-cita"></span>Cita
-                    <span class="ae-muestra ae-google"></span>Ocupado en Google
-                    <span class="ae-muestra ae-fuera"></span>Fuera de turno
-                    <span class="ae-muestra ae-comun"></span>Espacio común
-                </div>
+                {% if vista != 'mes' %}
+                    <div class="ae-leyenda">
+                        <span class="ae-muestra ae-libre"></span>Libre
+                        <span class="ae-muestra ae-cita"></span>Cita
+                        <span class="ae-muestra ae-reunion"></span>Reunión
+                        <span class="ae-muestra ae-google"></span>Ocupado en Google
+                        <span class="ae-muestra ae-fuera"></span>Fuera de turno
+                        {% if vista == 'dia' %}<span class="ae-muestra ae-comun"></span>{% if por_persona %}Alguien libre{% else %}Espacio común{% endif %}{% endif %}
+                    </div>
+                {% endif %}
             </div>
-            {% if filas %}
+
+            {% if not hay_miembros and vista != 'mes' %}
+                <p class="agenda-sub mb-0">{% if equipo %}El equipo no tiene miembros todavía. Agrégalos en <a href="/agenda/equipos/">Equipos</a>.{% else %}No tienes equipos visibles.{% endif %}</p>
+            {% elif vista == 'dia' %}
                 <div class="table-responsive ae-scroll">
                     <table class="ae-rejilla">
                         <thead>
@@ -66,14 +86,15 @@
                                     <span class="agenda-sub d-block">{{ f.miembro.get_rol_display }}</span>
                                 </th>
                                 {% for c in f.celdas %}
-                                    <td class="ae-celda ae-{{ c.estado }}" title="{{ c.hora|time:'H:i' }} · {% if c.cita %}{{ c.cita.titulo }}{% else %}{{ c.estado }}{% endif %}">
+                                    <td class="ae-celda ae-{{ c.estado }}{% if c.reunion.pendiente %} ae-pendiente{% endif %}"
+                                        title="{{ c.hora|time:'H:i' }} · {% if c.cita %}{{ c.cita.titulo }}{% elif c.reunion %}Reunión: {{ c.reunion.titulo }}{% if c.reunion.pendiente %} (pendiente de sincronizar){% endif %}{% elif c.estado == 'google' %}Ocupado en Google{% elif c.estado == 'fuera' %}Fuera de turno{% else %}{{ c.estado|capfirst }}{% endif %}">
                                         {% if c.cita %}<a href="/agenda/citas/{{ c.cita.pk }}/" class="ae-cita-enlace">{{ c.cita.codigo }}</a>{% endif %}
                                     </td>
                                 {% endfor %}
                             </tr>
                         {% endfor %}
                         <tr class="ae-fila-comun">
-                            <th scope="row" class="ae-persona">Espacio común<span class="agenda-sub d-block">{{ num_comunes }} disponible{{ num_comunes|pluralize }}</span></th>
+                            <th scope="row" class="ae-persona">{% if por_persona %}Alguien libre{% else %}Espacio común{% endif %}<span class="agenda-sub d-block">{{ num_comunes }} disponible{{ num_comunes|pluralize }}</span></th>
                             {% for h in horas %}
                                 {% with hh=h|time:"H:i" %}
                                     <td class="ae-celda {% if hh in comunes %}ae-comun{% endif %}">
@@ -87,9 +108,86 @@
                         </tbody>
                     </table>
                 </div>
-                <p class="agenda-sub mt-3 mb-0">Toca un espacio común (<i class="fas fa-plus"></i>) para agendar con todos los responsables; se crea el evento con videollamada y se envía la invitación.</p>
+                <p class="agenda-sub mt-3 mb-0">Toca un espacio (<i class="fas fa-plus"></i>) para agendar: {% if por_persona %}la cita va a la persona libre con menos citas esa semana, por turnos{% else %}asisten todos los responsables{% endif %}. Se crea la videollamada y se envía la invitación.</p>
+            {% elif vista == 'semana' %}
+                <div class="ae-semana-movil d-md-none">
+                    {% for d in por_dia %}
+                        <section class="ae-dia-movil{% if d.fecha == hoy %} ae-hoy{% endif %}" aria-label="{{ d.fecha|date:'l j \d\e F' }}">
+                            <div class="ae-dia-movil-cabecera">
+                                <a href="?equipo={{ equipo.pk }}&vista=dia&fecha={{ d.fecha|date:'Y-m-d' }}" class="ae-dia-movil-fecha">{{ d.fecha|date:"l j"|capfirst }}</a>
+                                {% if d.disponibles %}<a href="?equipo={{ equipo.pk }}&vista=dia&fecha={{ d.fecha|date:'Y-m-d' }}" class="ae-chip ae-comun">{{ d.disponibles }} espacio{{ d.disponibles|pluralize }}</a>{% else %}<span class="agenda-sub">Sin espacios</span>{% endif %}
+                            </div>
+                            {% for p in d.personas %}
+                                <div class="ae-dia-movil-persona{% if not p.celda.con_turno %} ae-fuera{% endif %}">
+                                    <strong>{{ p.miembro.usuario.get_full_name|default:p.miembro.usuario.username }}</strong>
+                                    <div class="ae-dia-movil-chips">{% include 'agenda/agenda_equipo/chips_dia.html' with celda=p.celda %}</div>
+                                </div>
+                            {% endfor %}
+                        </section>
+                    {% endfor %}
+                </div>
+                <div class="table-responsive ae-scroll d-none d-md-block">
+                    <table class="ae-semana">
+                        <thead>
+                        <tr>
+                            <th scope="col" class="ae-persona-col">Persona</th>
+                            {% for d in dias %}
+                                <th scope="col" class="{% if d == hoy %}ae-hoy{% endif %}"><a href="?equipo={{ equipo.pk }}&vista=dia&fecha={{ d|date:'Y-m-d' }}">{{ d|date:"D"|capfirst }} <span>{{ d|date:"j" }}</span></a></th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for f in filas_semana %}
+                            <tr>
+                                <th scope="row" class="ae-persona">
+                                    {{ f.miembro.usuario.get_full_name|default:f.miembro.usuario.username }}
+                                    <span class="agenda-sub d-block">{{ f.miembro.get_rol_display }}</span>
+                                </th>
+                                {% for c in f.celdas %}
+                                    <td class="ae-dia{% if not c.con_turno %} ae-fuera{% endif %}">
+                                        {% include 'agenda/agenda_equipo/chips_dia.html' with celda=c %}
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                        <tr class="ae-fila-comun">
+                            <th scope="row" class="ae-persona">{% if por_persona %}Alguien libre{% else %}Espacio común{% endif %}</th>
+                            {% for t in totales %}
+                                <td class="ae-dia">
+                                    {% if t.disponibles %}
+                                        <a href="?equipo={{ equipo.pk }}&vista=dia&fecha={{ t.fecha|date:'Y-m-d' }}" class="ae-chip ae-comun">{{ t.disponibles }} espacio{{ t.disponibles|pluralize }}</a>
+                                    {% else %}
+                                        <span class="agenda-sub">Ninguno</span>
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="agenda-sub mt-3 mb-0">Toca un día para ver sus horas y agendar.</p>
             {% else %}
-                <p class="agenda-sub mb-0">{% if equipo %}El equipo no tiene miembros todavía. Agrégalos en <a href="/agenda/equipos/">Equipos</a>.{% else %}No tienes equipos visibles.{% endif %}</p>
+                <table class="ae-mes">
+                    <thead>
+                    <tr><th scope="col">Lun</th><th scope="col">Mar</th><th scope="col">Mié</th><th scope="col">Jue</th><th scope="col">Vie</th><th scope="col">Sáb</th><th scope="col">Dom</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for semana in semanas %}
+                        <tr>
+                            {% for d in semana %}
+                                <td class="ae-mes-dia{% if d.otro_mes %} ae-otro-mes{% endif %}{% if d.hoy %} ae-hoy{% endif %}">
+                                    <a href="?equipo={{ equipo.pk }}&vista=dia&fecha={{ d.fecha|date:'Y-m-d' }}" class="ae-mes-enlace" aria-label="{{ d.fecha|date:'l j \d\e F' }}: {{ d.citas }} citas, {{ d.disponibles }} espacios">
+                                        <span class="ae-mes-num">{{ d.fecha|date:"j" }}</span>
+                                        {% if d.citas %}<span class="ae-chip ae-cita"><span class="ae-largo">{{ d.citas }} cita{{ d.citas|pluralize }}</span><span class="ae-corto" aria-hidden="true"><i class="fas fa-user-clock"></i> {{ d.citas }}</span></span>{% endif %}
+                                        {% if d.disponibles %}<span class="ae-chip ae-comun"><span class="ae-largo">{{ d.disponibles }} espacio{{ d.disponibles|pluralize }}</span><span class="ae-corto" aria-hidden="true"><i class="far fa-clock"></i> {{ d.disponibles }}</span></span>{% endif %}
+                                    </a>
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <p class="agenda-sub mt-3 mb-0">Cada día muestra las citas del equipo y los espacios {% if por_persona %}en que alguien está libre{% else %}en que coinciden todos los responsables{% endif %}. Toca un día para abrirlo.</p>
             {% endif %}
         </div>
     </div>
