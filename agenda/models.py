@@ -219,6 +219,8 @@ class Producto(ModeloBase):
     ventana_dias = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name='Se puede agendar hasta (días)')
     orden = models.PositiveSmallIntegerField(default=0, verbose_name='Orden')
     activo = models.BooleanField(default=True, verbose_name='Activo')
+    destacado = models.BooleanField(default=False, verbose_name='Destacado en la página principal',
+                                    help_text='Sale en el landing (máximo 4). Todo producto activo aparece en el catálogo.')
 
     def __str__(self):
         return f'{self.padre} · {self.nombre}' if self.padre_id else self.nombre

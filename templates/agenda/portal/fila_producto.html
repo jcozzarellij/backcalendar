@@ -9,7 +9,10 @@
         · {% if p.antelacion_horas is not None %}{{ p.antelacion_horas }} h{% else %}—{% endif %}
         · {% if p.ventana_dias %}{{ p.ventana_dias }} d{% else %}—{% endif %}
     </td>
-    <td class="text-center">{% if p.activo %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-secondary">En pausa</span>{% endif %}</td>
+    <td class="text-center">
+        {% if p.activo %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-secondary">En pausa</span>{% endif %}
+        {% if p.destacado and not nivel %}<span class="badge bg-primary">Destacado</span>{% endif %}
+    </td>
     <td class="text-center">
         <div class="dropdown">
             <button class="btn btn-icon agenda-btn-fila" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Acciones de {{ p.nombre }}">

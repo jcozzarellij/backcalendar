@@ -186,6 +186,8 @@ class ProductoForm(ModelFormBase):
             self.fields[campo].widget.attrs['col'] = '6'
         for campo in ('duracion_min', 'antelacion_horas', 'margen_min', 'limite_dia', 'limite_semana', 'ventana_dias', 'orden'):
             self.fields[campo].widget.attrs['col'] = '3'
+        for campo in ('activo', 'destacado'):
+            self.fields[campo].widget.attrs['col'] = '6'
 
     def clean(self):
         datos = super().clean()
