@@ -1,0 +1,31 @@
+{% extends 'public/base_landing.html' %}
+
+{% block meta_pagina %}
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="/static/css/public/reserva.css?v3.3">
+{% endblock %}
+
+{% block pagina %}
+<div class="row justify-content-center ag-cuerpo">
+    <div class="col-md-10 col-lg-7 col-xl-6">
+        <section class="ag-central" aria-labelledby="ac-titulo">
+            <span class="ag-central-icono" aria-hidden="true"><i class="fas {% block icono %}fa-key{% endblock %}"></i></span>
+            <h1 id="ac-titulo" class="ag-producto ag-central-titulo">{% block titulo_acceso %}{% endblock %}</h1>
+            <p class="ag-descripcion ag-central-texto">{% block bajada_acceso %}{% endblock %}</p>
+            <form method="post" class="ag-form ac-form" novalidate data-acceso data-espera="{% block espera_acceso %}{% endblock %}" data-espere="{{ t.espere }}" data-error="{{ t.au_error }}" data-conexion="{{ t.error_conexion }}">
+                {% csrf_token %}
+                {% block campos_acceso %}{% endblock %}
+                <div class="ag-acciones ag-central-acciones">
+                    <button type="submit" class="btn btn-success ld-agendar"><i class="fas {% block icono_boton %}fa-paper-plane{% endblock %}" aria-hidden="true"></i><span>{% block boton_acceso %}{% endblock %}</span></button>
+                </div>
+            </form>
+            {% block enlaces_acceso %}{% endblock %}
+        </section>
+        <p class="ac-legal"><a href="/privacidad/">{{ t.au_privacidad }}</a><span aria-hidden="true">·</span><a href="/proteccion-datos/">{{ t.au_datos }}</a></p>
+    </div>
+</div>
+{% endblock %}
+
+{% block js_pagina %}
+    <script src="/static/js/public/acceso.js?v1.0"></script>
+{% endblock %}

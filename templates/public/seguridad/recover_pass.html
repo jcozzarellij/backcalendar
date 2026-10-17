@@ -1,57 +1,17 @@
-{% extends 'public/seguridad/base_auth.html' %}
+{% extends 'public/seguridad/base_acceso.html' %}
 
-{% block au_eyebrow %}Recuperar acceso{% endblock %}
-{% block au_title %}Restablecer contraseña{% endblock %}
-{% block au_sub %}Escribe el correo de tu cuenta institucional y te enviamos una contraseña temporal.{% endblock %}
+{% block icono %}fa-key{% endblock %}
+{% block titulo_acceso %}{{ t.au_rp_titulo }}{% endblock %}
+{% block bajada_acceso %}{{ t.au_rp_sub }}{% endblock %}
+{% block espera_acceso %}{{ t.au_rp_espera }}{% endblock %}
 
-{% block auth_body %}
-    <form action="{{ request.path }}" method="post" id="frm-restaurar">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label class="form-label" for="recoverEmail">Correo electrónico</label>
-            <input type="email" class="form-control" id="recoverEmail" name="email"
-                   placeholder="tucorreo@ejemplo.com" required>
-        </div>
-        <button class="btn btn-primary" type="submit">
-            Enviar instrucciones <i class="fas fa-paper-plane ms-1"></i>
-        </button>
-    </form>
+{% block campos_acceso %}
+    <label class="ag-label" for="ac-correo">{{ t.au_correo }}</label>
+    <input type="email" class="ag-campo" id="ac-correo" name="email" placeholder="{{ t.ph_correo }}" autocomplete="email" required>
 {% endblock %}
 
-{% block au_links %}
-    <div class="au-links-row">
-        <a href="/restoreusername/" class="au-link">¿Olvidaste tu usuario?</a>
-        <a href="/login/" class="au-link">Iniciar sesión</a>
-    </div>
-{% endblock %}
+{% block boton_acceso %}{{ t.au_rp_boton }}{% endblock %}
 
-{% block auth_jscript %}
-    <script>
-        $('#frm-restaurar').on('submit', function (e) {
-            e.preventDefault();
-            var frmData = new FormData($(this)[0]);
-            $.ajax({
-                url: '{{ request.path }}',
-                data: frmData,
-                method: 'POST',
-                dataType: 'json',
-                cache: false,
-                contentType: false,
-                processData: false,
-                beforeSend: function () {
-                    pantallaespera('Enviando', 'Preparando el correo de recuperación...');
-                }
-            }).done(function (data) {
-                setTimeout($.unblockUI, 1);
-                if (data.resp === true) {
-                    location = "/login/";
-                } else {
-                    mensajeDanger(data.error);
-                }
-            }).fail(function () {
-                setTimeout($.unblockUI, 1);
-                mensajeDanger('Error de conexión.');
-            });
-        });
-    </script>
+{% block enlaces_acceso %}
+    <p class="ac-enlaces"><a href="/restoreusername/">{{ t.au_olvido_usuario }}</a><a href="/login/">{{ t.ld_ingresar }}</a></p>
 {% endblock %}

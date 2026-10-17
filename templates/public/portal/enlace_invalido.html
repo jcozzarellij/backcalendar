@@ -2,17 +2,17 @@
 
 {% block meta_pagina %}
     <meta name="robots" content="noindex, nofollow">
-    <link rel="stylesheet" href="/static/css/public/reserva.css?v3.2">
+    <link rel="stylesheet" href="/static/css/public/reserva.css?v3.3">
 {% endblock %}
 
 {% block pagina %}
 <div class="row justify-content-center ag-cuerpo">
     <div class="col-lg-8 col-xl-7">
-        <section class="ei-tarjeta" aria-labelledby="ei-titulo">
-            <span class="ei-icono" aria-hidden="true"><i class="fas fa-link-slash"></i></span>
-            <h1 id="ei-titulo" class="ag-producto ei-titulo">{{ t.ei_titulo }}</h1>
-            <p class="ag-descripcion ei-texto">{{ t.ei_texto }}</p>
-            <div class="ag-acciones ei-acciones">
+        <section class="ag-central" aria-labelledby="ag-central-titulo">
+            <span class="ag-central-icono" aria-hidden="true"><i class="fas fa-link-slash"></i></span>
+            <h1 id="ag-central-titulo" class="ag-producto ag-central-titulo">{{ t.ei_titulo }}</h1>
+            <p class="ag-descripcion ag-central-texto">{{ t.ei_texto }}</p>
+            <div class="ag-acciones ag-central-acciones">
                 <a href="/mi-cita/" class="btn btn-success ld-agendar"><i class="fas fa-ticket" aria-hidden="true"></i><span>{{ t.ei_buscar }}</span></a>
                 <a href="/" class="btn btn-light ag-boton-suave"><i class="fas fa-arrow-left" aria-hidden="true"></i><span>{{ t.ei_inicio }}</span></a>
             </div>

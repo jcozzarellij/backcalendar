@@ -1,58 +1,17 @@
-{% extends 'public/seguridad/base_auth.html' %}
+{% extends 'public/seguridad/base_acceso.html' %}
 
-{% block au_eyebrow %}Seguridad{% endblock %}
-{% block au_title %}Cambiar contraseña{% endblock %}
-{% block au_sub %}Por seguridad, define una nueva contraseña antes de continuar.{% endblock %}
+{% block icono %}fa-lock{% endblock %}
+{% block titulo_acceso %}{{ t.au_cc_titulo }}{% endblock %}
+{% block bajada_acceso %}{{ t.au_cc_sub }}{% endblock %}
+{% block espera_acceso %}{{ t.au_cc_espera }}{% endblock %}
 
-{% block auth_body %}
-    <form method="post" id="frm-restaurar">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label class="form-label" for="passNew">Nueva contraseña</label>
-            <div class="au-pass">
-                <input type="password" class="form-control" name="passNew"
-                       id="passNew" placeholder="Ingresa tu nueva contraseña" required>
-                <button type="button" class="au-pass-toggle" aria-label="Mostrar u ocultar contraseña">
-                    <i class="fas fa-eye"></i>
-                </button>
-            </div>
-        </div>
-        <button type="submit" class="btn btn-primary">
-            Cambiar contraseña <i class="fas fa-circle-check ms-1"></i>
-        </button>
-    </form>
+{% block campos_acceso %}
+    <label class="ag-label" for="ac-clave">{{ t.au_cc_campo }}</label>
+    <div class="ac-clave">
+        <input type="password" class="ag-campo" id="ac-clave" name="passNew" placeholder="{{ t.au_cc_ph }}" autocomplete="new-password" required>
+        <button type="button" class="ac-ver-clave" data-ver-clave aria-controls="ac-clave" aria-pressed="false" aria-label="{{ t.au_ver_clave }}"><i class="fas fa-eye" aria-hidden="true"></i></button>
+    </div>
 {% endblock %}
 
-{% block auth_jscript %}
-    <script>
-        $('#frm-restaurar').on({
-            submit: function (e) {
-                e.preventDefault();
-                var frmData = new FormData($(this)[0]);
-                $.ajax({
-                    url: '{{ request.path }}',
-                    data: frmData,
-                    method: 'POST',
-                    dataType: 'json',
-                    cache: false,
-                    contentType: false,
-                    processData: false,
-                    beforeSend: function () {
-                        pantallaespera('Guardando', 'Actualizando tu contraseña...');
-                    }
-                }).done(function (data) {
-                    setTimeout($.unblockUI, 1);
-                    if (data.resp === true) {
-                        location = "/login/";
-                        return false;
-                    } else {
-                        mensajeDanger(data.error);
-                    }
-                }).fail(function () {
-                    setTimeout($.unblockUI, 1);
-                    mensajeDanger('Error de conexión.');
-                });
-            }
-        });
-    </script>
-{% endblock %}
+{% block icono_boton %}fa-circle-check{% endblock %}
+{% block boton_acceso %}{{ t.au_cc_boton }}{% endblock %}
