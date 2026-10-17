@@ -283,12 +283,15 @@ def incrustar(request, portal):
     portal_obj = Portal.objects.filter(status=True, activo=True, slug=portal).first()
     if portal_obj is None:
         raise Http404('Portal no encontrado')
-    data = {'titulo': f'Agendar · {portal_obj.nombre}', 'ruta': request.path, 'fecha': datetime.now(), 'ventana': True}
+    data = {'ruta': request.path, 'fecha': datetime.now(), 'ventana': True}
     addData(request, data)
-    data['portal'] = portal_obj
-    data['productos'] = list(Producto.objects.filter(status=True, activo=True, portal=portal_obj, padre__isnull=True)
-                             .order_by('orden', 'nombre'))
-    return _con_marco(render(request, 'public/portal/incrustar.html', data), portal_obj)
+    t = funciones_portal.contexto_publico(request, data, portal_obj)
+    data.update({
+        'titulo': f"{t['ld_agendar']} · {portal_obj.nombre}",
+        'portal': portal_obj,
+        'productos': funciones_portal.productos_publicos(portal_obj, data['idioma'], t),
+    })
+    return _con_marco(_render(request, 'public/portal/incrustar.html', data), portal_obj)
 
 
 def _render(request, plantilla, data, status=200):

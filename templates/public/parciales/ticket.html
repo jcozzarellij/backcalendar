@@ -16,7 +16,7 @@
                     <ul class="row g-2">
                         {% for s in p.partes %}
                             <li class="col-md-6">
-                                <a href="/agendar/{{ s.slug }}/" class="ld-parte">
+                                <a href="/agendar/{{ s.slug }}/{% if ventana %}?ventana=1{% endif %}" class="ld-parte">
                                     <span class="ld-parte-texto">
                                         <span class="ld-parte-nombre">{{ s.nombre }}</span>
                                         {% if s.descripcion %}<span class="ld-parte-desc">{{ s.descripcion }}</span>{% endif %}
@@ -29,7 +29,7 @@
                 </div>
             {% else %}
                 <div class="col-sm-auto ld-ticket-talon">
-                    <a href="/agendar/{{ p.slug }}/" class="btn btn-success ld-agendar">
+                    <a href="/agendar/{{ p.slug }}/{% if ventana %}?ventana=1{% endif %}" class="btn btn-success ld-agendar">
                         <i class="fas fa-calendar-check" aria-hidden="true"></i>{{ t.ld_agendar }}<span class="visually-hidden"> {{ p.nombre }}</span>
                     </a>
                 </div>

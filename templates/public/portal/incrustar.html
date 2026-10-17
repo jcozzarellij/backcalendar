@@ -1,24 +1,38 @@
-{% extends 'public/base.html' %}
+{% extends 'public/base_landing.html' %}
 
-{% block head %}
+{% block meta_pagina %}
     <meta name="robots" content="noindex, nofollow">
-    <link rel="stylesheet" href="/static/css/public/portal.css?v1.0">
+    <link rel="stylesheet" href="/static/css/public/reserva.css?v3.2">
 {% endblock %}
 
-{% block content %}
-<section class="pt-paso" aria-labelledby="pt-inc-titulo">
-    <h1 id="pt-inc-titulo" class="pt-paso-titulo">¿Sobre qué quiere su cita?</h1>
-    <ul class="pt-productos pt-productos-grande">
-        {% for p in productos %}
-            <li>
-                <a href="/agendar/{{ p.slug }}/?ventana=1"><i class="fas fa-calendar-plus" aria-hidden="true"></i><span>{{ p.nombre }}{% if p.descripcion %}<small>{{ p.descripcion }}</small>{% endif %}</span></a>
-            </li>
-        {% empty %}
-            <li class="pt-vacio">Todavía no hay productos para agendar.</li>
-        {% endfor %}
-    </ul>
-    {% if portal.telefono_atencion %}
-        <p class="pt-contacto mb-0"><i class="fas fa-phone" aria-hidden="true"></i><a href="tel:{{ portal.telefono_atencion|cut:' ' }}">{{ portal.telefono_atencion }}</a></p>
+{% block pagina %}
+<section class="ag-cabecera in-cabecera" aria-labelledby="in-titulo">
+    <h1 id="in-titulo" class="ag-producto in-titulo">{{ t.ld_productos_titulo }}</h1>
+    <p class="ag-descripcion">{{ t.in_bajada }}</p>
+</section>
+
+<section class="in-productos" aria-labelledby="in-titulo">
+    {% if productos %}
+        <ul class="ld-tickets row g-3">
+            {% for p in productos %}
+                {% include 'public/parciales/ticket.html' %}
+            {% endfor %}
+        </ul>
+    {% else %}
+        {% include 'public/parciales/ticket_vacio.html' with encabezado='h2' %}
     {% endif %}
 </section>
+
+<div class="row gx-3 gy-3 in-pie">
+    <div class="col-md-6">
+        <section class="ci-panel in-cita" aria-labelledby="in-cita-titulo">
+            <h2 class="ag-ayuda-titulo" id="in-cita-titulo">{{ t.ld_ya_cita }}</h2>
+            <p class="ag-nota">{{ t.ld_ya_cita_texto }}</p>
+            <a href="/mi-cita/" class="btn btn-light ag-boton-suave" target="_blank" rel="noopener">{{ t.mc_boton }}<i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i><span class="visually-hidden"> ({{ t.ld_nueva_pestana }})</span></a>
+        </section>
+    </div>
+    <div class="col-md-6">
+        {% include 'public/parciales/ayuda.html' with ayuda_id='in-ayuda-titulo' %}
+    </div>
+</div>
 {% endblock %}

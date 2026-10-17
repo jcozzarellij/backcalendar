@@ -1334,3 +1334,79 @@ button.ag-mes-dia:hover,
         transition: none;
     }
 }
+
+.in-cabecera {
+    padding: 1.5rem 0 1.25rem;
+}
+
+.in-titulo {
+    font-size: clamp(1.7em, 1.5vw + 1.1em, 2.4em);
+}
+
+.in-productos {
+    padding-bottom: 1.5rem;
+}
+
+.in-pie {
+    padding-bottom: 2rem;
+}
+
+.in-cita .ag-nota {
+    margin: 0 0 .9rem;
+}
+
+.pb-ventana .pb-main {
+    padding-top: 0;
+}
+
+.pb-body.pb-landing.pb-ventana {
+    background: var(--ld-nube);
+}
+
+.pb-ventana .ld-letra {
+    display: none;
+}
+
+.ei-tarjeta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .9rem;
+    margin: clamp(1.5rem, 4vw, 3rem) 0 1rem;
+    padding: clamp(1.5rem, 4vw, 2.75rem);
+    border-radius: 20px;
+    background: var(--ld-papel);
+}
+
+.ei-icono {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.2rem;
+    height: 3.2rem;
+    border-radius: 16px;
+    background: var(--ld-nube);
+    color: var(--ld-azul);
+    font-size: 1.2em;
+}
+
+.ei-titulo,
+.ei-texto {
+    margin: 0;
+}
+
+.ei-acciones {
+    align-self: stretch;
+    margin-top: .5rem;
+}
+
+@media (max-width: 575.98px) {
+    .ei-tarjeta .ei-acciones .btn {
+        width: 100%;
+        white-space: normal;
+    }
+
+    .ei-tarjeta .ei-acciones .btn span {
+        min-width: 0;
+    }
+}
