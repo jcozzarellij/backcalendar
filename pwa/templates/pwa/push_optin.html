@@ -49,13 +49,19 @@
         }
 
         function showSnack() {
-            snack.hidden = false;
-            requestAnimationFrame(() => snack.classList.add('is-visible'));
+            colaAvisos.pedir(() => {
+                snack.hidden = false;
+                requestAnimationFrame(() => snack.classList.add('is-visible'));
+            });
         }
 
         function hideSnack() {
+            if (snack.hidden) return;
             snack.classList.remove('is-visible');
-            setTimeout(() => { snack.hidden = true; }, 240);
+            setTimeout(() => {
+                snack.hidden = true;
+                colaAvisos.liberar();
+            }, 240);
         }
 
         function urlB64ToUint8Array(b64) {

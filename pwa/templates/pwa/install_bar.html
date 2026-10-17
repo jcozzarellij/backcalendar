@@ -1,16 +1,7 @@
 <div id="pwaInstallBar" class="pwa-bar" hidden>
     <div class="pwa-bar__inner">
         <div class="pwa-bar__icon-box">
-            {% if logo %}
-                <img src="{{ logo }}" alt="" class="pwa-bar__app-logo">
-            {% else %}
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                     class="pwa-bar__icon-svg">
-                    <rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect>
-                    <path d="M12 18h.01"></path>
-                </svg>
-            {% endif %}
+            <img src="/pwa/icono/192.png?v={{ pwa_icono_version }}" alt="" class="pwa-bar__app-logo">
         </div>
         <div class="pwa-bar__body">
             <p class="pwa-bar__title">
@@ -185,13 +176,22 @@
                 return;
             }
             bar.dataset.mode = mode;
-            bar.hidden = false;
-            requestAnimationFrame(() => bar.classList.add('is-visible'));
+            if (!bar.hidden || bar.dataset.enCola) return;
+            bar.dataset.enCola = '1';
+            colaAvisos.pedir(() => {
+                delete bar.dataset.enCola;
+                bar.hidden = false;
+                requestAnimationFrame(() => bar.classList.add('is-visible'));
+            });
         }
 
         function hideBar() {
+            if (bar.hidden) return;
             bar.classList.remove('is-visible');
-            setTimeout(() => { bar.hidden = true; }, 220);
+            setTimeout(() => {
+                bar.hidden = true;
+                colaAvisos.liberar();
+            }, 220);
         }
 
         function showSheet(sheet) {
