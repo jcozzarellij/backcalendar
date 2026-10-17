@@ -41,7 +41,7 @@ self.addEventListener('push', (event) => {
         requireInteraction: payload.requireInteraction === true,
         vibrate: payload.vibrate || [200, 100, 200],
         data: {url: payload.url || '/', extra: payload.extra || null},
-        actions: payload.url ? [{action: 'open_url', title: 'Open'}] : []
+        actions: payload.url ? [{action: 'open_url', title: 'Abrir'}] : []
     };
     event.waitUntil(self.registration.showNotification(title, options));
 });
