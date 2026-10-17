@@ -5,9 +5,13 @@ Interfaz:
 - `espacios_comunes(usuarios, fecha, duracion=None, margen=0)` — inicios en que coinciden todos.
 - `espacios_libres_rango` / `espacios_comunes_rango(..., desde, hasta, ...)` — lo mismo para varios días: {fecha: inicios},
   con las consultas y la petición a Google hechas una vez para todo el rango.
-- `ocupacion_del_dia(usuario, fecha)` — bloques (inicio, fin, tipo) para pintar la agenda del equipo:
-  tipo ∈ {'turno', 'cita', 'google', 'manual'}.
+- `ocupacion_rango(usuario, desde, hasta)` / `ocupacion_del_dia(usuario, fecha)` — bloques (inicio, fin, tipo)
+  para pintar la agenda del equipo: tipo ∈ {'turno', 'cita', 'reunion', 'google', 'manual'}.
+- `espacios_alguno_rango(usuarios, ...)` — inicios en que al menos uno está libre (modo «una persona»).
+- `estado_en(usuario, inicio, fin)` — 'libre', 'ocupado' o 'fuera' de turno.
 - `ocupados_google(usuario, desde, hasta)` — bloques ocupados en Google, cacheados.
+- `eventos_google(usuario, desde, hasta, excluir=(), refrescar=False)` — eventos propios de Google para
+  mostrar en la agenda del usuario, cacheados; (eventos o None sin conexión, error).
 
 Todo en hora local naive (`USE_TZ=False`). Google se consulta por usuario con su propia conexión;
 si no la tiene o falla, se ignora y la disponibilidad se calcula solo con lo propio.
@@ -20,7 +24,7 @@ from django.core.cache import cache
 from seguridad.models import ParametroSistema
 from . import funciones_google
 from .funciones_turnos import datos_turnos, duracion_turno, franjas_del_dia, franjas_en
-from .models import BloqueOcupado, ConexionAplicacion
+from .models import BloqueOcupado, Reunion
 
 logger = logging.getLogger(__name__)
 
@@ -36,10 +40,10 @@ def _parametro_int(clave, default):
 def ocupados_google(usuario, desde, hasta):
     """Bloques (inicio, fin) ocupados en el Google Calendar del usuario; lista vacía si no hay
     conexión o Google falla. Se cachea por usuario y día según `agenda_cache_disponibilidad_seg`."""
-    conexion = ConexionAplicacion.objects.filter(status=True, usuario=usuario, proveedor='google', conectada=True).first()
+    conexion = funciones_google.conexion_activa(usuario)
     if conexion is None:
         return []
-    clave = f'agenda:freebusy:{usuario.pk}:{desde:%Y%m%d%H%M}:{hasta:%Y%m%d%H%M}'
+    clave = f'agenda:freebusy:{usuario.pk}:{_version_google(usuario)}:{desde:%Y%m%d%H%M}:{hasta:%Y%m%d%H%M}'
     cacheado = cache.get(clave)
     if cacheado is not None:
         return cacheado
@@ -52,14 +56,54 @@ def ocupados_google(usuario, desde, hasta):
     return bloques
 
 
+def eventos_google(usuario, desde, hasta, excluir=(), refrescar=False):
+    """Eventos del Google Calendar del usuario que no son citas de Turno, solo lectura. `excluir` son los
+    `google_event_id` de las citas ya pintadas (las copias de invitado no traen `cita_id`). Devuelve
+    (eventos, error): sin conexión, (None, ''); si Google falla, ([], mensaje) y la agenda sigue sin ellos."""
+    conexion = funciones_google.conexion_activa(usuario)
+    if conexion is None:
+        return None, ''
+    clave = f'agenda:eventos_google:{usuario.pk}:{_version_google(usuario)}:{desde:%Y%m%d%H%M}:{hasta:%Y%m%d%H%M}'
+    eventos = None if refrescar else cache.get(clave)
+    if eventos is None:
+        try:
+            eventos = funciones_google.listar_eventos(conexion, desde, hasta)
+        except Exception as ex:
+            logger.warning('eventos de Google de %s fallaron: %s', usuario, ex)
+            mensaje = str(ex) if isinstance(ex, funciones_google.ErrorGoogle) else 'Google no respondió.'
+            return [], mensaje
+        cache.set(clave, eventos, _parametro_int('agenda_cache_disponibilidad_seg', 180))
+    excluidos = {i for i in excluir if i}
+    return [e for e in eventos if e['id'] not in excluidos], ''
+
+
+def _version_google(usuario):
+    clave = f'agenda:google_version:{usuario.pk}'
+    version = cache.get(clave)
+    if version is None:
+        version = 1
+        cache.set(clave, version, None)
+    return version
+
+
 def invalidar_google(usuario):
-    """Borra el caché de Google del usuario (tras crear o mover una cita)."""
-    cache.delete_pattern(f'agenda:freebusy:{usuario.pk}:*') if hasattr(cache, 'delete_pattern') else None
+    """Descarta el caché de Google del usuario (ocupado y eventos) tras crear, mover o borrar algo: sube su
+    versión, así las claves viejas dejan de leerse sin tener que buscarlas (LocMemCache no tiene delete_pattern)."""
+    clave = f'agenda:google_version:{usuario.pk}'
+    try:
+        cache.incr(clave)
+    except ValueError:
+        cache.set(clave, 2, None)
 
 
 def bloques_propios(usuario, desde, hasta):
-    return [(b.inicio, b.fin) for b in BloqueOcupado.objects.filter(
-        status=True, usuario=usuario, inicio__lt=hasta, fin__gt=desde).order_by('inicio')]
+    """Lo ocupado según Turno: bloques de citas y manuales, más las reuniones propias (aunque todavía no
+    estén en Google, así la agenda no ofrece esa hora si la plataforma está caída)."""
+    bloques = [(b.inicio, b.fin) for b in BloqueOcupado.objects.filter(
+        status=True, usuario=usuario, inicio__lt=hasta, fin__gt=desde)]
+    bloques += list(Reunion.objects.filter(status=True, organizador=usuario, eliminada=False, inicio__lt=hasta,
+                                           fin__gt=desde).values_list('inicio', 'fin'))
+    return sorted(bloques)
 
 
 def _ocupado_en(inicio, fin, bloques, margen):
@@ -118,17 +162,70 @@ def espacios_comunes_rango(usuarios, desde, hasta, duracion=None, margen=0, paso
     return {f: sorted(h) for f, h in comunes.items()}
 
 
+def espacios_alguno_rango(usuarios, desde, hasta, duracion=None, margen=0, paso=None, desde_hora=None):
+    """{fecha: inicios en que AL MENOS UNO de los usuarios está libre} para cada día del rango."""
+    union = {}
+    for usuario in usuarios:
+        for f, horas in espacios_libres_rango(usuario, desde, hasta, duracion, margen, paso, desde_hora).items():
+            union.setdefault(f, set()).update(horas)
+    return {f: sorted(h) for f, h in union.items()}
+
+
+def estado_en(usuario, inicio, fin, margen=0):
+    """'libre', 'ocupado' o 'fuera' (fuera de su turno declarado) para el intervalo [inicio, fin)."""
+    if _ocupado_en(inicio, fin, bloques_propios(usuario, inicio, fin) + ocupados_google(usuario, inicio, fin), margen):
+        return 'ocupado'
+    dentro = any(datetime.combine(inicio.date(), a) <= inicio and datetime.combine(inicio.date(), b) >= fin
+                 for a, b in franjas_del_dia(usuario, inicio.date()))
+    return 'libre' if dentro else 'fuera'
+
+
+def ocupacion_rango(usuario, desde, hasta):
+    """{fecha: bloques} para la agenda del equipo: turnos declarados y, dentro de ellos, lo ocupado (citas,
+    bloqueos manuales, reuniones propias aunque estén pendientes de sincronizar, y lo ocupado en Google).
+    Una consulta por fuente para todo el rango."""
+    fechas = [desde + timedelta(days=i) for i in range((hasta - desde).days + 1)]
+    rango_ini = datetime.combine(desde, datetime.min.time())
+    rango_fin = datetime.combine(hasta, datetime.min.time()) + timedelta(days=1)
+    datos = datos_turnos(usuario, desde, hasta)
+    por_dia = {f: [{'inicio': datetime.combine(f, a), 'fin': datetime.combine(f, b), 'tipo': 'turno'} for a, b in franjas_en(datos, f)]
+               for f in fechas}
+    ocupados = [{'inicio': b.inicio, 'fin': b.fin, 'tipo': b.fuente, 'cita': b.cita} for b in BloqueOcupado.objects.filter(
+        status=True, usuario=usuario, inicio__lt=rango_fin, fin__gt=rango_ini).select_related('cita')]
+    ocupados += [{'inicio': r.inicio, 'fin': r.fin, 'tipo': 'reunion', 'reunion': r} for r in Reunion.objects.filter(
+        status=True, organizador=usuario, eliminada=False, inicio__lt=rango_fin, fin__gt=rango_ini)]
+    propios = [(b['inicio'], b['fin']) for b in ocupados]
+    ocupados += [{'inicio': i, 'fin': f, 'tipo': 'google'} for g in ocupados_google(usuario, rango_ini, rango_fin)
+                 for i, f in _restar_intervalos(g, propios)]
+    for b in ocupados:
+        for f in fechas:
+            dia_ini = datetime.combine(f, datetime.min.time())
+            if b['inicio'] < dia_ini + timedelta(days=1) and b['fin'] > dia_ini:
+                por_dia[f].append({**b, 'inicio': max(b['inicio'], dia_ini), 'fin': min(b['fin'], dia_ini + timedelta(days=1))})
+    return {f: sorted(bl, key=lambda b: (b['inicio'], b['tipo'] != 'turno')) for f, bl in por_dia.items()}
+
+
+def _restar_intervalos(intervalo, otros):
+    """Partes de `intervalo` que no cubre ninguno de `otros` (lo ocupado en Google que no es una cita o
+    reunión de Turno ya pintada); descarta restos de menos de un minuto."""
+    partes = [intervalo]
+    for o_ini, o_fin in otros:
+        nuevas = []
+        for p_ini, p_fin in partes:
+            if o_fin <= p_ini or o_ini >= p_fin:
+                nuevas.append((p_ini, p_fin))
+                continue
+            if o_ini > p_ini:
+                nuevas.append((p_ini, o_ini))
+            if o_fin < p_fin:
+                nuevas.append((o_fin, p_fin))
+        partes = nuevas
+    return [(a, b) for a, b in partes if b - a >= timedelta(minutes=1)]
+
+
 def ocupacion_del_dia(usuario, fecha):
-    """Bloques para la vista de equipo: turnos declarados y, dentro de ellos, lo ocupado."""
-    dia_ini = datetime.combine(fecha, datetime.min.time())
-    dia_fin = dia_ini + timedelta(days=1)
-    bloques = [{'inicio': datetime.combine(fecha, a), 'fin': datetime.combine(fecha, b), 'tipo': 'turno'}
-               for a, b in franjas_del_dia(usuario, fecha)]
-    for b in BloqueOcupado.objects.filter(status=True, usuario=usuario, inicio__lt=dia_fin, fin__gt=dia_ini).select_related('cita'):
-        bloques.append({'inicio': b.inicio, 'fin': b.fin, 'tipo': b.fuente, 'cita': b.cita})
-    for inicio, fin in ocupados_google(usuario, dia_ini, dia_fin):
-        bloques.append({'inicio': max(inicio, dia_ini), 'fin': min(fin, dia_fin), 'tipo': 'google'})
-    return sorted(bloques, key=lambda b: (b['inicio'], b['tipo'] != 'turno'))
+    """Bloques de un día para la vista de equipo (ver `ocupacion_rango`)."""
+    return ocupacion_rango(usuario, fecha, fecha)[fecha]
 
 
 def primer_espacio(usuarios, desde, dias=14, duracion=None, margen=0, antelacion_horas=None):

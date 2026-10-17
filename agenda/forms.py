@@ -107,6 +107,20 @@ class ExcepcionTurnoForm(ModelFormBase):
         return datos
 
 
+class SelectConDeshabilitadas(forms.Select):
+    """Select que muestra algunas opciones deshabilitadas (las plataformas que todavía no existen)."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.deshabilitadas = set()
+
+    def create_option(self, name, value, *args, **kwargs):
+        opcion = super().create_option(name, value, *args, **kwargs)
+        if value in self.deshabilitadas:
+            opcion['attrs']['disabled'] = True
+        return opcion
+
+
 class CitaRapidaForm(FormBase):
     """Agendar desde el panel (vista de equipo o cola): datos mínimos del cliente y la cita."""
     nombres = forms.CharField(label='Nombre del cliente', max_length=200, widget=forms.TextInput(attrs={'col': '6'}))
@@ -120,11 +134,67 @@ class CitaRapidaForm(FormBase):
                                  input_formats=['%Y-%m-%dT%H:%M', '%Y-%m-%d %H:%M'])
     duracion = forms.IntegerField(label='Duración (min)', min_value=10, max_value=240, initial=40,
                                   widget=forms.NumberInput(attrs={'col': '6'}))
+    plataforma = forms.ChoiceField(label='Videollamada en', initial='google', required=False,
+                                   widget=SelectConDeshabilitadas(attrs={'col': '12'}),
+                                   help_text='Se genera en la cuenta de quien organiza. Si la plataforma está caída, la cita '
+                                             'se crea igual y el enlace llega al reconectar.')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        from .funciones_reuniones import IMPLEMENTADAS
+        from .models import PLATAFORMA_REUNION
         self.fields['producto'].queryset = Producto.objects.filter(status=True, activo=True).select_related('padre')
         self.fields['producto'].widget.attrs['class'] = 'select2'
+        self.fields['plataforma'].choices = [(k, v if k in IMPLEMENTADAS else f'{v} (próximamente)') for k, v in PLATAFORMA_REUNION]
+        self.fields['plataforma'].widget.deshabilitadas = {k for k, _ in PLATAFORMA_REUNION if k not in IMPLEMENTADAS}
+        self.fields['plataforma'].widget.attrs['class'] = 'select2'
+
+    def clean_plataforma(self):
+        valor = self.cleaned_data.get('plataforma') or 'google'
+        if valor in self.fields['plataforma'].widget.deshabilitadas:
+            raise ValidationError('Esa plataforma todavía no está disponible.')
+        return valor
+
+
+class ReunionForm(FormBase):
+    """Reunión propia en la plataforma elegida (hoy Google Calendar), creada o editada desde Mi agenda."""
+    titulo = forms.CharField(label='Título', max_length=200, widget=forms.TextInput(attrs={'col': '12', 'placeholder': 'Ej.: Revisión semanal con el equipo'}))
+    inicio = forms.DateTimeField(label='Inicio', widget=forms.DateTimeInput(attrs={'col': '6', 'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+                                 input_formats=['%Y-%m-%dT%H:%M', '%Y-%m-%d %H:%M'])
+    duracion = forms.IntegerField(label='Duración (min)', min_value=5, max_value=720, initial=30,
+                                  widget=forms.NumberInput(attrs={'col': '6'}))
+    color = forms.ChoiceField(label='Color', required=False, widget=forms.Select(attrs={'col': '6'}))
+    lugar = forms.CharField(label='Lugar', max_length=300, required=False,
+                            widget=forms.TextInput(attrs={'col': '6', 'placeholder': 'Oficina, dirección o enlace'}))
+    invitados = forms.CharField(label='Invitados', required=False,
+                                widget=forms.TextInput(attrs={'col': '12', 'placeholder': 'correo@ejemplo.com, otro@ejemplo.com'}),
+                                help_text='Correos separados por coma. Google les envía la invitación.')
+    descripcion = forms.CharField(label='Descripción', required=False, widget=forms.Textarea(attrs={'col': '12', 'rows': '3'}))
+    meet = forms.BooleanField(label='Agregar videollamada de Google Meet', required=False, initial=True,
+                              widget=forms.CheckboxInput(attrs={'col': '12'}))
+
+    def __init__(self, *args, todo_el_dia=False, creando=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        from .funciones_google import COLORES_EVENTO
+        self.fields['color'].choices = [('', 'Color del calendario')] + [(k, nombre) for k, (nombre, _) in COLORES_EVENTO.items()]
+        self.fields['color'].widget.attrs['class'] = 'select2'
+        if todo_el_dia:
+            del self.fields['inicio'], self.fields['duracion']
+        if not creando:
+            del self.fields['meet']
+
+    def clean_invitados(self):
+        from django.core.validators import validate_email
+        correos = [c.strip() for c in (self.cleaned_data.get('invitados') or '').replace(';', ',').split(',') if c.strip()]
+        malos = []
+        for correo in correos:
+            try:
+                validate_email(correo)
+            except ValidationError:
+                malos.append(correo)
+        if malos:
+            raise ValidationError('Correo no válido: ' + ', '.join(malos))
+        return list(dict.fromkeys(correos))
 
 
 class SolicitudForm(ModelFormBase):

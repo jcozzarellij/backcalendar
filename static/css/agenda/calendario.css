@@ -214,6 +214,16 @@
     text-overflow: ellipsis;
 }
 
+.cal-mes-dia.cal-sobre {
+    outline: 2px dashed var(--mi-azul, #005082);
+    outline-offset: -3px;
+    background: var(--mi-azul-suave, #e6f0f5);
+}
+
+a.cal-mes-cita[draggable="true"] {
+    cursor: grab;
+}
+
 .cal-mes-mas {
     font-size: .76rem;
     color: var(--mi-azul, #005082);
@@ -241,6 +251,10 @@
 }
 
 @media (max-width: 767.98px) {
+    .cal-barra {
+        justify-content: flex-start;
+    }
+
     .cal-rejilla {
         min-width: 560px;
     }
@@ -254,8 +268,168 @@
     }
 }
 
-.cal-rejilla tbody tr:first-child .cal-hora {
+.cal-rejilla tbody tr:first-child .cal-hora,
+.cal-fila-dia + tr .cal-hora {
     transform: none;
+}
+
+.cal-barra {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.cal-grupo {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+}
+
+.cal-cola .d-flex > .agenda-sub {
+    white-space: nowrap;
+}
+
+.cal-cola .mi-pildora {
+    min-width: 0;
+    max-width: 60%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.cal-rejilla:has(thead th:nth-child(4)) .cal-bloque {
+    padding: 4px 6px;
+}
+
+.cal-rejilla tbody tr {
+    height: 2.75rem;
+}
+
+.cal-rejilla tbody tr.cal-fila-dia {
+    height: auto;
+}
+
+.cal-celda {
+    height: 2.75rem;
+}
+
+.cal-con-cita {
+    position: relative;
+    height: auto;
+}
+
+.cal-bloque {
+    position: absolute;
+    min-height: 1.15rem;
+}
+
+.cal-google {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 6px;
+    box-shadow: inset 3px 0 0 rgba(0, 0, 0, .22);
+    font: inherit;
+    text-align: left;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.cal-google[draggable="true"] {
+    cursor: grab;
+}
+
+.cal-google:hover {
+    filter: brightness(.94);
+}
+
+.cal-google.cal-arrastrando {
+    opacity: .5;
+}
+
+.cal-google .cal-cita-sub {
+    color: inherit;
+    opacity: .85;
+}
+
+.cal-pendiente {
+    background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, .28) 0 6px, transparent 6px 12px);
+    box-shadow: inset 3px 0 0 rgba(0, 0, 0, .22), inset 0 0 0 1px rgba(0, 0, 0, .25);
+}
+
+.cal-reunion-plataforma {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-weight: 600;
+    color: var(--mi-tinta, #1a2b3c);
+}
+
+.cal-elegir {
+    display: grid;
+    gap: .5rem;
+    text-align: left;
+}
+
+.cal-elegir .btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    text-align: left;
+}
+
+.cal-elegir .btn small {
+    font-weight: 400;
+    opacity: .8;
+}
+
+.cal-google:focus-visible {
+    outline: 2px solid var(--mi-azul, #005082);
+    outline-offset: 1px;
+}
+
+.cal-google .cal-cita-titulo > .fab,
+.cal-google .cal-cita-titulo > .fas {
+    margin-right: 2px;
+}
+
+.cal-google.cal-mes-cita,
+.cal-google-dia {
+    display: block;
+    width: 100%;
+    margin-bottom: 3px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: .76rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.cal-google-dia .cal-cita-titulo {
+    display: block;
+}
+
+.cal-fila-dia .cal-hora {
+    vertical-align: middle;
+    font-size: .72rem;
+    line-height: 1.1;
+}
+
+.cal-dia-completo {
+    padding: 3px 2px 0;
+    vertical-align: top;
+    border-bottom: 1px solid var(--mi-borde, #e4e1da);
+    border-left: 1px solid var(--mi-borde, #e4e1da);
+    background: var(--mi-fondo, #f6f4ef);
+}
+
+.cal-pastilla-google {
+    background-color: #039be5;
+    border-left: 3px solid #0277bd;
 }
 
 .cal-rejilla:not(:has(thead th:nth-child(3))) {

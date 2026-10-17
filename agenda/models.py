@@ -275,4 +275,56 @@ class ConexionAplicacion(ModeloBase):
         ]
 
 
+PLATAFORMA_REUNION = (
+    ('google', 'Google Calendar'),
+    ('teams', 'Microsoft Teams'),
+    ('zoom', 'Zoom'),
+)
+
+PENDIENTE_REUNION = (
+    ('', 'Sincronizada'),
+    ('crear', 'Por crear en la plataforma'),
+    ('actualizar', 'Por actualizar en la plataforma'),
+    ('eliminar', 'Por eliminar en la plataforma'),
+)
+
+
+class Reunion(ModeloBase):
+    """Reunión propia (no es una cita con cliente) creada desde Mi agenda. Turno es la fuente de verdad: se
+    guarda aquí primero y se refleja en la plataforma; si esta no responde queda `pendiente` y el cron
+    `reconciliar_google` la reintenta. `id_externo` se fija al crearla, así un reintento no la duplica."""
+    organizador = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='reuniones_agenda',
+                                    verbose_name='Organizador')
+    plataforma = models.CharField(max_length=20, choices=PLATAFORMA_REUNION, default='google', verbose_name='Plataforma')
+    titulo = models.CharField(max_length=200, verbose_name='Título')
+    inicio = models.DateTimeField(verbose_name='Inicio')
+    fin = models.DateTimeField(verbose_name='Fin')
+    lugar = models.CharField(max_length=300, blank=True, default='', verbose_name='Lugar')
+    descripcion = models.TextField(blank=True, default='', verbose_name='Descripción')
+    invitados = models.TextField(blank=True, default='', verbose_name='Invitados', help_text='Correos separados por coma.')
+    color_id = models.CharField(max_length=4, blank=True, default='', verbose_name='Color')
+    con_videollamada = models.BooleanField(default=True, verbose_name='Con videollamada')
+    id_externo = models.CharField(max_length=255, blank=True, default='', db_index=True, verbose_name='ID en la plataforma')
+    enlace = models.URLField(max_length=500, blank=True, default='', verbose_name='Enlace del evento')
+    enlace_videollamada = models.URLField(max_length=500, blank=True, default='', verbose_name='Enlace de la videollamada')
+    eliminada = models.BooleanField(default=False, verbose_name='Eliminada')
+    pendiente = models.CharField(max_length=12, choices=PENDIENTE_REUNION, blank=True, default='crear', verbose_name='Sincronización')
+    error_sincronizacion = models.CharField(max_length=300, blank=True, default='', verbose_name='Último error de sincronización')
+    intentos = models.PositiveSmallIntegerField(default=0, verbose_name='Intentos de sincronización')
+    ultima_sincronizacion = models.DateTimeField(blank=True, null=True, verbose_name='Última sincronización')
+
+    def __str__(self):
+        return f'{self.titulo} · {self.inicio:%d/%m/%Y %H:%M} · {self.get_plataforma_display()}'
+
+    @property
+    def lista_invitados(self):
+        return [c for c in (x.strip() for x in self.invitados.split(',')) if c]
+
+    class Meta:
+        verbose_name = 'Reunión'
+        verbose_name_plural = 'Reuniones'
+        ordering = ('inicio',)
+        indexes = [models.Index(fields=['organizador', 'inicio'], name='reunion_organizador_inicio')]
+
+
 from .models_citas import *

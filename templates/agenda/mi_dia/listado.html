@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block head %}
     <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
-    <link rel="stylesheet" href="/static/css/agenda/mi_dia.css?v1.2">
+    <link rel="stylesheet" href="/static/css/agenda/mi_dia.css?v1.4">
 {% endblock %}
 {% block subtitulo %}{% endblock %}
 {% block acciones %}
@@ -12,6 +12,13 @@
         <div class="alert alert-warning d-flex align-items-center gap-2" role="status">
             <i class="fas fa-calendar-xmark" aria-hidden="true"></i>
             <div>Tu Google Calendar no está conectado: tus citas no se crean en tu calendario. <a href="/agenda/aplicaciones/">Conectarlo en Conexiones</a>.</div>
+        </div>
+    {% endif %}
+
+    {% if google_error %}
+        <div class="alert alert-warning d-flex align-items-center gap-2" role="status">
+            <i class="fab fa-google" aria-hidden="true"></i>
+            <div>No se pudieron leer tus eventos de Google Calendar: {{ google_error }} Revisa la conexión en <a href="/agenda/aplicaciones/">Conexiones</a>.</div>
         </div>
     {% endif %}
 
@@ -81,9 +88,19 @@
                     {% if agenda %}
                         <ul class="md-agenda">
                             {% for a in agenda %}
-                                <li class="md-item {% if not a.cita %}md-item-libre{% endif %}">
-                                    <span class="md-item-hora">{{ a.inicio|time:"H:i" }} – {{ a.fin|time:"H:i" }}</span>
-                                    {% if a.cita %}
+                                <li class="md-item {% if a.evento %}md-item-google{% elif not a.cita %}md-item-libre{% endif %}">
+                                    <span class="md-item-hora">{% if a.evento.todo_el_dia %}Todo el día{% else %}{{ a.inicio|time:"H:i" }} – {{ a.fin|time:"H:i" }}{% endif %}</span>
+                                    {% if a.evento %}
+                                        <span class="md-item-cuerpo">
+                                            <strong><span class="md-color" style="background-color: {{ a.evento.color }}" aria-hidden="true"></span>{{ a.evento.titulo }}</strong>
+                                            <span class="agenda-sub"><i class="fab fa-google me-1" aria-hidden="true"></i>{% if a.evento.origen == 'turno' %}Reunión creada en Turno{% else %}Generada en Google Calendar{% endif %}{% if a.evento.lugar %} · {{ a.evento.lugar }}{% endif %}</span>
+                                            {% if a.evento.pendiente %}<span class="md-pendiente-sync"><i class="fas fa-rotate me-1" aria-hidden="true"></i>{{ a.evento.pendiente }}: se sincroniza cuando la plataforma responda.</span>{% endif %}
+                                        </span>
+                                        <span class="md-item-acciones">
+                                            {% if a.evento.meet %}<a href="{{ a.evento.meet }}" target="_blank" rel="noopener" class="btn btn-success btn-sm" aria-label="Unirse a la videollamada de {{ a.evento.titulo }}"><i class="fas fa-video" aria-hidden="true"></i></a>{% endif %}
+                                            <a href="/agenda/mi-agenda/?vista=dia&fecha={{ fecha }}" class="btn btn-light btn-sm">Gestionar</a>
+                                        </span>
+                                    {% elif a.cita %}
                                         <span class="md-item-cuerpo">
                                             <a href="/agenda/citas/{{ a.cita.pk }}/">{{ a.cita.titulo }}</a>
                                             <span class="agenda-sub">{{ a.cita.cliente }}{% if a.cita.proyecto %} · {{ a.cita.proyecto }}{% endif %}</span>

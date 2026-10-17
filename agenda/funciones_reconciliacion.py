@@ -5,6 +5,7 @@ Por cada cita confirmada futura:
 - con evento → lo lee en Google: si está cancelado, la cita pasa a «pendiente» y se avisa al organizador;
   si lo movieron desde Google, se mueve aquí (bloques incluidos) y se anota; se refrescan el Meet y
   las respuestas de los invitados (`ParticipanteCita.respuesta`).
+Después reintenta las reuniones propias que quedaron pendientes (`funciones_reuniones.sincronizar_pendientes`).
 Devuelve un resumen con contadores. Nunca lanza por una cita: registra y sigue.
 """
 import logging
@@ -97,4 +98,10 @@ def reconciliar(ahora=None, dias=30):
         except Exception as ex:
             resumen['errores'] += 1
             logger.warning('Reconciliación de %s falló: %s', cita.codigo, ex)
+    try:
+        from .funciones_reuniones import sincronizar_pendientes
+        resumen['reuniones_pendientes'], resumen['reuniones_al_dia'] = sincronizar_pendientes()
+    except Exception as ex:
+        resumen['errores'] += 1
+        logger.warning('Sincronizar reuniones pendientes falló: %s', ex)
     return resumen

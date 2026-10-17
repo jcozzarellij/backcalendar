@@ -5,7 +5,7 @@ from django.db.models import F, Func, Q
 
 from backcalendar.settings import AUTH_USER_MODEL
 from core.custom_models import ModeloBase, RegistroInmutable
-from .models import Equipo, Portal, Producto, Proyecto
+from .models import PLATAFORMA_REUNION, Equipo, Portal, Producto, Proyecto
 
 ESTADO_SOLICITUD = (
     ('en_cola', 'En cola'),
@@ -153,6 +153,7 @@ class Cita(ModeloBase):
     asignada_por = models.CharField(max_length=20, choices=ASIGNADA_POR, default='coordinador', verbose_name='Asignada por')
     numero_sesion = models.PositiveSmallIntegerField(default=1, verbose_name='Sesión número')
     idioma = models.CharField(max_length=2, choices=IDIOMA_CLIENTE, default='es', verbose_name='Idioma')
+    plataforma = models.CharField(max_length=20, choices=PLATAFORMA_REUNION, default='google', verbose_name='Plataforma de la videollamada')
     google_event_id = models.CharField(max_length=255, blank=True, default='', verbose_name='Evento en Google')
     enlace_meet = models.URLField(blank=True, default='', verbose_name='Enlace de videollamada')
     enlace_evento = models.URLField(blank=True, default='', verbose_name='Enlace del evento')

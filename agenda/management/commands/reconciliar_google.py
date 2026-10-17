@@ -21,4 +21,6 @@ class Command(BaseCommand):
         from agenda.funciones_reconciliacion import reconciliar
         r = reconciliar(dias=dias)
         self.stdout.write('Revisadas {revisadas}, reintentadas {reintentadas}, borradas en Google {canceladas_en_google}, '
-                          'movidas en Google {movidas_en_google}, respuestas {respuestas}, errores {errores}.'.format(**r))
+                          'movidas en Google {movidas_en_google}, respuestas {respuestas}, errores {errores}; '
+                          'reuniones pendientes {p}, al día {a}.'.format(**r, p=r.get('reuniones_pendientes', 0),
+                                                                         a=r.get('reuniones_al_dia', 0)))

@@ -1,0 +1,49 @@
+<div class="row g-2">
+    <input type="hidden" name="action" value="{{ accion_form }}">
+    <input type="hidden" name="pk" value="0">
+    <input type="hidden" name="plataforma" value="{{ plataforma.clave }}">
+    {% if evento %}
+        <input type="hidden" name="evento" value="{{ evento.ref }}">
+        <input type="hidden" name="todo_el_dia" value="{% if evento.todo_el_dia %}1{% else %}0{% endif %}">
+    {% endif %}
+    <div class="col-12">
+        <div class="cal-reunion-plataforma">
+            <i class="{{ plataforma.icono }}" aria-hidden="true"></i>
+            <span>{% if evento %}Reunión de {{ plataforma.nombre }}{% else %}Se crea en tu {{ plataforma.nombre }}{% endif %}</span>
+        </div>
+        {% if plataforma.aviso %}
+            <div class="alert alert-warning small py-2 mt-2 mb-0" role="note">{{ plataforma.aviso }}</div>
+        {% endif %}
+        {% if evento.pendiente %}
+            <div class="alert alert-warning small py-2 mt-2 mb-0" role="note">{{ evento.pendiente }}: {{ evento.error|default:'se sincroniza cuando la plataforma responda.' }}</div>
+        {% endif %}
+        {% if evento.recurrente %}
+            <div class="alert alert-info small py-2 mt-2 mb-0" role="note">Este evento se repite: los cambios aplican solo a esta fecha.</div>
+        {% endif %}
+        {% if evento.todo_el_dia %}
+            <div class="alert alert-info small py-2 mt-2 mb-0" role="note">Es un evento de todo el día: su fecha se cambia en Google Calendar.</div>
+        {% endif %}
+    </div>
+    {% for field in form %}
+        <div class="col-lg-{{ field.field.widget.attrs.col|default:'12' }}">
+            <div class="mb-2">
+                <label class="form-label small mb-1" for="id_{{ field.name }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                <div class="invalid-feedback" id="errorMessage{{ field.name }}"></div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<div class="border-top my-3"></div>
+
+<div class="d-flex justify-content-end">
+    <button type="button" class="btn btn-danger btn-sm me-1" data-bs-dismiss="modal">
+        <i class="fa fa-window-close me-1"></i>Cancelar
+    </button>
+    <button type="submit" id="submit" class="btn btn-success btn-sm">
+        <i class="fa fa-calendar-check me-1"></i>{% if evento %}Guardar cambios{% else %}Crear reunión{% endif %}
+    </button>
+</div>
+{% include 'base_formulario_modal.html' %}

@@ -53,6 +53,36 @@
     text-decoration: none;
 }
 
+.md-item-google .md-item-cuerpo strong {
+    font-weight: 600;
+    color: var(--turno-tinta);
+}
+
+.md-item-google .md-item-hora {
+    color: #5f6b78;
+}
+
+.md-color {
+    display: inline-block;
+    width: .7rem;
+    height: .7rem;
+    margin-right: .45rem;
+    border-radius: 50%;
+    vertical-align: baseline;
+}
+
+.md-pendiente-sync {
+    font-size: .8rem;
+    color: var(--bs-warning-text-emphasis);
+}
+
+.md-item-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: .4rem;
+}
+
 .md-item-libre .md-item-hora {
     color: var(--bs-success-text-emphasis);
 }

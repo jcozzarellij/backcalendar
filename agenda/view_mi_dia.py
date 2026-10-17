@@ -8,6 +8,7 @@ from core.funciones import addData, secure_module
 from seguridad.models import Notificacion
 from .funciones_alertas import preferencia_de
 from .funciones_citas import citas_del_usuario, pendientes_de_cierre
+from . import funciones_reuniones
 from .funciones_disponibilidad import espacios_libres
 from .funciones_turnos import duracion_turno
 from .models import ConexionAplicacion, PatronTurno, Solicitud
@@ -36,7 +37,10 @@ def miDiaView(request):
     for h in libres:
         if not any(a['inicio'] <= h < a['fin'] for a in agenda):
             agenda.append({'inicio': h, 'fin': h + timedelta(minutes=paso), 'cita': None})
-    agenda.sort(key=lambda a: a['inicio'])
+    eventos, _, data['google_error'] = funciones_reuniones.agenda_externa(request.user, dia_ini, dia_fin,
+                                                                        excluir=[c.google_event_id for c in citas])
+    agenda += [{'inicio': e['inicio'], 'fin': e['fin'], 'cita': None, 'evento': e} for e in eventos]
+    agenda.sort(key=lambda a: (a['inicio'], 'evento' not in a))
     data['proxima'] = proxima
     data['agenda'] = agenda
     data['citas_hoy'] = len(citas)

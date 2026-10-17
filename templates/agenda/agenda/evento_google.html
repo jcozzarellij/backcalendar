@@ -1,0 +1,13 @@
+<button type="button" class="cal-google {{ clase }}{% if e.pendiente %} cal-pendiente{% endif %}"
+        style="{% if estilo %}{{ estilo }}; {% endif %}background-color: {{ e.color }}; color: {{ e.color_texto }}"
+        draggable="{% if e.editable and not e.todo_el_dia and clase != 'cal-google-dia' %}true{% else %}false{% endif %}" data-hora="{{ e.inicio|time:'H:i' }}"
+        data-ref="{{ e.ref }}" data-plataforma="{{ e.plataforma }}" data-origen="{{ e.origen }}"
+        data-editable="{% if e.editable %}1{% else %}0{% endif %}" data-minutos="{{ e.minutos }}"
+        data-titulo="{{ e.titulo }}"
+        data-horario="{% if e.todo_el_dia %}Todo el día{% else %}{{ e.inicio|date:'d/m H:i' }} – {% if e.inicio|date:'Ymd' != e.fin|date:'Ymd' %}{{ e.fin|date:'d/m H:i' }}{% else %}{{ e.fin|time:'H:i' }}{% endif %}{% endif %}"
+        data-lugar="{{ e.lugar }}" data-meet="{{ e.meet }}" data-enlace="{{ e.enlace }}"
+        data-pendiente="{{ e.pendiente }}" data-error="{{ e.error }}"
+        title="{{ e.titulo }} · {% if e.pendiente %}{{ e.pendiente }}{% elif e.origen == 'turno' %}Creada en Turno · Google Calendar{% else %}Generada en Google Calendar{% endif %}">
+    <span class="cal-cita-titulo"><i class="{% if e.plataforma == 'teams' %}fab fa-microsoft{% elif e.plataforma == 'zoom' %}fas fa-video{% else %}fab fa-google{% endif %}" aria-hidden="true"></i>{% if e.pendiente %}<i class="fas fa-rotate ms-1" aria-hidden="true"></i><span class="visually-hidden"> Pendiente de sincronizar.</span>{% endif %}{% if clase == 'cal-mes-cita' and not e.todo_el_dia %} {{ e.inicio|time:"H:i" }}{% endif %} {{ e.titulo }}</span>
+    {% if clase == 'cal-bloque' %}<span class="cal-cita-sub">{{ e.inicio|time:"H:i" }}–{{ e.fin|time:"H:i" }} · {% if e.pendiente %}Pendiente{% else %}Google{% endif %}</span>{% endif %}
+</button>

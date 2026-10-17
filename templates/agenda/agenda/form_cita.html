@@ -6,6 +6,7 @@
             <div class="mb-2">
                 <label class="form-label small mb-1" for="id_{{ field.name }}">{{ field.label }}</label>
                 {{ field }}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
                 <div class="invalid-feedback" id="errorMessage{{ field.name }}"></div>
             </div>
         </div>
