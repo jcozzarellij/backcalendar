@@ -27,10 +27,17 @@ def agendar(request, slug):
     producto = funciones_portal.producto_por_slug(slug)
     if producto is None:
         raise Http404('Producto no encontrado')
-    data = {'ruta': request.path, 'fecha': datetime.now()}
+    idioma = funciones_portal.idioma_de(request)
+    t = funciones_portal.textos(idioma)
+    data = {
+        'titulo': f"{t['ld_agendar']} · {funciones_portal.nombre_producto(producto, idioma)}",
+        'ruta': request.path,
+        'fecha': datetime.now(),
+    }
     addData(request, data)
     ventana = _en_ventana(request, data)
     sesion = _sesion(request)
+
     if request.method == 'POST':
         t = funciones_portal.contexto_publico(request, data, producto.portal)
         res_json = {}
@@ -62,7 +69,7 @@ def agendar(request, slug):
         return JsonResponse(res_json)
     elif request.method == 'GET':
         if 'action' in request.GET:
-            action = request.GET['action']
+            data["action"] = action = request.GET['action']
             if action == 'horas':
                 return _horas_json(producto, _fecha(request.GET.get('fecha')), sesion)
             if action == 'apartar':
@@ -87,7 +94,6 @@ def agendar(request, slug):
         mes_anterior = (primero - timedelta(days=1)).replace(day=1)
         mes_siguiente = (primero.replace(day=28) + timedelta(days=4)).replace(day=1)
         data.update({
-            'titulo': f"{t['ld_agendar']} · {nombre}",
             'producto': producto,
             'portal': producto.portal,
             'equipo': funciones_portal.equipo_de(producto),
@@ -117,16 +123,21 @@ def agendar(request, slug):
 @rate_limit(limit=60, seconds=60)
 def cita_cliente(request, token):
     acceso = funciones_tokens.validar(token, 'cita')
-    data = {'ruta': request.path, 'fecha': datetime.now()}
+    t = funciones_portal.textos(funciones_portal.idioma_de(request))
+    data = {
+        'titulo': t['su_cita'],
+        'ruta': request.path,
+        'fecha': datetime.now(),
+    }
     addData(request, data)
     ventana = _en_ventana(request, data)
     if acceso is None or acceso.cita is None:
-        t = funciones_portal.contexto_publico(request, data)
-        data['titulo'] = t['su_cita']
+        funciones_portal.contexto_publico(request, data)
         return _render(request, 'public/portal/enlace_invalido.html', data, status=410)
     cita = Cita.objects.select_related(*RELACIONES_CITA).get(pk=acceso.cita_id)
     portal = cita.producto.portal if cita.producto_id else cita.cliente.portal_origen
     t = funciones_portal.contexto_publico(request, data, portal, preferido=cita.idioma)
+
     if request.method == 'POST':
         res_json = {}
         action = request.POST.get('action', '')
@@ -149,7 +160,8 @@ def cita_cliente(request, token):
         return JsonResponse(res_json)
     elif request.method == 'GET':
         if 'action' in request.GET:
-            if request.GET['action'] == 'horas' and cita.producto_id:
+            data["action"] = action = request.GET['action']
+            if action == 'horas' and cita.producto_id:
                 return _horas_json(cita.producto, _fecha(request.GET.get('fecha')))
             return JsonResponse({'result': False, 'message': 'Acción no permitida.'})
         _presentar(cita, data['idioma'], t)
@@ -174,8 +186,15 @@ def cita_cliente(request, token):
 
 @rate_limit(limit=10, seconds=60)
 def mi_cita(request):
+    t = funciones_portal.textos(funciones_portal.idioma_de(request))
+    data = {
+        'titulo': t['mc_titulo'],
+        'ruta': request.path,
+        'fecha': datetime.now(),
+    }
+    addData(request, data)
+
     if request.method == 'POST':
-        t = funciones_portal.textos(funciones_portal.idioma_de(request))
         action = request.POST.get('action', '')
         try:
             if action != 'buscar':
@@ -196,21 +215,25 @@ def mi_cita(request):
             salva_logs(request, __file__, request.method, action, type(ex).__name__,
                        'Error on line {}'.format(sys.exc_info()[-1].tb_lineno), ex)
             return JsonResponse({'error': True, 'message': t['error_cambio']})
-    data = {'ruta': request.path, 'fecha': datetime.now()}
-    addData(request, data)
-    t = funciones_portal.contexto_publico(request, data, funciones_portal.portal_principal())
-    data['titulo'] = t['mc_titulo']
+    elif request.method == 'GET':
+        if 'action' in request.GET:
+            data["action"] = action = request.GET['action']
+    funciones_portal.contexto_publico(request, data, funciones_portal.portal_principal())
     return _render(request, 'public/portal/mi_cita.html', data)
 
 
 @rate_limit(limit=60, seconds=60)
 def conectar(request, portal, token):
     acceso = funciones_tokens.validar(token, 'cliente')
-    data = {'ruta': request.path, 'fecha': datetime.now()}
+    t = funciones_portal.textos(funciones_portal.idioma_de(request))
+    data = {
+        'titulo': t['mis_citas'],
+        'ruta': request.path,
+        'fecha': datetime.now(),
+    }
     addData(request, data)
     if acceso is None or acceso.cliente is None:
-        t = funciones_portal.contexto_publico(request, data)
-        data['titulo'] = t['mis_citas']
+        funciones_portal.contexto_publico(request, data)
         return _render(request, 'public/portal/enlace_invalido.html', data, status=410)
     cliente = acceso.cliente
     portal_obj = Portal.objects.filter(status=True, activo=True, slug=portal).first() or cliente.portal_origen
@@ -247,7 +270,8 @@ def conectar(request, portal, token):
         return JsonResponse(res_json)
     elif request.method == 'GET':
         if 'action' in request.GET:
-            if request.GET['action'] == 'horas':
+            data["action"] = action = request.GET['action']
+            if action == 'horas':
                 try:
                     cita = _cita_propia()
                 except ValueError as ex:
@@ -271,7 +295,7 @@ def conectar(request, portal, token):
                          for p in Producto.objects.filter(status=True, activo=True, portal=portal_obj, padre__isnull=True)
                          .order_by('orden', 'nombre')]
         data.update({
-            'titulo': t['mis_citas'], 'cliente': cliente, 'portal': portal_obj, 'proximas': proximas,
+            'cliente': cliente, 'portal': portal_obj, 'proximas': proximas,
             'pasadas': pasadas, 'productos': productos, 'url_horas': request.path, 'aviso': _aviso(request, t),
         })
         return _render(request, 'public/portal/conectar.html', data)
@@ -283,11 +307,22 @@ def incrustar(request, portal):
     portal_obj = Portal.objects.filter(status=True, activo=True, slug=portal).first()
     if portal_obj is None:
         raise Http404('Portal no encontrado')
-    data = {'ruta': request.path, 'fecha': datetime.now(), 'ventana': True}
-    addData(request, data)
-    t = funciones_portal.contexto_publico(request, data, portal_obj)
-    data.update({
+    t = funciones_portal.textos(funciones_portal.idioma_de(request))
+    data = {
         'titulo': f"{t['ld_agendar']} · {portal_obj.nombre}",
+        'ruta': request.path,
+        'fecha': datetime.now(),
+    }
+    addData(request, data)
+    data['ventana'] = True
+    t = funciones_portal.contexto_publico(request, data, portal_obj)
+
+    if request.method == 'POST':
+        pass
+    elif request.method == 'GET':
+        if 'action' in request.GET:
+            data["action"] = action = request.GET['action']
+    data.update({
         'portal': portal_obj,
         'productos': funciones_portal.productos_publicos(portal_obj, data['idioma'], t),
     })

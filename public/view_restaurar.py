@@ -9,19 +9,26 @@ from core.funciones import addData, rate_limit
 
 
 def restaurar(request):
-    if request.method == 'POST':
-        return _solicitar(request)
-    data = {'ruta': request.path, 'fecha': datetime.now()}
+    t = funciones_portal.textos(funciones_portal.idioma_de(request))
+    data = {
+        'titulo': t['au_rp_titulo'],
+        'ruta': request.path,
+        'fecha': datetime.now(),
+    }
     addData(request, data)
-    t = funciones_portal.contexto_publico(request, data, funciones_portal.portal_principal())
-    data['titulo'] = t['au_rp_titulo']
+
+    if request.method == 'POST':
+        return _solicitar(request, t)
+    elif request.method == 'GET':
+        if 'action' in request.GET:
+            data["action"] = action = request.GET['action']
+    funciones_portal.contexto_publico(request, data, funciones_portal.portal_principal())
     return render(request, 'public/seguridad/recover_pass.html', data)
 
 
 @rate_limit(limit=5, seconds=300)
-def _solicitar(request):
+def _solicitar(request, t):
     """Respuesta siempre neutra: no revela si el correo existe o está habilitado (evita enumerar cuentas)."""
-    t = funciones_portal.textos(funciones_portal.idioma_de(request))
     if 'email' not in request.POST:
         return JsonResponse({'resp': False, 'error': t['au_error']})
     solicitar_restauracion_clave(request.POST['email'])
