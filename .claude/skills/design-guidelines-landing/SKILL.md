@@ -49,9 +49,10 @@ Todo ticket se arma en `agenda/funciones_portal.py`: `productos_destacados(porta
 | Pieza | Dónde | Regla |
 |---|---|---|
 | Barra | `.pb-header-inner`, `.ld-nav` | Enlaces como píldoras transparentes de 44 px que se aclaran al pasar el mouse; un separador fino antes del idioma; todo en una sola fila. |
-| Idioma | `public/parciales/idioma.html` | Menú `<details>` transparente, con globo y nombre del idioma. En el teléfono solo se ve el globo. |
+| Idioma | `public/parciales/idioma.html` | Menú `<details>` transparente, con globo y nombre del idioma. Bajo 768 px se oculta y el idioma pasa al menú móvil. |
 | Sesión | `public/parciales/usuario.html` | Foto redonda de `request.user.get_foto_gris`, sin nombre. «Ir al panel» y «Mi perfil» solo con `is_staff`; «Cerrar sesión» va a `/logout/`. |
-| Visitante | `.ld-ingresar` | Píldora azul sólida, la única de la barra. En el teléfono queda solo el icono. |
+| Visitante | `.ld-ingresar` | Píldora azul sólida, la única de la barra. Bajo 768 px se oculta e «Iniciar sesión» va al final del menú móvil, en verde. |
+| Menú móvil | `.ld-menu` en `nav_landing.html` | Bajo 768 px la barra queda con logo, foto (si hay sesión) y una píldora azul «Menú» (`<details class="pb-menu">`, la cierra `menus.js`). Despliega Catálogo, Mi cita y Para empresas, el idioma con banderas e «Iniciar sesión». La barra se separa 10 px de los bordes y su vidrio sube a 94 % para que la hoja verde no la tiña. Bajo 360 px la píldora queda solo con el ícono. |
 | Barra (plantilla) | `public/parciales/nav_landing.html` | La comparten landing y catálogo; «Catálogo» marca `aria-current` en `/catalogo/`. |
 | Letra grande | `public/parciales/letra.html` (`.ld-letra`) | `position: sticky` al final del contenido: flota abajo a la derecha y se detiene antes del pie sin JS. `landing.js` guarda la preferencia en `localStorage`. En el teléfono queda solo «Aa». |
 | Vacío y contacto | `public/parciales/ticket_vacio.html`, `contacto.html` | Un solo lugar para «Estamos preparando…» y para «llámenos / escríbanos»; se incluyen con `encabezado` y `clase`. |

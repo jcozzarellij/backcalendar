@@ -185,6 +185,7 @@ TEXTOS = [
     ('mc_donde_texto', 'Está en el correo de confirmación y en su boleto, junto al código QR. Empieza con QW.', 'It is in the confirmation email and on your ticket, next to the QR code. It starts with QW.', 'Está no e-mail de confirmação e no seu bilhete, ao lado do código QR. Começa com QW.'),
     ('mc_qr_texto', 'Si tiene el código QR, escanéelo con la cámara del teléfono y su cita se abre directamente.', 'If you have the QR code, scan it with your phone camera and your appointment opens directly.', 'Se tiver o código QR, escaneie com a câmera do celular e o agendamento abre direto.'),
     ('mc_nueva', '¿Todavía no tiene una cita?', 'No appointment yet?', 'Ainda não tem um agendamento?'),
+    ('ld_menu', 'Menú', 'Menu', 'Menu'),
     ('ld_mi_cita', 'Mi cita', 'My appointment', 'Meu agendamento'),
     ('ld_buscar_cita', 'O búsquela con su código', 'Or find it with your code', 'Ou encontre com seu código'),
     ('procesando', 'Procesando', 'Processing', 'Processando'),
