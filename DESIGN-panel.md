@@ -92,7 +92,7 @@ Celdas de 2.1 rem de alto, papel con borde 1 px y radio `--bs-border-radius-sm`;
 
 ## Pendiente de migrar al landing
 
-Siguen en el registro anterior (Geist, fondo blanco cálido `#fcfbf8`, papel con borde de 1 px `#e4e6e9`, sin sombras, texto base 17 px, píldoras de 48 px) hasta su rediseño: pantalla de acceso (`static/css/public/auth.css`), portal de agendar (`portal.css`), «Mis citas» y legales (`publico.css`). Al rediseñar una, pasa a `base_landing.html` y a las reglas de `DESIGN-landing.md`.
+Siguen en el registro anterior (Geist, fondo blanco cálido `#fcfbf8`, papel con borde de 1 px `#e4e6e9`, sin sombras, texto base 17 px, píldoras de 48 px) hasta su rediseño: pantalla de acceso (`static/css/public/auth.css`) y legales (`publico.css`). Al rediseñar una, pasa a `base_landing.html` y a las reglas de `DESIGN-landing.md`. El portal (agendar, mi cita, mis citas, ventana para incrustar y enlace inválido) ya está en esa línea con `static/css/public/reserva.css`.
 
 ## Don'ts
 
