@@ -1,9 +1,8 @@
-{% extends 'agenda/base_agenda.html' %}
+{% extends 'base.html' %}
 {% block head %}
     <link rel="stylesheet" href="/static/css/agenda/agenda.css?v1.0">
     <link rel="stylesheet" href="/static/css/agenda/mi_dia.css?v1.2">
 {% endblock %}
-{% block eyebrow %}{{ hoy_agenda|date:"l j \d\e F \d\e Y" }}{% endblock %}
 {% block subtitulo %}{% endblock %}
 {% block acciones %}
     <button type="button" class="btn btn-primary" onclick="formModal(0, 'Nueva cita', 'agendar', {}, '/agenda/mi-agenda/')"><i class="fas fa-plus me-1"></i>Nueva cita</button>

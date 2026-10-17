@@ -1,6 +1,6 @@
 {% load templatefunctions %}
 <!DOCTYPE html>
-<html lang="es" dir="ltr" data-startbar="light" data-bs-theme="light">
+<html lang="es" dir="ltr" data-bs-theme="light">
 <head>
     <meta charset="utf-8"/>
     <title>{{ titulo }} | {{ nombreempresa }}</title>
@@ -23,9 +23,8 @@
         <link rel="stylesheet" href="/static/css/pwa/install_bar.css?v={{ version_css }}">
     {% endif %}
     <link rel="stylesheet" href="/static/css/pwa/push_optin.css?v={{ version_css }}">
-    <link rel="stylesheet" href="/static/css/core/sin_sidebar.css?v={{ version_css }}">
+    <link rel="stylesheet" href="/static/css/agenda/micrositio.css?v3.0">
     <link rel="stylesheet" href="/static/css/core/interaccion.css?v={{ version_css }}">
-    <link rel="stylesheet" href="/static/css/core/menu_perfil.css?v1.1">
     {% block head %}{% endblock %}
     <script>
         {% if activar_cambio_clave %}
@@ -33,219 +32,88 @@
         {% endif %}
     </script>
 </head>
-<body class="{% if ocultar_sidebar %}sin-sidebar{% endif %}{% block body_class %}{% endblock %}" data-alertas-agenda="1">
+<body class="mi-cuerpo{% block body_class %}{% endblock %}" data-alertas-agenda="1">
 {% block cuerpo %}
-
-<div class="topbar d-print-none">
-    <div class="container-xxl">
-        <nav class="topbar-custom d-flex justify-content-between" id="topbar-custom">
-            <ul class="topbar-item list-unstyled d-inline-flex align-items-center mb-0">
-                <li>
-                    <button class="nav-link mobile-menu-btn nav-icon" id="togglemenu">
-                        <i class="iconoir-menu-scale"></i>
-                    </button>
-                </li>
-                <li class="mx-3 welcome-text">
-                    <h3 class="mb-0 fw-bold text-truncate">{{ titulo }}</h3>
-                    {% if descripcion %}
-                        <h6 class="mb-0 fw-normal text-muted text-truncate fs-14">{{ descripcion }}</h6>
-                    {% endif %}
-                </li>
-            </ul>
-            <ul class="topbar-item list-unstyled d-inline-flex align-items-center mb-0">
-                <li class="hide-phone app-search">
-                    <form role="search" action="/agenda/buscar/" method="get">
-                        <input type="search" name="q" class="form-control top-search mb-0"
-                               placeholder="Buscar cliente, cita o código…" aria-label="Buscar cliente, cita o código">
-                        <button type="button" aria-label="Buscar"><i class="iconoir-search"></i></button>
-                    </form>
-                </li>
-                <li class="dropdown topbar-item">
-                    <a class="nav-link dropdown-toggle arrow-none nav-icon position-relative" data-bs-toggle="dropdown"
-                       href="#"
-                       role="button"
-                       aria-haspopup="false" aria-expanded="false">
-                        <i class="icofont-bell-alt {% if totalnot %}text-warning{% endif %}"></i>
-                        {% if totalnot %}
-                            <span class="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle"
-                                  style="font-size:.6rem;">
-                                {% if totalnot > 99 %}99+{% else %}{{ totalnot }}{% endif %}
-                            </span>
-                        {% endif %}
-                    </a>
-                    <div class="dropdown-menu stop dropdown-menu-end dropdown-lg py-0"
-                         style="min-width:320px;max-width:380px;">
-                        <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
-                            <strong class="fs-14">Notificaciones</strong>
-                            {% if totalnot %}
-                                <small class="text-muted">{{ totalnot }} sin leer</small>
-                            {% endif %}
-                        </div>
-                        {% for notif in listnotification %}
-                            <a href="{% if notif.url %}{{ notif.url }}{% else %}/notificaciones/{% endif %}"
-                               class="dropdown-item d-flex align-items-start py-2 border-bottom dp-notif-item"
-                               data-notif-id="{{ notif.id }}"
-                               style="white-space:normal;">
-                                <div class="me-2 flex-shrink-0">
-                                    <span class="badge rounded-circle d-inline-flex align-items-center justify-content-center"
-                                          style="width:32px;height:32px;background:{% if notif.tipo == 4 %}#dc3545{% elif notif.tipo == 3 %}#198754{% elif notif.tipo == 2 %}#0d6efd{% else %}#0dcaf0{% endif %};color:#fff;">
-                                        <i class="fa fa-{% if notif.tipo == 4 %}triangle-exclamation{% elif notif.tipo == 3 %}circle-check{% elif notif.tipo == 2 %}bullhorn{% else %}circle-info{% endif %}"></i>
-                                    </span>
-                                </div>
-                                <div class="flex-grow-1" style="min-width:0;">
-                                    <div class="fw-medium fs-13 text-dark text-truncate">{{ notif.titulo|default:'(sin título)' }}</div>
-                                    <div class="text-muted fs-12"
-                                         style="overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">{{ notif.cuerpo|striptags|truncatechars:80 }}</div>
-                                    <small class="text-muted fs-11">
-                                        <i class="fa fa-clock me-1"></i>{{ notif.fecha_registro|date:'d/m/Y H:i' }}
-                                    </small>
-                                </div>
-                            </a>
-                        {% empty %}
-                            <div class="ms-3 py-3" style="text-align: center">
-                                <img src="/static/iconos/notificacion.svg" style="width: 120px">
-                                <p class="mb-2 mt-2" style="color: #7C7C7C">Sin notificaciones nuevas</p>
-                            </div>
-                        {% endfor %}
-                        <a href="/notificaciones/" class="dropdown-item text-center text-primary fs-13 py-2 fw-medium">
-                            Ver todas las notificaciones <i class="fi-arrow-right ms-1"></i>
-                        </a>
-                    </div>
-                </li>
-                {% if request.user.is_authenticated %}
-                    <li class="dropdown topbar-item">
-                        <a class="nav-link dropdown-toggle arrow-none nav-icon" data-bs-toggle="dropdown" href="/"
-                           role="button"
-                           aria-haspopup="false" aria-expanded="false">
-                            <img src="{{ request.user.get_foto_gris }}" alt="" class="thumb-lg rounded-circle">
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end py-0 menu-perfil">
-                            <div class="d-flex align-items-center dropdown-item bg-secondary-subtle menu-perfil-cabecera">
-                                <div class="flex-shrink-0">
-                                    <img src="{{ request.user.get_foto_gris }}" alt=""
-                                         class="thumb-md rounded-circle">
-                                </div>
-                                <div class="flex-grow-1 ms-2 align-self-center">
-                                    <h6 class="my-0 fw-medium text-dark fs-13">{{ request.user.get_full_name }}</h6>
-                                    <small class="text-muted mb-0">{{ request.user.groups_str }}</small>
-                                </div>
-                            </div>
-                            <div class="dropdown-divider mt-0"></div>
-                            <small class="text-muted px-3 pt-1 pb-1 d-block">Cuenta</small>
-                            <a class="dropdown-item" href="/perfilpanel/"><i
-                                    class="las la-user fs-18 me-1 align-text-bottom"></i> Perfil</a>
-                            {% if sesion_anterior %}
-                                <a class="dropdown-item" href="/seguridad/regresar-sesion/"><i
-                                        class="las la-sign-in-alt fs-18 me-1 align-text-bottom"></i> Regresar a mi
-                                    sesión</a>
-                            {% endif %}
-                            {% if request.user.is_superuser %}
-                                <a class="dropdown-item" href="/admin"><i
-                                        class="las la-question-circle fs-18 me-1 align-text-bottom"></i> Panel de Administración</a>
-                            {% endif %}
-                            <div class="dropdown-divider mb-0"></div>
-                            <a class="dropdown-item text-danger" href="{% url 'logout_url' %}"><i
-                                    class="las la-power-off fs-18 me-1 align-text-bottom"></i> Cerrar Sesión</a>
-                        </div>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
-    </div>
-</div>
-
-{% if not ocultar_sidebar %}
-<div class="startbar d-print-none">
-        <div class="brand">
-        <a href="/" class="logo marca-panel">
-            <span>
-                <img src="{% if confi.ico %}{{ confi.ico.url }}{% else %}/media/{{ confi.logo_sistema }}{% endif %}" alt="" class="logo-sm marca-panel-icono">
-            </span>
-            <span>
-            <h3 class="logo-lg logo-dark text-black marca-panel-texto">{{ alias }}</h3></span>
+<div class="mi-shell">
+    <aside class="mi-lateral d-print-none" id="mi-lateral">
+        <a href="/panel/" class="mi-marca" aria-label="{{ nombreempresa }}">
+            {% if confi.logo_sistema %}<img src="/media/{{ confi.logo_sistema }}" alt="{{ nombreempresa }}">{% else %}<span>{{ alias|default:nombreempresa }}</span>{% endif %}
         </a>
-    </div>
-    <div class="startbar-menu">
-        <div class="startbar-collapse" id="startbarCollapse" data-simplebar>
-            <div class="d-flex align-items-start flex-column w-100">
-                <ul class="navbar-nav mb-auto w-100">
-                    <li class="menu-label pt-0 mt-0">
-                        <span>Menu</span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/panel/">
-                            <i class="fa fa-home menu-icon"></i>
-                            <span>Panel</span>
-                        </a>
-                    </li>
-
-                    {% for grupo in grupos %}
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.path != '/panel/' and grupo.nombre == group %}active{% endif %}"
-                               href="#sidebar{{ grupo.nombre|cut:" " }}" data-bs-toggle="collapse" role="button"
-                               aria-expanded="{% if request.path != '/panel/' and grupo.nombre == group %}true{% else %}false{% endif %}"
-                               aria-controls="sidebar{{ grupo.nombre|cut:" " }}">
-                                <i class="{{ grupo.icono }} menu-icon"></i>
-                                <span>{{ grupo.nombre }}</span>
+        <nav class="mi-nav" aria-label="Principal">
+            <a href="/panel/" class="mi-nav-item {% if request.path == '/panel/' %}activo{% endif %}">
+                <i class="fas fa-house" aria-hidden="true"></i><span>Panel</span>
+            </a>
+            {% for grupo in grupos %}
+                <div class="mi-grupo">
+                    <button type="button" class="mi-nav-item mi-grupo-titulo" data-bs-toggle="collapse" data-bs-target="#mi-grupo-{{ grupo.pk }}" aria-expanded="{% if grupo.pk == grupo_abierto %}true{% else %}false{% endif %}" aria-controls="mi-grupo-{{ grupo.pk }}">
+                        <i class="{{ grupo.icono }}" aria-hidden="true"></i><span>{{ grupo.nombre }}</span><i class="fas fa-chevron-down mi-grupo-flecha" aria-hidden="true"></i>
+                    </button>
+                    <div class="collapse {% if grupo.pk == grupo_abierto %}show{% endif %}" id="mi-grupo-{{ grupo.pk }}">
+                        {% for modulo in grupo.modulos_visibles %}
+                            <a href="{{ modulo.url }}" class="mi-nav-item mi-nav-sub {% if ruta_val|startswith:modulo.url %}activo{% endif %}">
+                                <i class="fas {{ modulo.icono|default:'fa-circle' }}" aria-hidden="true"></i><span>{{ modulo.nombre }}</span>
+                                {% if modulo.contador %}<span class="mi-contador">{{ modulo.contador }}</span>{% endif %}
                             </a>
-                            <div class="collapse {% if request.path != '/panel/' and grupo.nombre == group %}show{% endif %}"
-                                 id="sidebar{{ grupo.nombre|cut:" " }}">
-                                <ul class="nav flex-column">
-                                    {% for modulo in grupo.modulos_activos %}
-                                        {% if modulo.id in modulos_id %}
-                                            <li class="nav-item">
-                                                <a class="nav-link {% if ruta_val|startswith:modulo.url %}active{% endif %}"
-                                                   href="{{ modulo.url }}?{{ dict_url_vars_completo }}">{{ modulo.nombre }}</a>
-                                            </li>
-                                        {% endif %}
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="startbar-overlay d-print-none"></div>
-{% endif %}
-
-<div class="page-wrapper">
-    <div class="page-content">
-        <div class="container-xxl">
-                            <div class="row mb-2">
-                    <div class="col-md-8">
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb mb-0 py-2">
-                                {% for rt in ruta_lista %}
-                                    <li class="breadcrumb-item">
-                                        <a href="{{ rt.0 }}" class="text-muted">{{ rt.1 }}</a>
-                                    </li>
-                                {% endfor %}
-                            </ol>
-                        </nav>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        {% if not request.path == '/panel/' %}
-                            <a href="{% block atras %}{% if request.path == '/panel/' %}/
-
-                                {% else %}{% if not tiene_val_get %}/panel/{% else %}{{ request.path }}{% endif %}{% endif %}{% endblock %}"
-                               class="btn btn-default btn-sm">
-                                <i class="fa fa-arrow-circle-left me-1"></i>Atrás
-                            </a>
-                        {% endif %}
+                        {% endfor %}
                     </div>
                 </div>
-
-            {% block content %}
-            {% endblock %}
+            {% endfor %}
+        </nav>
+        <div class="mi-usuario">
+            <a href="/perfilpanel/" class="mi-perfil" title="Mi perfil">
+                <img src="{{ request.user.get_foto_gris }}" alt="" class="mi-avatar">
+                <div class="mi-usuario-texto">
+                    <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+                    <span>{{ request.user.groups_str|default:'' }}</span>
+                </div>
+            </a>
+            <a href="{% url 'logout_url' %}" class="mi-salir" aria-label="Cerrar sesión" title="Cerrar sesión"><i class="fas fa-power-off"></i></a>
         </div>
+    </aside>
+    <div class="mi-fondo d-print-none" id="mi-fondo"></div>
 
-    </div>
+    <main class="mi-contenido">
+        <header class="mi-cabecera">
+            <button type="button" class="mi-menu-boton d-print-none" id="mi-menu-boton" aria-label="Abrir menú"><i class="fas fa-bars"></i></button>
+            <div class="mi-cabecera-texto">
+                <p class="mi-eyebrow">{% block eyebrow %}{{ fecha_actual|date:"l j \d\e F \d\e Y" }}{% endblock %}</p>
+                <h1 class="mi-titulo">{% block titulo_pagina %}{{ titulo }}{% endblock %}</h1>
+                {% block subtitulo %}{% if descripcion %}<p class="mi-sub">{{ descripcion }}</p>{% endif %}{% endblock %}
+            </div>
+            <div class="mi-cabecera-acciones">
+                {% block acciones %}{% endblock %}
+                {% if request.GET.action or not es_pantalla_modulo %}
+                    <a href="{% block atras %}/panel/{% endblock %}" class="btn btn-default btn-sm d-print-none"><i class="fas fa-arrow-left me-1"></i>Atrás</a>
+                {% endif %}
+            </div>
+            <div class="mi-cabecera-campana">
+                <div class="dropdown d-print-none">
+                    <a class="mi-campana" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false" aria-label="Notificaciones">
+                        <i class="fas fa-bell"></i>{% if totalnot %}<span class="mi-campana-punto">{% if totalnot > 99 %}99+{% else %}{{ totalnot }}{% endif %}</span>{% endif %}
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end py-0 mi-notificaciones">
+                        <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
+                            <strong class="fs-14">Notificaciones</strong>
+                            {% if totalnot %}<small class="text-muted">{{ totalnot }} sin leer</small>{% endif %}
+                        </div>
+                        {% for notif in listnotification %}
+                            <a href="{% if notif.url %}{{ notif.url }}{% else %}/notificaciones/{% endif %}" class="dropdown-item d-block py-2 border-bottom" data-notif-id="{{ notif.id }}" style="white-space:normal;">
+                                <div class="fw-medium fs-13 text-dark text-truncate">{{ notif.titulo|default:'(sin título)' }}</div>
+                                <div class="text-muted fs-12">{{ notif.cuerpo|striptags|truncatechars:80 }}</div>
+                                <small class="text-muted fs-11"><i class="fa fa-clock me-1"></i>{{ notif.fecha_registro|date:'d/m/Y H:i' }}</small>
+                            </a>
+                        {% empty %}
+                            <div class="py-3 text-center text-muted">Sin notificaciones nuevas</div>
+                        {% endfor %}
+                        <a href="/notificaciones/" class="dropdown-item text-center text-primary fs-13 py-2 fw-medium">Ver todas las notificaciones</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+        {% block content %}{% endblock %}
+    </main>
 </div>
-
+<script src="/static/js/agenda/micrositio.js?v1.1"></script>
 {% endblock %}
 
 <div class="modal fade" id="modalPostAjax" tabindex="-1" aria-labelledby="modalPostAjaxLabel" aria-hidden="true">
@@ -267,9 +135,7 @@
 </div>
 
 <script src="/static/assets_riz/libs/bootstrap/js/bootstrap.bundle.min.js?1"></script>
-<script src="/static/assets_riz/libs/simplebar/simplebar.min.js"></script>
 <script src="/static/assets_riz/js/app.js"></script>
-<script src="/static/assets_riz/js/sidebar-storage.js?v1.2"></script>
 <script src="/static/jquery-3.7.1.min.js"></script>
 
 {% include 'datatable.html' %}
@@ -309,7 +175,7 @@
         {% endif %}
     }
 
-    function eliminarajax(pk, nombre, accion, titulo = `Estas a punto de eliminar este registro ${nombre}`) {
+    function eliminarajax(pk, nombre, accion, titulo = `Estás a punto de eliminar el registro ${nombre}`) {
         Swal.fire({
             title: `${titulo}`,
             text: "Esta acción es irreversible",
@@ -318,7 +184,7 @@
             allowOutsideClick: false,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
-            confirmButtonText: 'Si, deseo hacerlo!',
+            confirmButtonText: 'Sí, deseo hacerlo',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.value) {
@@ -659,6 +525,7 @@
     })();
 </script>
 
+<script src="/static/js/pwa/cola_avisos.js?v1.0"></script>
 {% if request.path == '/panel/' %}
     {% include 'pwa/install_bar.html' %}
 {% endif %}

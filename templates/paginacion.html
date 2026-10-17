@@ -73,11 +73,11 @@
             </div>
         </div>
     </div>
-{% else %}
+{% elif request.GET %}
     <div class="text-center text-muted" style="margin-bottom: 25px; margin-top: 20px">
-        <span>No existen resultados para esta búsqueda.</span>
-        <a href="{{ request.path }}" class="text-success text-decoration-none">
-            Haz clic aquí para reiniciar
+        <span>No hay resultados con estos filtros.</span>
+        <a href="{{ request.path }}" class="text-primary text-decoration-none">
+            Quitar filtros
             <i class="bi bi-arrow-clockwise ms-1"></i>
         </a>
     </div>

@@ -5,8 +5,7 @@ from django.contrib.admin.models import DELETION, ADDITION, CHANGE, LogEntry
 from django.core.cache import cache
 from django.core.paginator import Paginator, EmptyPage
 from django.core import signing
-from django.db import models
-from django.db.models import Value, F, QuerySet
+from django.db.models import Prefetch, QuerySet
 from django.http import HttpResponseRedirect, JsonResponse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
@@ -199,8 +198,45 @@ def obtener_perfil_activo(request):
     if not request.user.is_authenticated:
         return None
     nuevo = 'administrativo' if request.user.es_administrativo() else None
-    request.session['perfil_activo'] = nuevo
+    if request.session.get('perfil_activo') != nuevo:
+        request.session['perfil_activo'] = nuevo
     return nuevo
+
+
+def modulos_permitidos(request):
+    """Módulos activos que abren los grupos del usuario (todos para el superusuario). Se memoiza
+    en el request: `secure_module` y `addData` lo piden en la misma petición."""
+    if not hasattr(request, '_modulos_permitidos'):
+        modulos = Modulo.objects.filter(status=True)
+        if not request.user.is_superuser:
+            ids = GroupModulo.objects.filter(
+                group__in=request.user.groups.all(), status=True,
+            ).values_list('modulos__id', flat=True)
+            modulos = modulos.filter(id__in=ids)
+        request._modulos_permitidos = list(modulos.order_by('orden'))
+    return request._modulos_permitidos
+
+
+def agregar_sidebar(request, data):
+    """Secciones del sidebar con sus módulos visibles, sección abierta, módulo de la ruta actual y
+    contadores de pendientes. Una consulta para las secciones con sus módulos ya filtrados y ordenados."""
+    from agenda.models import Solicitud
+    modulos = modulos_permitidos(request)
+    ids = [m.id for m in modulos]
+    grupos = list(ModuloGrupo.objects.filter(status=True, modulos__id__in=ids).order_by('prioridad').distinct()
+                  .prefetch_related(Prefetch('modulos', queryset=Modulo.objects.filter(id__in=ids).order_by('orden'),
+                                             to_attr='modulos_visibles')))
+    ruta = request.path.lower()
+    data['grupos'] = grupos
+    data['grupo_abierto'] = next((g.pk for g in grupos for m in g.modulos_visibles if ruta.startswith(m.url.lower())),
+                                 None)
+    data['es_pantalla_modulo'] = request.path == '/panel/' or any(m.url == request.path for m in modulos)
+    contadores = {'/agenda/alertas/': data.get('totalnot', 0)}
+    if any(m.url == '/agenda/cola/' for m in modulos):
+        contadores['/agenda/cola/'] = Solicitud.objects.filter(status=True, estado='en_cola').count()
+    for grupo in grupos:
+        for modulo in grupo.modulos_visibles:
+            modulo.contador = contadores.get(modulo.url, 0)
 
 
 def secure_module(f):
@@ -214,14 +250,8 @@ def secure_module(f):
                 urls_validas = ['perfilpanel', 'panel']
                 if request.path.replace('/', '') in urls_validas:
                     return f(*args, **kwargs)
-                modulos_id = list(
-                    GroupModulo.objects.filter(group__in=request.user.groups.all(), status=True).values_list('modulos__id',
-                                                                                                flat=True))
-                ms = Modulo.objects.filter(
-                    status=True, id__in=modulos_id,
-                ).annotate(
-                    url_2=Value(request.path, output_field=models.CharField()))
-                if ms.filter(url_2__istartswith=F('url')).exists():
+                ruta = request.path.lower()
+                if any(ruta.startswith(m.url.lower()) for m in modulos_permitidos(request)):
                     return f(*args, **kwargs)
                 else:
                     messages.error(request, "No tienes acceso.")
@@ -355,51 +385,14 @@ def addData(request, data):
         if request.user.cambio_clave and request.path != '/changepass/':
             data['activar_cambio_clave'] = request.user.cambio_clave
         get_filtros_anteriores(request, data, None)
-        data["fecha_session_expira"] = (request.session.model.objects.get(
-            pk=request.session.session_key).expire_date - timezone.now()).seconds
-        if not request.session.exists(request.session.session_key):
-            request.session.create()
+        # Tope de un día: base.html lo pasa a setInterval en ms y por encima de 2^31-1 el navegador
+        # lo dispara al instante (bucle de recargas). La sesión dura 30 días.
+        data["fecha_session_expira"] = min(request.session.get_expiry_age(), 24 * 60 * 60)
         data['ruta_val'] = request.path
         perfil_activo = obtener_perfil_activo(request)
         data['perfil_activo'] = perfil_activo
-        data.setdefault('ocultar_sidebar', False)
         if perfil_activo:
-            data['gruposUserLogueado'] = ", ".join(list(request.user.groups.all().values_list('name', flat=True)))
-            if request.user.is_superuser:
-                modulos_qs = Modulo.objects.filter(status=True)
-            else:
-                modulos_id_rol = GroupModulo.objects.filter(
-                    group__in=request.user.groups.all(), status=True,
-                ).values_list('modulos__id', flat=True)
-                modulos_qs = Modulo.objects.filter(id__in=modulos_id_rol, status=True)
-            data["modulos_id"] = modulos_id = list(modulos_qs.values_list('id', flat=True))
-            data['grupos'] = ModuloGrupo.objects.filter(
-                status=True, modulos__id__in=modulos_id,
-            ).order_by('prioridad').distinct()
-            modulos = Modulo.objects.annotate(url_2=Value(request.path, output_field=models.CharField())).filter(
-                url_2__istartswith=F('url'))
-            if modulos.exists():
-                if data['grupos'].filter(modulos__in=modulos, status=True).exists():
-                    data["group"] = data['grupos'].filter(modulos__in=modulos, status=True).first().nombre
-            if 'ruta_lista' not in request.session:
-                request.session['ruta_lista'] = [['/panel/', 'Inicio']]
-            rutalista = request.session['ruta_lista']
-            if request.path and request.method == 'GET':
-                if Modulo.objects.values('url').filter(url=request.path).exists():
-                    modulo = Modulo.objects.values("url", "nombre").filter(url=request.path).first()
-                    url = [modulo['url'], modulo['nombre']]
-                    if rutalista.count(url) <= 0:
-                        if rutalista.__len__() >= 4:
-                            b = rutalista[1]
-                            rutalista.remove(b)
-                            rutalista.append(url)
-                        else:
-                            rutalista.append(url)
-                    request.session['ruta_lista'] = rutalista
-                    data["url_back"] = '/'
-                    url_back = [data['url_back']]
-                    request.session['url_back'] = url_back
-            data["ruta_lista"] = rutalista
+            agregar_sidebar(request, data)
 
 
 def redirectAfterPostGet(request):

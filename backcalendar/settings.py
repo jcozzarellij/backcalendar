@@ -159,7 +159,6 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'pwa.context_processors.pwa_settings',
-                'agenda.context_processors.menu_agenda',
             ],
         },
     },
@@ -173,7 +172,9 @@ DATABASES = {
         'NAME': POSTGRES_DBNAME,
         'USER': POSTGRES_USER,
         'PASSWORD': POSTGRES_PASSWORD,
-        'HOST': POSTGRES_HOST,
+        # `localhost` resuelve primero a ::1; si Postgres no escucha en IPv6, cada conexión espera el
+        # connect_timeout completo (5 s) antes de caer a IPv4.
+        'HOST': '127.0.0.1' if POSTGRES_HOST in ('', 'localhost') else POSTGRES_HOST,
         'PORT': POSTGRES_PORT,
         'ATOMIC_REQUESTS': False,
         'CONN_MAX_AGE': 60,
