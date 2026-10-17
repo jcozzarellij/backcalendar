@@ -1405,3 +1405,110 @@ button.ag-mes-dia:hover,
 .ac-legal a {
     font-weight: 600;
 }
+
+.lg-documentos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+    margin-top: 1.25rem;
+}
+
+.lg-documentos .ag-parte[aria-current="page"] {
+    background: var(--ld-azul);
+    color: #ffffff;
+}
+
+.lg-indice {
+    padding: 1.25rem 1.4rem;
+    border-radius: 20px;
+    background: var(--ld-papel);
+}
+
+.lg-indice-titulo {
+    margin: 0 0 .6rem;
+    color: var(--ld-azul);
+    font-family: var(--ld-titulos);
+    font-weight: 800;
+    font-size: 1em;
+}
+
+.lg-indice ol {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+    margin: 0;
+    padding: 0 0 0 1.2em;
+}
+
+.lg-indice a {
+    display: inline-block;
+    padding: .3em 0;
+    color: var(--ld-tinta);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.lg-indice a:hover,
+.lg-indice a:focus-visible {
+    color: var(--ld-azul);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.lg-documento {
+    padding: clamp(1.5rem, 4vw, 3rem);
+    border-radius: 20px;
+    background: var(--ld-papel);
+}
+
+.lg-secciones {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin: 0;
+    padding: 0 0 0 1.4em;
+}
+
+.lg-seccion {
+    max-width: 68ch;
+    scroll-margin-top: 110px;
+}
+
+.lg-seccion::marker {
+    color: var(--ld-azul);
+    font-family: var(--ld-titulos);
+    font-weight: 800;
+    font-size: 1.25em;
+}
+
+.lg-seccion-titulo {
+    margin: 0 0 .5rem;
+    color: var(--ld-tinta);
+    font-family: var(--ld-titulos);
+    font-weight: 800;
+    font-size: 1.25em;
+    letter-spacing: -.02em;
+}
+
+.lg-seccion p,
+.lg-texto p {
+    margin: 0 0 .9rem;
+    color: var(--ld-tinta);
+}
+
+.lg-texto {
+    max-width: 72ch;
+}
+
+.lg-seccion a,
+.lg-texto a {
+    color: var(--ld-azul);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.lg-actualizado {
+    margin: 2rem 0 0;
+    color: var(--ld-texto);
+    font-size: .88em;
+}

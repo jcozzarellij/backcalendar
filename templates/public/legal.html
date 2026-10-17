@@ -1,0 +1,48 @@
+{% extends 'public/base_landing.html' %}
+
+{% block meta_pagina %}
+    <meta name="description" content="{{ bajada }}">
+    <link rel="stylesheet" href="/static/css/public/reserva.css?v3.4">
+{% endblock %}
+
+{% block pagina %}
+<section class="ag-cabecera" aria-labelledby="lg-titulo">
+    <a href="/" class="ct-volver"><i class="fas fa-arrow-left" aria-hidden="true"></i>{{ t.ct_volver }}</a>
+    <h1 id="lg-titulo" class="ag-producto">{{ titulo }}</h1>
+    <p class="ag-descripcion">{{ bajada }}</p>
+    <nav class="lg-documentos" aria-label="{{ t.lg_documentos }}">
+        <a href="/privacidad/" class="ag-parte"{% if documento == 'terminos' %} aria-current="page"{% endif %}>{{ t.lg_corto_terminos }}</a>
+        <a href="/proteccion-datos/" class="ag-parte"{% if documento == 'datos' %} aria-current="page"{% endif %}>{{ t.au_datos }}</a>
+    </nav>
+</section>
+
+<div class="row gx-3 gy-4 ag-cuerpo">
+    {% if not texto_propio %}
+        <div class="col-lg-4 col-xl-3">
+            <nav class="ag-lateral lg-indice" aria-labelledby="lg-indice-titulo">
+                <h2 class="lg-indice-titulo" id="lg-indice-titulo">{{ t.lg_indice }}</h2>
+                <ol>
+                    {% for s in secciones %}<li><a href="#{{ s.id }}">{{ s.titulo }}</a></li>{% endfor %}
+                </ol>
+            </nav>
+        </div>
+    {% endif %}
+    <div class="{% if texto_propio %}col-lg-10 col-xl-8{% else %}col-lg-8 col-xl-9{% endif %}">
+        <article class="lg-documento" aria-labelledby="lg-titulo">
+            {% if texto_propio %}
+                <div class="lg-texto">{{ texto_propio|linebreaks }}</div>
+            {% else %}
+                <ol class="lg-secciones">
+                    {% for s in secciones %}
+                        <li class="lg-seccion" id="{{ s.id }}">
+                            <h2 class="lg-seccion-titulo">{{ s.titulo }}</h2>
+                            <p>{{ s.texto }}{% if s.con_correo %} {% if correo_legal %}<a href="mailto:{{ correo_legal }}">{{ correo_legal }}</a>{% else %}{{ t.lg_sin_correo }}{% endif %}.{% endif %}</p>
+                        </li>
+                    {% endfor %}
+                </ol>
+            {% endif %}
+            {% if actualizado %}<p class="lg-actualizado">{{ t.lg_actualizado }}: {{ actualizado|date:t.formato_fecha_larga }}</p>{% endif %}
+        </article>
+    </div>
+</div>
+{% endblock %}
