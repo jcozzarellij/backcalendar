@@ -7,6 +7,14 @@ from django.utils.deconstruct import deconstructible
 #para el modelo financiero.models.Constante
 
 
+def _tamano_subido(file):
+    """Tamaño del archivo recién subido. None si es el que ya estaba guardado: ese no se vuelve a
+    validar (y su fichero puede no existir en disco)."""
+    if getattr(file, '_committed', False):
+        return None
+    return file.size
+
+
 @deconstructible
 class FileMaxSizeInMbValidator:
     message = "El tamaño máximo del archivo es %(maxSize)sMB."
@@ -20,7 +28,9 @@ class FileMaxSizeInMbValidator:
             self.code = code
 
     def __call__(self, file):
-        file_size = file.file.size
+        file_size = _tamano_subido(file)
+        if file_size is None:
+            return
         limit_kb = self.fileSize * 1000
         if file_size > limit_kb * 1024:
             raise ValidationError(
@@ -50,7 +60,9 @@ def validate_file_size_20mb(file):
     __general_validate_file_size(file, 20000)
 
 def __general_validate_file_size(file, size):
-    file_size = file.file.size
+    file_size = _tamano_subido(file)
+    if file_size is None:
+        return
     limit_kb = size
     if file_size > limit_kb * 1024:
         raise ValidationError("El tamaño máximo del archivo es {}MB".format(int(size/1000)))
