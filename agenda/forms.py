@@ -196,6 +196,8 @@ class ProductoForm(ModelFormBase):
         if padre and padre.padre_id:
             raise ValidationError({'padre': 'Solo hay dos niveles: un subproducto no puede tener hijos'})
         repetido = Producto.objects.filter(status=True, portal=self.portal, padre=padre, slug=slug).exclude(id=self.instance.id or 0)
+        if slug in RUTAS_RESERVADAS:
+            raise ValidationError({'slug': 'Esta ruta está reservada por el sistema, elija otra'})
         if slug and repetido.exists():
             raise ValidationError({'slug': 'Ya existe un producto con esta ruta en el portal'})
         datos['slug'] = slug
@@ -237,8 +239,6 @@ class BuscarCitaForm(FormBase):
     correo = forms.EmailField()
 
     def clean_codigo(self):
-        if slug in RUTAS_RESERVADAS:
-            raise ValidationError({'slug': 'Esta ruta está reservada por el sistema, elija otra'})
         from .funciones_citas import normalizar_codigo_cita
         return normalizar_codigo_cita(self.cleaned_data['codigo'])
 
