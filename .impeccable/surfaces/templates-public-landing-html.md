@@ -7,17 +7,17 @@ related_targets: []
 
 # Landing pública de Turno ("/")
 
-Modo: Persuade. Audiencias: clientes (sobre todo personas mayores) que vienen a pedir una cita sobre un producto de Exducere Online; en segundo plano, empresas que evalúan Turno para su negocio.
-Trabajo del visitante: entender en segundos que aquí pide una cita por videollamada y elegir el producto. Mientras no exista el portal de reserva, cada producto lleva a su sitio; «Agendar» se suma en la fase 4.
-Contenido real: productos desde la base (Kawana Proctoring, Moodle con IA, Moodle web/móvil, Servidores). Sin testimonios, precios ni métricas. Teléfono de atención: se muestra solo cuando exista en Configuración.
-Restricciones: texto base ≥19 px, botones ≥56 px, trato de usted, sin degradados ni sombras, Bootstrap 5 grid, sin comentarios ni <style>.
-Pendiente: textos en/pt (fase 7), teléfono de atención, botón «Agendar» por producto.
+Modo: Persuade. Audiencias: clientes (sobre todo personas mayores) que vienen a pedir una cita por videollamada sobre un producto de Exducere Online; en segundo plano, empresas que evalúan Turno para su negocio.
+Trabajo del visitante: entender en segundos que aquí agenda una videollamada y pulsar «Agendar» en su producto; la página de cada producto (`/agendar/<slug>/`) agenda en 4 pasos dentro de la misma página.
+Contenido real: productos y subproductos desde la base (Qwana, MoAI · Moodle con IA, Moodle con Plataforma web y Aplicación móvil). El landing no muestra horarios ni cupos. Sin testimonios, precios ni métricas. Teléfono de atención solo cuando exista en el portal.
+Restricciones del usuario (2026-10-16): Manrope (titulares) + DM Sans (cuerpo) como lienzocreativo; colores del logo; barra de navegación de vidrio; idioma en un desplegable, no un botón por idioma; botón de acción verde con texto tinta. Bootstrap 5 grid, sin comentarios ni <style>, texto base ≥19 px, botones ≥56 px, trato de usted.
+Pendiente: revisión de traducciones en/pt, teléfono de atención, rediseño del portal de agendar con el mismo mundo.
 
 ## Direction contract
 
-THESIS: La página abre mostrando el objeto que el cliente va a recibir —su turno— en vez de un hero de marketing con métricas; se niega a la cuadrícula de mes y a las tarjetas icono+título genéricas.
-OWN-WORLD (revisado por el usuario): lenguaje de materiales de Apple. Fondo nube #E6F0F5 con tres campos de color desenfocados (celeste, verde claro, azul) detrás; cabecera, tarjeta de turno y lista de productos como vidrio translúcido (blanco al 58 %, backdrop-filter blur 28px saturate 170 %, borde claro de 1px, sombra suave y difusa); banda de empresas como vidrio oscuro (#003052 al 72 %). Tipografía de sistema (SF Pro / Segoe UI) con tracking negativo en titulares (-0.03em) y cuerpo cerca de 0; azul #005082 para la hoja de calendario y los botones de acción, verde #67BD01 para el botón principal y el foco. Fallbacks: prefers-reduced-transparency → superficies sólidas; prefers-contrast → bordes definidos; prefers-reduced-motion → sin materialización.
-STORY: El visitante ve su cita tal como llegará (día, hora en palabras, videollamada, código), entiende que solo debe elegir el producto, baja a la lista de productos, y si es una empresa encuentra al final la banda azul que presenta Turno.
-FIRST VIEWPORT: Columna izquierda (7/12): titular Fredoka de 3 líneas «Su cita, a la hora acordada.», bajada de 2 líneas y botón verde de 56px «Elegir producto». Columna derecha (5/12): tarjeta de turno a escala real con hoja de calendario (mes en banda azul, día grande), «2:20 de la tarde», «Videollamada con el equipo de Moodle» y código QW-7K2M-91, rotulada «Así llega su cita».
-FORM: Tarjeta de turno en grande (estructura 3 de 7 en la lista propia, sorteada) · seed b30b84d5 · construcción por código.
+THESIS: Cada producto se presenta como un ticket de mostrador —papel con muescas y línea troquelada, talón con «Agendar»— en vez de una tarjeta genérica o una lista; se niega a mostrar cupos, métricas y la cuadrícula de iconos.
+OWN-WORLD: fondo nube #E6F0F5 con una gran hoja verde #67BD01 (la del logo, forma de esquinas opuestas redondeadas) que asoma arriba a la derecha; barra flotante de vidrio blanco (blur 22px) con radio 22px; tickets de papel blanco con muescas del color del fondo y troquel discontinuo #c9d7e1; Manrope 800 con tracking −0.03em en titulares, DM Sans en cuerpo; azul #005082 para marca e información, verde con texto tinta solo en «Agendar»; banda de empresas en azul sólido.
+STORY: El visitante lee que aquí agenda una videollamada, ve los tickets de cada producto, pulsa «Agendar» en el suyo (o en la parte de Moodle que le interesa); si duda, tiene el teléfono y «Ya tengo una cita» a la vista; si es empresa, al final encuentra la banda azul de Turno.
+FIRST VIEWPORT: barra de vidrio arriba (logo, Mis citas, Para empresas, desplegable de idioma, «Aa»); columna izquierda 5/12 con titular Manrope de 3 líneas, bajada, ayuda por teléfono y «Ya tengo una cita»; columna derecha 7/12 con la pila de tickets, el primero completo a la vista con su talón verde «Agendar».
+FORM: dispensador de turnos de mostrador (estructura 2 de 7 en la lista propia, re-roll 1) · seed:84d8d88db432b19c · construcción por código.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance

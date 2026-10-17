@@ -1,6 +1,6 @@
 ---
 name: Turno de Exducere Online
-description: Papel blanco sobre un blanco cálido, tinta casi negra, un solo azul institucional y un solo verde para actuar; Geist en todo.
+description: Fondo nube con la hoja verde del logo, tickets de papel troquelado, barra de vidrio, un azul institucional que informa y un verde que actúa; Manrope y DM Sans en lo público, Geist en el panel.
 colors:
   azul: "#005082"
   azul-oscuro: "#003a5f"
@@ -20,13 +20,36 @@ colors:
   rojo: "#D93838"
   azul-velo: "rgba(0, 80, 130, 0.1)"
   azul-borde-suave: "#b3cbdb"
+  nube-oscura: "#d6e6ef"
+  linea-publica: "#c3d4df"
+  texto-publico: "#3a4b5c"
+  vidrio: "rgba(255, 255, 255, 0.6)"
+  verde-accion: "#3f7f00"
+  verde-accion-hover: "#336600"
 typography:
   display:
-    fontFamily: "Geist, Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
-    fontSize: "clamp(2.4rem, 4.8vw, 3.75rem)"
-    fontWeight: 500
-    lineHeight: 1.06
+    fontFamily: "Manrope, DM Sans, system-ui, sans-serif"
+    fontSize: "clamp(2.2em, 2.4vw + 1.3em, 3.7em)"
+    fontWeight: 800
+    lineHeight: 1.02
     letterSpacing: "-0.035em"
+  headline-publico:
+    fontFamily: "Manrope, DM Sans, system-ui, sans-serif"
+    fontSize: "clamp(1.5em, 1.2vw + 1.1em, 2.1em)"
+    fontWeight: 800
+    lineHeight: 1.12
+    letterSpacing: "-0.03em"
+  ticket:
+    fontFamily: "Manrope, DM Sans, system-ui, sans-serif"
+    fontSize: "1.65em"
+    fontWeight: 800
+    lineHeight: 1.1
+    letterSpacing: "-0.03em"
+  body-publico:
+    fontFamily: "DM Sans, system-ui, -apple-system, Segoe UI, sans-serif"
+    fontSize: "19px"
+    fontWeight: 400
+    lineHeight: 1.5
   headline:
     fontFamily: "Geist, Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
     fontSize: "clamp(1.6rem, 2.8vw, 2.25rem)"
@@ -77,6 +100,9 @@ rounded:
   panel-md: "0.85rem"
   panel-lg: "1.1rem"
   panel-xl: "1.6rem"
+  ticket: "20px"
+  vidrio: "22px"
+  menu: "14px"
 spacing:
   xs: "0.5rem"
   sm: "1rem"
@@ -85,6 +111,34 @@ spacing:
   xl: "3.5rem"
   hero: "3rem 0 4rem"
 components:
+  nav-vidrio:
+    backgroundColor: "{colors.vidrio}"
+    textColor: "{colors.tinta-panel}"
+    rounded: "{rounded.vidrio}"
+    padding: "10px 12px 10px 20px"
+    height: "72px"
+  menu-idioma:
+    backgroundColor: "{colors.papel}"
+    textColor: "{colors.tinta-panel}"
+    rounded: "{rounded.menu}"
+    padding: "0 16px"
+    height: "48px"
+  ticket:
+    backgroundColor: "{colors.papel}"
+    textColor: "{colors.tinta-panel}"
+    rounded: "{rounded.ticket}"
+    padding: "1.4em 1.6em"
+  ticket-agendar:
+    backgroundColor: "{colors.verde-accion}"
+    textColor: "{colors.papel}"
+    rounded: "{rounded.pildora}"
+    padding: "0.55em 1.6em"
+    height: "56px"
+  ticket-parte:
+    backgroundColor: "{colors.nube}"
+    textColor: "{colors.tinta-panel}"
+    rounded: "16px"
+    padding: "0.8em 0.8em 0.8em 1.1em"
   button-primary:
     backgroundColor: "{colors.azul}"
     textColor: "{colors.papel}"
@@ -189,6 +243,8 @@ components:
 
 **Creative North Star: "El turno sobre la mesa"**
 
+**Landing pública (`/`, octubre de 2026): el mostrador de turnos.** El landing dejó el blanco cálido y Geist: fondo nube #E6F0F5 con la hoja verde del logo asomando arriba a la derecha (una sola forma, esquinas opuestas redondeadas, recortada por el borde), barra de navegación flotante de vidrio blanco (60 %, `backdrop-filter: blur(22px) saturate(170%)`, radio 22 px, sólida con `prefers-reduced-transparency` y `prefers-contrast`), enlaces e idioma como píldoras transparentes dentro del vidrio (menú `<details>` con globo y banderas), «Iniciar sesión» como única píldora azul sólida o, con sesión iniciada, solo la foto redonda del usuario (`get_foto_gris`) con un menú de Panel, Mi perfil y Cerrar sesión, y un botón «Aa · Letra más grande» `sticky` abajo a la derecha que se detiene antes del pie (19 → 23 px). Toda página pública con esta línea extiende `templates/public/base_landing.html`. Cada producto es un ticket de papel blanco (radio 20 px) con línea troquelada discontinua #c3d4df y dos muescas del color del fondo; el talón lleva el botón «Agendar» en verde de acción #3f7f00 con texto blanco (4.9:1); el verde del logo #67BD01 queda para la hoja, viñetas e iconos, sin texto encima. Un producto con subproductos (Moodle) pone sus partes en el talón, lado a lado, como filas nube con su píldora verde. El landing no muestra horarios ni cupos: muestra hasta 4 productos `destacado` como tickets a ancho completo y enlaza a `/catalogo/`, que lista todos los productos activos con un buscador; «Tres pasos» es una franja de una fila. Titulares en Manrope 800 con −0.03/−0.035em, cuerpo en DM Sans; banda de empresas en azul sólido. Los tickets entran una vez, escalonados 80 ms, con 18 px de desplazamiento y `cubic-bezier(.16, 1, .3, 1)`. Lo que sigue en esta sección describe el registro anterior (legales, acceso, portal y panel), que mantiene Geist hasta su propio rediseño.
+
 Turno es la plataforma de citas de Exducere Online y su mundo visual nace de un solo objeto: el turno que el cliente va a recibir, puesto en grande antes de pedirle nada. Todo lo demás es la mesa de alrededor. En lo público esa mesa es un blanco cálido (#fcfbf8) sobre el que descansan superficies de papel blanco delimitadas por líneas finas (#e4e6e9); la tinta es un azul casi negro (#071a31) que escribe titulares, numerales y la banda de cierre; el azul institucional (#005082) solo pinta la banda de mes de la hoja de calendario, los numeradores de los pasos y los botones que llevan a otro sitio; el verde (#67BD01) aparece una vez por bloque, en el botón que hay que pulsar. No hay degradados, no hay vidrio, no hay sombras, no hay cuadrícula de mes.
 
 Una sola familia tipográfica, Geist (autoalojada, eje variable 100–900), hace todo el trabajo: titulares en peso 500 con tracking muy cerrado (−0.035em en el display), cuerpo en 400, etiquetas en 600. Lo que diferencia un titular de un párrafo es el tamaño, el color de tinta y el tracking, no el cambio de fuente. El estilo es plano y sin ornamentos, parecido a una herramienta de agenda profesional: la jerarquía la dan el espacio en blanco y las líneas de 1 px.
@@ -257,7 +313,7 @@ Una paleta institucional corta sobre un blanco cálido: tinta casi negra para le
 - **Label** (Geist 600, 0.8em, +0.06em, mayúsculas): la banda de mes de la hoja, blanco sobre azul. Es la única mayúscula del mundo público de la landing.
 
 ### Named Rules
-**La regla de la única familia.** Geist en todo: titulares, cuerpo, numerales, botones, panel. No se añade una segunda fuente ni se usan los `@font-face` de Fredoka, Inter o Plus Jakarta Sans que siguen declarados en `turno_fuentes.css`.
+**La regla de la única familia.** Geist en el panel, legales, acceso y portal. Excepción: el landing usa Manrope 800 para titulares y DM Sans para el cuerpo (autoalojadas en `static/fonts/manrope` y `static/fonts/dmsans`, declaradas en `turno_fuentes.css`), a pedido del usuario siguiendo la referencia de lienzocreativo. No se usan los `@font-face` de Fredoka, Inter o Plus Jakarta Sans.
 
 **La regla del em público.** En lo público ningún tamaño va en `rem` ni `px` salvo `--ld-base`; todo deriva en `em` para que «Letra más grande» (17 → 21 px) escale titulares, botones y hoja de calendario sin romper nada.
 
@@ -354,7 +410,8 @@ Celdas de 2.1 rem de alto, papel con borde 1 px `--bs-border-color` y radio `--b
 - **Do** escribir el copy visible en español y los textos de ayuda de iconos con `aria-hidden` en el icono y `visually-hidden` en el texto.
 
 ### Don't:
-- **Don't** usar degradados, mesh, glassmorphism ni `backdrop-filter`, ni deformar o reducir el logo por debajo de 24 px.
+- **Don't** usar degradados, mesh ni glassmorphism, ni deformar o reducir el logo por debajo de 24 px. La única superficie de vidrio permitida es la barra de navegación del landing, con su respaldo sólido.
+- **Don't** mostrar horarios, cupos ni «quedan N» en el landing: la disponibilidad vive en la página de agendar de cada producto.
 - **Don't** añadir `box-shadow` a ninguna superficie pública; en el panel, solo las tres sombras de tinta ya definidas.
 - **Don't** usar `btn-outline-*`: los botones son píldoras sólidas azules o verdes.
 - **Don't** escribir `<style>` en plantillas ni comentarios en HTML, CSS o JS.
