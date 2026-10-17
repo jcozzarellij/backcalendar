@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="{{ idioma|default:'es' }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="x-apple-disable-message-reformatting">
+    <title>{% block titulo_html %}{% endblock %}</title>
+</head>
+<body style="margin:0; padding:0; background-color:#E6F0F5;">
+<div style="display:none; max-height:0; max-width:0; overflow:hidden; opacity:0; mso-hide:all;">{% block preheader %}{% endblock %}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#E6F0F5;">
+    <tr>
+        <td align="center" style="padding:28px 12px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; background-color:#ffffff; border-radius:20px; border-collapse:separate; overflow:hidden;">
+                <tr>
+                    <td style="background-color:#005082; padding:26px 32px 24px;">
+                        {% if logo %}<img src="{{ logo }}" alt="{{ nombreempresa }}" height="36" style="display:block; height:36px; width:auto; border:0; margin:0 0 18px;">{% endif %}
+                        <h1 style="margin:0; color:#ffffff; font-family:Arial,'Helvetica Neue',Helvetica,sans-serif; font-size:25px; line-height:1.2; font-weight:800; letter-spacing:-0.4px;">{% block titulo %}{% endblock %}</h1>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="height:5px; line-height:5px; font-size:0; background-color:#67BD01;">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td style="padding:30px 32px 34px; font-family:Arial,'Helvetica Neue',Helvetica,sans-serif; font-size:16px; line-height:1.6; color:#1A2B3C;">
+                        {% block content %}{% endblock %}
+                    </td>
+                </tr>
+            </table>
+            <p style="max-width:560px; margin:18px auto 0; font-family:Arial,'Helvetica Neue',Helvetica,sans-serif; font-size:12px; line-height:1.6; color:#3a4b5c; text-align:center;">{% block pie %}{% endblock %}</p>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

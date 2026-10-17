@@ -205,7 +205,7 @@ class PortalTests(TestCase):
 
     def test_reservar_crea_cita_tokens_y_bloquea_el_horario(self):
         inicio = datetime.combine(self.lunes, time(9, 0))
-        with patch.object(self.funciones_portal, 'enviar_confirmacion'):
+        with patch.object(self.funciones_portal.funciones_avisos_cita, 'avisar_reserva'):
             cita, token = self.funciones_portal.reservar(self.producto, inicio, self.datos)
         self.assertEqual(cita.asignada_por, 'cliente')
         self.assertEqual(cita.fin, inicio + timedelta(minutes=40))
@@ -225,7 +225,7 @@ class PortalTests(TestCase):
         self.assertContains(r, '¿Qué día le queda bien?')
         r = navegador.get(f'/agendar/kawana/?action=horas&fecha={self.lunes:%Y-%m-%d}')
         self.assertEqual(len(r.json()['data']), 3)
-        with patch.object(self.funciones_portal, 'enviar_confirmacion'):
+        with patch.object(self.funciones_portal.funciones_avisos_cita, 'avisar_reserva'):
             r = navegador.post('/agendar/kawana/', dict(self.datos, action='reservar',
                                                         inicio=f'{self.lunes:%Y-%m-%d}T09:40'))
         self.assertFalse(r.json()['error'], r.json())

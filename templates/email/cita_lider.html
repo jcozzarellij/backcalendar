@@ -1,0 +1,75 @@
+{% extends 'email/cita_base.html' %}
+
+{% block titulo_html %}{{ titulo }}{% endblock %}
+{% block preheader %}{{ cliente.nombres }} · {{ fecha_larga }}, {{ hora }} · {{ cita.codigo }}{% endblock %}
+{% block titulo %}{{ titulo }}{% endblock %}
+
+{% block content %}
+    <p style="margin:0 0 10px; font-size:17px; font-weight:700;">Hola, {{ lider.first_name|default:lider.username }}.</p>
+    {% if evento == 'reservada' %}
+        <p style="margin:0 0 22px;"><strong>{{ cliente.nombres }}</strong> agendó una videollamada desde el portal. Estos son los datos para que el equipo la prepare.</p>
+    {% elif evento == 'movida' %}
+        <p style="margin:0 0 22px;">{{ quien }} movió la cita de <strong>{{ cliente.nombres }}</strong>. La agenda del equipo ya está actualizada.</p>
+    {% else %}
+        <p style="margin:0 0 22px;">{{ quien }} canceló la cita de <strong>{{ cliente.nombres }}</strong>. El horario quedó libre en la agenda del equipo.</p>
+    {% endif %}
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#E6F0F5; border-radius:16px; border-collapse:separate; margin:0 0 22px;">
+        <tr>
+            <td style="padding:20px 22px 6px;">
+                <p style="margin:0; font-size:13px; font-weight:700; color:#005082;">{% if cita.producto %}{{ cita.producto.nombre }}{% else %}{{ cita.titulo }}{% endif %}</p>
+                <p style="margin:4px 0 0; font-size:21px; line-height:1.25; font-weight:800; color:#1A2B3C;{% if evento == 'cancelada' %} text-decoration:line-through;{% endif %}">{{ fecha_larga }}, {{ hora }} a {{ hora_fin }}</p>
+                {% if anterior %}<p style="margin:4px 0 0; font-size:14px; color:#9b1c17;">Antes: <span style="text-decoration:line-through;">{{ anterior.fecha }}, {{ anterior.hora }} a {{ anterior.hora_fin }}</span></p>{% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:14px 22px 18px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:2px dashed #c3d4df;">
+                    <tr>
+                        <td style="padding:14px 0 4px; font-size:14px; color:#3a4b5c; width:34%;">Cliente</td>
+                        <td style="padding:14px 0 4px; font-size:15px; font-weight:700; color:#1A2B3C;">{{ cliente.nombres }}</td>
+                    </tr>
+                    {% if cliente.correo %}
+                        <tr>
+                            <td style="padding:4px 0; font-size:14px; color:#3a4b5c;">Correo</td>
+                            <td style="padding:4px 0; font-size:15px;"><a href="mailto:{{ cliente.correo }}" style="color:#005082;">{{ cliente.correo }}</a></td>
+                        </tr>
+                    {% endif %}
+                    {% if telefono %}
+                        <tr>
+                            <td style="padding:4px 0; font-size:14px; color:#3a4b5c;">Teléfono</td>
+                            <td style="padding:4px 0; font-size:15px;"><a href="tel:{{ telefono|cut:' ' }}" style="color:#005082;">{{ telefono }}</a></td>
+                        </tr>
+                    {% endif %}
+                    <tr>
+                        <td style="padding:4px 0; font-size:14px; color:#3a4b5c;">Organiza</td>
+                        <td style="padding:4px 0; font-size:15px; color:#1A2B3C;">{{ cita.organizador.get_full_name|default:cita.organizador.username }}</td>
+                    </tr>
+                    {% if cita.equipo %}
+                        <tr>
+                            <td style="padding:4px 0; font-size:14px; color:#3a4b5c;">Equipo</td>
+                            <td style="padding:4px 0; font-size:15px; color:#1A2B3C;">{{ cita.equipo.nombre }}</td>
+                        </tr>
+                    {% endif %}
+                    <tr>
+                        <td style="padding:4px 0; font-size:14px; color:#3a4b5c;">Código</td>
+                        <td style="padding:4px 0; font-size:16px; font-weight:800; letter-spacing:1px; color:#1A2B3C;">{{ cita.codigo }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    {% if mensaje %}
+        <p style="margin:0 0 6px; font-size:14px; font-weight:700; color:#005082;">Lo que contó el cliente</p>
+        <p style="margin:0 0 22px; padding:12px 16px; background-color:#f4f8fb; border-left:4px solid #67BD01; border-radius:8px; font-size:15px; color:#1A2B3C; white-space:pre-line;">{{ mensaje }}</p>
+    {% endif %}
+    {% if evento == 'cancelada' and cita.motivo_cancelacion %}
+        <p style="margin:0 0 6px; font-size:14px; font-weight:700; color:#9b1c17;">Motivo de la cancelación</p>
+        <p style="margin:0 0 22px; padding:12px 16px; background-color:#fdecea; border-radius:8px; font-size:15px; color:#1A2B3C;">{{ cita.motivo_cancelacion }}</p>
+    {% endif %}
+
+    <p style="margin:0;"><a href="{{ url_panel }}" style="display:inline-block; background-color:#005082; color:#ffffff; font-weight:700; font-size:16px; padding:14px 26px; border-radius:999px; text-decoration:none;">Abrir la cita en el panel</a></p>
+{% endblock %}
+
+{% block pie %}Aviso interno de {{ nombreempresa }}. También lo tienes en las notificaciones del panel.{% endblock %}

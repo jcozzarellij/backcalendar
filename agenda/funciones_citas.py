@@ -51,6 +51,14 @@ def codigo_cita():
     return _codigo('QW', Cita, 6)
 
 
+def normalizar_codigo_cita(texto):
+    """Código que escribe el cliente («qwhewgcm», «qw-hewg-cm») en el formato de `codigo_cita`."""
+    limpio = ''.join(c for c in (texto or '').upper() if c.isalnum())
+    if limpio.startswith('QW') and len(limpio) == 8:
+        return f'QW-{limpio[2:6]}-{limpio[6:]}'
+    return (texto or '').strip().upper()
+
+
 def obtener_o_crear_cliente(nombres, correo, telefono='', portal=None, request=None, idioma='es'):
     correo = (correo or '').strip().lower()
     cliente = Cliente.objects.filter(correo__iexact=correo).first() if correo else None
@@ -183,8 +191,9 @@ def sincronizar_google(cita):
     return cita.sincronizada_google
 
 
-def mover_cita(cita, inicio, fin, request=None, detalle=''):
-    """Reprograma: revalida a todos los obligatorios y mueve sus bloques. Dentro de `atomic()`."""
+def mover_cita(cita, inicio, fin, request=None, detalle='', por_cliente=False):
+    """Reprograma: revalida a todos los obligatorios y mueve sus bloques. Dentro de `atomic()`. Al confirmar
+    avisa al cliente y al líder del equipo."""
     if fin <= inicio:
         raise ValueError('La hora final debe ser posterior a la inicial.')
     if cita.estado in ('cancelada', 'cerrada'):
@@ -192,19 +201,24 @@ def mover_cita(cita, inicio, fin, request=None, detalle=''):
     bloques = list(BloqueOcupado.objects.select_for_update().filter(status=True, cita=cita).select_related('usuario'))
     _verificar_libres([b.usuario for b in bloques], inicio, fin, excluir_cita=cita)
     anterior = f'{cita.inicio:%d/%m/%Y %H:%M}'
+    inicio_anterior, fin_anterior = cita.inicio, cita.fin
     cita.inicio, cita.fin = inicio, fin
     cita.save(request)
     for b in bloques:
         b.inicio, b.fin = inicio, fin
         b.save(request)
     autor = getattr(request, 'user', None) if request is not None else None
-    anotar(cita, 'Cita reprogramada', f'De {anterior} a {inicio:%d/%m/%Y %H:%M}. {detalle}'.strip(),
-           autor if autor is not None and autor.is_authenticated else None)
+    autor = autor if autor is not None and autor.is_authenticated else None
+    anotar(cita, 'Cita reprogramada', f'De {anterior} a {inicio:%d/%m/%Y %H:%M}. {detalle}'.strip(), autor)
     transaction.on_commit(lambda: sincronizar_google(cita))
+    if inicio != inicio_anterior:
+        transaction.on_commit(lambda: _avisos().avisar_reprogramacion(cita.pk, inicio_anterior, fin_anterior, por_cliente,
+                                                                       autor.pk if autor else None))
     return cita
 
 
-def cancelar_cita(cita, motivo='', request=None):
+def cancelar_cita(cita, motivo='', request=None, por_cliente=False):
+    """Cancela, libera los bloques y, al confirmar, avisa al cliente y al líder del equipo."""
     if cita.estado == 'cancelada':
         return cita
     cita.estado = 'cancelada'
@@ -217,8 +231,10 @@ def cancelar_cita(cita, motivo='', request=None):
         cita.solicitud.estado = 'cancelada'
         cita.solicitud.save(request)
     autor = getattr(request, 'user', None) if request is not None else None
-    anotar(cita, 'Cita cancelada', motivo, autor if autor is not None and autor.is_authenticated else None)
+    autor = autor if autor is not None and autor.is_authenticated else None
+    anotar(cita, 'Cita cancelada', motivo, autor)
     transaction.on_commit(lambda: sincronizar_google(cita))
+    transaction.on_commit(lambda: _avisos().avisar_cancelacion(cita.pk, por_cliente, autor.pk if autor else None))
     return cita
 
 
@@ -255,3 +271,8 @@ def pendientes_de_cierre(usuario):
 
 def limite_pendientes(dias=30):
     return timedelta(days=dias)
+
+
+def _avisos():
+    from . import funciones_avisos_cita
+    return funciones_avisos_cita
