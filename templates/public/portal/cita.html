@@ -1,83 +1,94 @@
-{% extends 'public/base.html' %}
+{% extends 'public/base_landing.html' %}
 
-{% block head %}
+{% block meta_pagina %}
     <meta name="robots" content="noindex, nofollow">
-    <link rel="stylesheet" href="/static/css/public/portal.css?v1.0">
+    <link rel="stylesheet" href="/static/css/public/reserva.css?v2.7">
 {% endblock %}
 
-{% block content %}
-<div class="row g-4 g-lg-5 justify-content-center">
-    <div class="col-lg-5">
-        {% include 'public/portal/parciales/tarjeta_cita.html' with cita=cita qr=qr %}
-    </div>
-    <div class="col-lg-6">
-        <section class="pt-lado">
-            {% if cita.estado == 'cancelada' %}
-                <p class="pt-eyebrow">Cita cancelada</p>
-                <h1 class="pt-titulo">Esta cita fue cancelada.</h1>
-                <p class="pt-desc">Si quiere, puede agendar una nueva en cualquier momento.</p>
-                {% if producto %}<a href="/agendar/{{ producto.slug }}/" class="btn btn-success pt-boton"><i class="fas fa-calendar-plus" aria-hidden="true"></i>Agendar otra cita</a>{% endif %}
-            {% elif cita.estado == 'cerrada' or cita.estado == 'realizada' or cita.estado == 'no_asistio' %}
-                <p class="pt-eyebrow">Cita realizada</p>
-                <h1 class="pt-titulo">Gracias por su tiempo.</h1>
-                <p class="pt-desc">Si quiere una nueva reunión, agéndela aquí.</p>
-                {% if producto %}<a href="/agendar/{{ producto.slug }}/" class="btn btn-success pt-boton"><i class="fas fa-calendar-plus" aria-hidden="true"></i>Agendar otra cita</a>{% endif %}
-            {% else %}
-                <p class="pt-eyebrow">Confirmada</p>
-                <h1 class="pt-titulo">Su cita quedó agendada.</h1>
-                <p class="pt-desc">Le enviamos los detalles a <strong>{{ cita.cliente.correo }}</strong>. El día de la cita entre por el enlace de la videollamada; si no lo ve, revise su carpeta de correo no deseado.</p>
-                <div class="pt-acciones">
-                    {% if cita.enlace_meet %}
-                        <a href="{{ cita.enlace_meet }}" class="btn btn-success pt-boton" target="_blank" rel="noopener"><i class="fas fa-video" aria-hidden="true"></i>Entrar a la videollamada</a>
-                    {% else %}
-                        <p class="pt-nota"><i class="fas fa-info-circle" aria-hidden="true"></i> El enlace de la videollamada le llega por correo y aparece aquí en unos minutos.</p>
-                    {% endif %}
-                    {% if cita.enlace_evento %}
-                        <a href="{{ cita.enlace_evento }}" class="btn btn-primary pt-boton" target="_blank" rel="noopener"><i class="fab fa-google" aria-hidden="true"></i>Ver en Google Calendar</a>
-                    {% endif %}
+{% block pagina %}
+<div id="pt-portal" {% include 'public/portal/parciales/textos_gestion.html' %}>
+    <section class="ag-cabecera" aria-labelledby="ci-titulo">
+        {% if fase == 'cancelada' %}
+            <h1 id="ci-titulo" class="ag-producto">{{ t.ci_titulo_cancelada }}</h1>
+            <p class="ag-descripcion">{{ t.ci_texto_cancelada }}</p>
+        {% elif fase == 'terminada' %}
+            <h1 id="ci-titulo" class="ag-producto">{{ t.ci_titulo_realizada }}</h1>
+            <p class="ag-descripcion">{{ t.ci_texto_realizada }}</p>
+        {% else %}
+            <h1 id="ci-titulo" class="ag-producto">{{ t.ci_titulo_ok }}</h1>
+            <p class="ag-descripcion">{{ t.ci_enviamos }} <strong>{{ cita.cliente.correo }}</strong>.</p>
+        {% endif %}
+    </section>
+
+    <div class="row gx-3 gy-4 ag-cuerpo">
+        <div class="col-lg-5">
+            <article class="ci-boleto{% if fase == 'cancelada' %} ci-boleto-cancelada{% endif %}" aria-labelledby="ci-boleto-fecha">
+                <div class="ci-boleto-cuerpo">
+                    <span class="ci-estado ci-estado-{{ cita.estado }}">{{ cita.estado_texto }}</span>
+                    <div class="ci-fecha">
+                        <span class="ag-hoja ci-hoja" aria-hidden="true"><span class="ag-hoja-mes">{{ cita.inicio|date:"M" }}</span><span class="ag-hoja-dia">{{ cita.inicio|date:"j" }}</span></span>
+                        <div>
+                            <p class="ci-fecha-larga" id="ci-boleto-fecha">{{ cita.inicio|date:t.formato_fecha_larga|capfirst }}</p>
+                            <p class="ci-hora">{{ cita.inicio|time:"H:i" }} {{ t.ci_a }} {{ cita.fin|time:"H:i" }}</p>
+                        </div>
+                    </div>
+                    <p class="ld-ticket-dato ci-producto"><i class="fas fa-video" aria-hidden="true"></i>{{ cita.nombre_mostrar }}{% if cita.equipo %} · {{ cita.equipo.nombre }}{% endif %}</p>
                 </div>
+                <div class="ag-troquel ci-boleto-talon">
+                    {% if qr %}<img src="{{ qr }}" alt="{{ t.ci_qr_alt }}" class="ci-qr" width="168" height="168">{% endif %}
+                    <div class="ci-talon-texto">
+                        <p class="ci-etiqueta">{{ t.ci_codigo }}</p>
+                        <p class="ci-codigo">{{ cita.codigo }}</p>
+                        <p class="ci-cliente">{{ cita.cliente.nombres }}</p>
+                        {% if qr %}<p class="ci-qr-texto">{{ t.ci_qr_texto }}</p>{% endif %}
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="ci-columna">
+                <section class="ci-panel" aria-labelledby="ci-titulo">
+                    {% if fase != 'activa' %}
+                        {% if producto %}<a href="/agendar/{{ producto.slug }}/{% if ventana %}?ventana=1{% endif %}" class="btn btn-success ld-agendar"><i class="fas fa-calendar-plus" aria-hidden="true"></i>{{ t.ci_agendar_otra }}</a>{% endif %}
+                    {% else %}
+                        {% if cita.enlace_meet or cita.enlace_evento %}
+                            <div class="ag-acciones ci-acciones-principales">
+                                {% if cita.enlace_meet %}
+                                    <a href="{{ cita.enlace_meet }}" class="btn btn-success ld-agendar" target="_blank" rel="noopener"><i class="fas fa-video" aria-hidden="true"></i>{{ t.ci_entrar }}<span class="visually-hidden"> ({{ t.ld_nueva_pestana }})</span></a>
+                                {% endif %}
+                                {% if cita.enlace_evento %}
+                                    <a href="{{ cita.enlace_evento }}" class="btn btn-primary ag-boton-azul" target="_blank" rel="noopener"><i class="far fa-calendar" aria-hidden="true"></i>{{ t.ci_google }}<span class="visually-hidden"> ({{ t.ld_nueva_pestana }})</span></a>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <p class="ag-aviso ci-aviso"><i class="far fa-envelope" aria-hidden="true"></i>{{ t.ci_enlace_pendiente }}</p>
+                        {% endif %}
+                        <p class="ci-guarde">{{ t.ci_guarde }}</p>
+                        {% if puede_cambiar or puede_cancelar %}
+                            <h2 class="ci-h2">{{ t.ci_gestionar }}</h2>
+                            <div class="ag-acciones">
+                                {% if puede_cambiar %}<button type="button" class="btn btn-light ag-boton-suave" data-abrir="pt-cambio" aria-expanded="false" aria-controls="pt-cambio"><i class="far fa-calendar" aria-hidden="true"></i>{{ t.ci_cambiar }}</button>{% endif %}
+                                {% if puede_cancelar %}<button type="button" class="btn btn-light ag-boton-suave" data-abrir="pt-cancelar" aria-expanded="false" aria-controls="pt-cancelar"><i class="fas fa-xmark" aria-hidden="true"></i>{{ t.ci_cancelar }}</button>{% endif %}
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </section>
+
                 {% if puede_cambiar %}
-                    <button type="button" class="btn btn-light pt-boton-chico mt-3" id="pt-abrir-cambio" aria-expanded="false" aria-controls="pt-cambio"><i class="fas fa-calendar-alt" aria-hidden="true"></i>Cambiar la fecha</button>
+                    {% include 'public/portal/parciales/panel_cambio.html' with clase='ci-panel' panel_id='pt-cambio' grupo='cita' nivel='h2' cita_pk='' %}
                 {% endif %}
                 {% if puede_cancelar %}
-                    <button type="button" class="btn btn-light pt-boton-chico mt-3" id="pt-abrir-cancelar" aria-expanded="false" aria-controls="pt-cancelar"><i class="fas fa-times" aria-hidden="true"></i>Cancelar la cita</button>
+                    {% include 'public/portal/parciales/panel_cancelar.html' with clase='ci-panel' panel_id='pt-cancelar' grupo='cita' nivel='h2' cita_pk='' %}
                 {% endif %}
-            {% endif %}
-        </section>
 
-        {% if puede_cambiar %}
-            <section class="pt-paso mt-4" id="pt-cambio" hidden data-pt-agenda data-url-horas="{{ url_horas }}" data-action="reprogramar">
-                <h2 class="pt-paso-titulo">Elija el nuevo día y hora</h2>
-                {% include 'public/portal/parciales/selector_dias.html' with dias=dias %}
-                <div class="pt-horas mt-3" data-horas aria-live="polite"></div>
-                <form class="pt-form mt-3" data-form-cambio novalidate hidden>
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="reprogramar">
-                    <input type="hidden" name="inicio" value="">
-                    <p class="pt-resumen-fecha" data-resumen></p>
-                    <p class="pt-error" data-error role="alert" hidden></p>
-                    <button type="submit" class="btn btn-success pt-boton">Confirmar el cambio</button>
-                </form>
-            </section>
-        {% endif %}
-
-        {% if puede_cancelar %}
-            <section class="pt-paso mt-4" id="pt-cancelar" hidden>
-                <h2 class="pt-paso-titulo">¿Seguro que quiere cancelar?</h2>
-                <form class="pt-form" data-form-cancelar novalidate>
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="cancelar">
-                    <label class="form-label" for="pt-motivo">Cuéntenos por qué <span class="pt-opcional">(opcional)</span></label>
-                    <input type="text" class="form-control" id="pt-motivo" name="motivo" maxlength="200">
-                    <p class="pt-error" data-error role="alert" hidden></p>
-                    <button type="submit" class="btn btn-danger pt-boton mt-3">Sí, cancelar mi cita</button>
-                </form>
-            </section>
-        {% endif %}
+                {% include 'public/parciales/ayuda.html' with ayuda_id='ci-ayuda-titulo' %}
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
 
-{% block jscript %}
-    <script src="/static/js/public/portal.js?v1.0"></script>
+{% block js_pagina %}
+    <script src="/static/js/public/portal.js?v2.7"></script>
 {% endblock %}

@@ -1,5 +1,6 @@
 <nav class="ld-nav" aria-label="{{ t.ld_productos }}">
     <a href="/catalogo/" class="ld-nav-enlace"{% if ruta == '/catalogo/' %} aria-current="page"{% endif %}>{{ t.ld_catalogo }}</a>
+    <a href="/mi-cita/" class="ld-nav-enlace"{% if ruta == '/mi-cita/' %} aria-current="page"{% endif %}>{{ t.ld_mi_cita }}</a>
     <a href="/#ld-empresa" class="ld-nav-enlace ld-nav-ancla">{{ t.ld_empresas }}</a>
     <span class="ld-nav-separador" aria-hidden="true"></span>
     {% include 'public/parciales/idioma.html' %}

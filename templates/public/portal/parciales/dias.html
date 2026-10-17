@@ -1,0 +1,10 @@
+<ul class="ag-destacadas{% if clase %} {{ clase }}{% endif %}">
+    {% for d in dias %}
+        <li>
+            <button type="button" class="pt-dia ag-dia" data-fecha="{{ d.valor }}" data-texto="{{ d.fecha|date:t.formato_fecha|capfirst }}" aria-pressed="false">
+                <span class="ag-hoja" aria-hidden="true"><span class="ag-hoja-mes">{{ d.fecha|date:"M" }}</span><span class="ag-hoja-dia">{{ d.fecha|date:"j" }}</span></span>
+                <span class="ag-dia-texto"><strong>{{ d.fecha|date:"l"|capfirst }}</strong><span>{{ d.espacios }} {{ etiqueta }}</span></span>
+            </button>
+        </li>
+    {% endfor %}
+</ul>

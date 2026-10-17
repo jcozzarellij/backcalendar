@@ -1,0 +1,11 @@
+{% if contacto_telefono or contacto_correo %}
+    <section class="ag-ayuda" aria-labelledby="{{ ayuda_id }}">
+        <h2 class="ag-ayuda-titulo" id="{{ ayuda_id }}">{{ t.ayuda_titulo }}</h2>
+        {% if contacto_telefono %}
+            <p>{{ t.ayuda_texto }}</p>
+            <a href="tel:{{ contacto_telefono|cut:' ' }}" class="ld-ayuda-tel">{{ contacto_telefono }}</a>
+        {% else %}
+            <p>{{ t.ld_escribir_texto }} <a href="mailto:{{ contacto_correo }}" class="ld-ayuda-tel">{{ contacto_correo }}</a></p>
+        {% endif %}
+    </section>
+{% endif %}

@@ -4,7 +4,7 @@ from .view_changepass import changepass
 from .view_landing import catalogo, landing
 from .view_restaurar import restaurar
 from .view_login import login_tienda, logout_tienda
-from .view_portal import agendar, cita_cliente, conectar, incrustar
+from .view_portal import agendar, cita_cliente, conectar, incrustar, mi_cita
 from .view_recordarusername import recordarusername
 from .view_terminoscondiciones import proteccion_datos, terminosycondiciones
 
@@ -20,6 +20,7 @@ urlpatterns = [
     path('terminosycondiciones/', terminosycondiciones),
     path('proteccion-datos/', proteccion_datos),
     path('agendar/<slug:slug>/', agendar),
+    path('mi-cita/', mi_cita),
     path('cita/<str:token>/', cita_cliente),
     path('conectar/<slug:portal>/<str:token>/', conectar),
     path('incrustar/<slug:portal>/', incrustar),

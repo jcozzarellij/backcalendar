@@ -1,0 +1,21 @@
+<div class="{{ clase }}" id="{{ panel_id }}{{ cita_pk }}" hidden data-panel-cita="{{ grupo }}" data-pt-agenda data-url-horas="{{ url_horas }}{% if cita_pk %}?cita={{ cita_pk }}{% endif %}" data-action="reprogramar" aria-labelledby="{{ panel_id }}{{ cita_pk }}-titulo">
+    <{{ nivel }} class="ci-h2" id="{{ panel_id }}{{ cita_pk }}-titulo">{{ t.ci_nuevo_dia }}</{{ nivel }}>
+    {% if dias %}
+        {% include 'public/portal/parciales/dias.html' with dias=dias clase='ci-dias' etiqueta=t.libres %}
+    {% else %}
+        <p class="ag-nota">{{ t.ci_sin_otros }}</p>
+    {% endif %}
+    <div class="pt-horas ag-horas ci-horas" data-horas aria-live="polite"></div>
+    <form class="ag-form" data-form-cambio novalidate hidden>
+        {% csrf_token %}
+        <input type="hidden" name="action" value="reprogramar">
+        {% if cita_pk %}<input type="hidden" name="cita" value="{{ cita_pk }}">{% endif %}
+        {% if ventana %}<input type="hidden" name="ventana" value="1">{% endif %}
+        <input type="hidden" name="inicio" value="">
+        <p class="ag-aviso" data-resumen></p>
+        <p class="pt-error ag-error" data-error role="alert" hidden></p>
+        <div class="ag-acciones">
+            <button type="submit" class="btn btn-success ld-agendar"><i class="fas fa-calendar-check" aria-hidden="true"></i>{{ t.ci_confirmar_cambio }}</button>
+        </div>
+    </form>
+</div>

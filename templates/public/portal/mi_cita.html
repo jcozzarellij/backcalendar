@@ -1,0 +1,59 @@
+{% extends 'public/base_landing.html' %}
+
+{% block meta_pagina %}
+    <meta name="description" content="{{ t.mc_bajada }}">
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" href="/static/css/public/reserva.css?v2.7">
+{% endblock %}
+
+{% block pagina %}
+<section class="ag-cabecera" aria-labelledby="mc-titulo">
+    <a href="/" class="ct-volver"><i class="fas fa-arrow-left" aria-hidden="true"></i>{{ t.ct_volver }}</a>
+    <h1 id="mc-titulo" class="ag-producto">{{ t.mc_titulo }}</h1>
+    <p class="ag-descripcion">{{ t.mc_bajada }}</p>
+</section>
+
+<div class="row gx-3 gy-4 ag-cuerpo">
+    <div class="col-lg-7">
+        <section class="ci-panel" aria-labelledby="mc-titulo">
+            <form method="post" class="ag-form mc-form" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="action" value="buscar">
+                <div class="row gx-3 gy-3">
+                    <div class="col-md-6">
+                        <label class="ag-label" for="id_codigo">{{ t.mc_codigo }}</label>
+                        <input type="text" class="ag-campo mc-codigo" id="id_codigo" name="codigo" placeholder="{{ t.mc_ph_codigo }}" maxlength="20" autocomplete="off" autocapitalize="characters" spellcheck="false" required>
+                        <div class="invalidFeedback ag-campo-error" id="errorMessagecodigo"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="ag-label" for="id_correo">{{ t.mc_correo }}</label>
+                        <input type="email" class="ag-campo" id="id_correo" name="correo" placeholder="{{ t.ph_correo }}" autocomplete="email" required>
+                        <div class="invalidFeedback ag-campo-error" id="errorMessagecorreo"></div>
+                    </div>
+                </div>
+                <div class="ag-acciones">
+                    <button type="submit" class="btn btn-success ld-agendar" id="submit"><i class="fas fa-ticket" aria-hidden="true"></i>{{ t.mc_boton }}</button>
+                </div>
+            </form>
+        </section>
+    </div>
+    <div class="col-lg-5">
+        <div class="ci-columna">
+            <section class="ag-ayuda" aria-labelledby="mc-donde">
+                <h2 class="ag-ayuda-titulo" id="mc-donde">{{ t.mc_donde_titulo }}</h2>
+                <p>{{ t.mc_donde_texto }}</p>
+                <p>{{ t.mc_qr_texto }}</p>
+            </section>
+            <section class="ci-panel mc-nueva" aria-labelledby="mc-nueva">
+                <h2 class="ag-ayuda-titulo" id="mc-nueva">{{ t.mc_nueva }}</h2>
+                <a href="/catalogo/" class="btn btn-light ag-boton-suave">{{ t.ld_ver_catalogo }}<i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+            </section>
+            {% include 'public/parciales/ayuda.html' with ayuda_id='mc-ayuda-titulo' %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js_pagina %}
+    <script src="/static/js/forms.js?version=2"></script>
+{% endblock %}

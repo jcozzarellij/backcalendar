@@ -1,6 +1,8 @@
 (function () {
     var raiz = document.getElementById('pt-portal');
     var T = raiz ? raiz.dataset : {};
+    var clases = {popup: 'ag-swal', confirmButton: 'btn ag-swal-si', cancelButton: 'btn ag-swal-no'};
+    var Alerta = Swal.mixin({buttonsStyling: false, customClass: clases});
 
     function csrf(form) {
         var campo = form.querySelector('input[name=csrfmiddlewaretoken]');
@@ -18,6 +20,7 @@
         var error = form.querySelector('[data-error]') || form.querySelector('.pt-error');
         mostrarError(error, '');
         if (boton) { boton.disabled = true; boton.setAttribute('aria-busy', 'true'); }
+        pantallaespera();
         fetch(form.getAttribute('action') || window.location.pathname, {
             method: 'POST',
             body: new FormData(form),
@@ -25,15 +28,34 @@
             credentials: 'same-origin'
         }).then(function (r) { return r.json(); }).then(function (data) {
             if (data.error) {
-                mostrarError(error, data.message || 'No se pudo completar. Intente de nuevo.');
+                Alerta.fire(data.message || T.tConexion, '', 'error');
                 return;
             }
             alTerminar(data);
         }).catch(function () {
-            mostrarError(error, T.tConexion || 'Sin conexión. Revise su internet e intente de nuevo.');
+            Alerta.fire(T.tConexion || 'Sin conexión. Revise su internet e intente de nuevo.', '', 'error');
         }).finally(function () {
             if (boton) { boton.disabled = false; boton.removeAttribute('aria-busy'); }
+            $.unblockUI();
         });
+    }
+
+    function confirmar(titulo, texto, si, no, peligro) {
+        return Alerta.fire({
+            title: titulo,
+            text: texto || '',
+            type: peligro ? 'warning' : 'question',
+            showCancelButton: true,
+            confirmButtonText: si,
+            cancelButtonText: no,
+            reverseButtons: true,
+            focusCancel: !!peligro,
+            customClass: peligro ? Object.assign({}, clases, {confirmButton: clases.confirmButton + ' ag-swal-peligro'}) : clases
+        }).then(function (r) { return !!r.value; });
+    }
+
+    function irA(data) {
+        window.location = data.to || window.location.href;
     }
 
     function urlHoras(base, fecha) {
@@ -162,7 +184,8 @@
                     return;
                 }
                 if (!form.reportValidity()) return;
-                enviar(form, function (data) { window.location = data.to; });
+                confirmar(T.tCfTitulo, [T.tProducto, resDia.textContent, resHora.textContent].join(' · '), T.tCfSi, T.tCfRevisar)
+                    .then(function (ok) { if (ok) enviar(form, irA); });
             });
         }
     }
@@ -183,7 +206,7 @@
                 inicio.value = '';
                 cargarHoras(base, boton.dataset.fecha, horas, function (h) {
                     inicio.value = h.valor;
-                    resumen.textContent = 'Nueva fecha: ' + textoFecha + ' a las ' + h.texto;
+                    resumen.textContent = (T.tNuevaFecha || 'Nueva fecha:') + ' ' + textoFecha + ' ' + (T.tALas || 'a las') + ' ' + h.texto;
                     form.hidden = false;
                 });
             });
@@ -191,10 +214,11 @@
         form.addEventListener('submit', function (e) {
             e.preventDefault();
             if (!inicio.value) {
-                mostrarError(form.querySelector('[data-error]'), 'Elija el nuevo día y la hora.');
+                mostrarError(form.querySelector('[data-error]'), T.tNuevoDia || 'Elija el nuevo día y la hora.');
                 return;
             }
-            enviar(form, function () { window.location.reload(); });
+            confirmar(T.tCfMoverTitulo, resumen.textContent, T.tCfSiMover, T.tCfRevisar)
+                .then(function (ok) { if (ok) enviar(form, irA); });
         });
     }
 
@@ -206,9 +230,16 @@
     document.querySelectorAll('[data-form-cancelar]').forEach(function (form) {
         form.addEventListener('submit', function (e) {
             e.preventDefault();
-            enviar(form, function () { window.location.reload(); });
+            confirmar(T.tCfCancelarTitulo, T.tCfCancelarTexto, T.tCfSiCancelar, T.tCfNo, true)
+                .then(function (ok) { if (ok) enviar(form, irA); });
         });
     });
+
+    if (T.aviso) {
+        Alerta.fire({title: T.aviso, text: T.avisoTexto || '', type: 'success'});
+        var limpia = window.location.pathname + window.location.search.replace(/([?&])aviso=[^&]*&?/, '$1').replace(/[?&]$/, '');
+        history.replaceState(null, '', limpia);
+    }
 
     function alternar(boton, panel) {
         panel.hidden = !panel.hidden;
@@ -219,14 +250,18 @@
     document.querySelectorAll('[data-abrir]').forEach(function (boton) {
         boton.addEventListener('click', function () {
             var panel = document.getElementById(boton.dataset.abrir);
-            if (panel) alternar(boton, panel);
+            if (!panel) return;
+            if (panel.dataset.panelCita) {
+                document.querySelectorAll('[data-panel-cita="' + panel.dataset.panelCita + '"]').forEach(function (otro) {
+                    if (otro !== panel && !otro.hidden) {
+                        otro.hidden = true;
+                        var suBoton = document.querySelector('[data-abrir="' + otro.id + '"]');
+                        if (suBoton) suBoton.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
+            alternar(boton, panel);
         });
-    });
-
-    [['pt-abrir-cambio', 'pt-cambio'], ['pt-abrir-cancelar', 'pt-cancelar']].forEach(function (par) {
-        var boton = document.getElementById(par[0]);
-        var panel = document.getElementById(par[1]);
-        if (boton && panel) boton.addEventListener('click', function () { alternar(boton, panel); });
     });
 
     var formLlamar = document.getElementById('pt-form-llamar');
@@ -250,14 +285,18 @@
             if (n) formLlamar.querySelector('input[name=nombres]').value = n.value;
             if (c) formLlamar.querySelector('input[name=correo]').value = c.value;
             if ((n && !n.value) || (c && !c.reportValidity())) {
-                mostrarError(document.getElementById('pt-ll-error'), 'Escriba su nombre y su correo.');
+                mostrarError(document.getElementById('pt-ll-error'), T.tFaltan || 'Escriba su nombre y su correo.');
                 return;
             }
-            enviar(formLlamar, function (data) {
-                var exito = document.getElementById('pt-ll-exito');
-                exito.textContent = data.message;
-                exito.hidden = false;
-                if (datos) datos.hidden = true;
+            confirmar(T.tCfLlamarTitulo, tel.value, T.tCfSiLlamar, T.tCfRevisar).then(function (ok) {
+                if (!ok) return;
+                enviar(formLlamar, function (data) {
+                    var exito = document.getElementById('pt-ll-exito');
+                    exito.textContent = data.message;
+                    exito.hidden = false;
+                    if (datos) datos.hidden = true;
+                    Alerta.fire({title: data.message, type: 'success'});
+                });
             });
         });
     }

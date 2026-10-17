@@ -1,100 +1,95 @@
-{% extends 'public/base.html' %}
+{% extends 'public/base_landing.html' %}
 
-{% block head %}
+{% block meta_pagina %}
     <meta name="robots" content="noindex, nofollow">
-    <link rel="stylesheet" href="/static/css/public/portal.css?v1.0">
+    <link rel="stylesheet" href="/static/css/public/reserva.css?v2.7">
 {% endblock %}
 
-{% block content %}
-<div class="row g-4 g-lg-5">
-    <div class="col-lg-4">
-        <aside class="pt-lado">
-            <p class="pt-eyebrow">{{ portal.nombre|default:"Turno" }}</p>
-            <h1 class="pt-titulo">Hola, {{ cliente.nombres }}.</h1>
-            <p class="pt-desc">Aquí están sus citas. Puede cambiarlas, cancelarlas o agendar una nueva. Guarde este enlace: es personal y no necesita contraseña.</p>
-            {% if productos %}
-                <p class="pt-eyebrow mt-4">Agendar otra cita</p>
-                <ul class="pt-productos">
-                    {% for p in productos %}
-                        <li><a href="/agendar/{{ p.slug }}/"><i class="fas fa-calendar-plus" aria-hidden="true"></i>{{ p.nombre }}</a></li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-            {% if portal.telefono_atencion %}
-                <p class="pt-contacto"><i class="fas fa-phone" aria-hidden="true"></i><a href="tel:{{ portal.telefono_atencion|cut:' ' }}">{{ portal.telefono_atencion }}</a></p>
-            {% endif %}
-        </aside>
-    </div>
+{% block pagina %}
+<div id="pt-portal" {% include 'public/portal/parciales/textos_gestion.html' %}>
+    <section class="ag-cabecera" aria-labelledby="mx-titulo">
+        <h1 id="mx-titulo" class="ag-producto">{{ t.mx_hola }} {{ cliente.nombres }}.</h1>
+        <p class="ag-descripcion">{{ t.mx_bajada }}</p>
+        <p class="ci-guarde mx-enlace"><i class="fas fa-lock" aria-hidden="true"></i>{{ t.mx_enlace }}</p>
+    </section>
 
-    <div class="col-lg-8">
-        <h2 class="pt-paso-titulo">Próximas citas</h2>
-        {% for c in proximas %}
-            <section class="pt-cita-fila" id="cita-{{ c.pk }}">
-                <div class="row g-3 align-items-center">
-                    <div class="col-auto">
-                        <div class="pt-hoja"><span class="pt-hoja-mes">{{ c.inicio|date:"M" }}</span><span class="pt-hoja-dia">{{ c.inicio|date:"j" }}</span></div>
-                    </div>
-                    <div class="col">
-                        <p class="pt-tarjeta-fecha">{{ c.inicio|date:"l j \d\e F"|capfirst }} · {{ c.inicio|time:"H:i" }}</p>
-                        <p class="pt-cita-nombre">{% if c.producto %}{{ c.producto.nombre }}{% else %}{{ c.titulo }}{% endif %} <span class="pt-tag">{{ c.get_estado_display }}</span></p>
-                        <p class="pt-tarjeta-etiqueta">Código {{ c.codigo }}</p>
-                    </div>
-                    <div class="col-lg-auto">
-                        <div class="pt-acciones-fila">
-                            {% if c.enlace_meet %}<a href="{{ c.enlace_meet }}" class="btn btn-success pt-boton-chico" target="_blank" rel="noopener"><i class="fas fa-video" aria-hidden="true"></i>Entrar</a>{% endif %}
-                            {% if c.dias_cambio %}<button type="button" class="btn btn-light pt-boton-chico" data-abrir="pt-cambio-{{ c.pk }}" aria-expanded="false"><i class="fas fa-calendar-alt" aria-hidden="true"></i>Cambiar</button>{% endif %}
-                            <button type="button" class="btn btn-light pt-boton-chico" data-abrir="pt-cancelar-{{ c.pk }}" aria-expanded="false"><i class="fas fa-times" aria-hidden="true"></i>Cancelar</button>
-                        </div>
-                    </div>
-                </div>
-                {% if c.dias_cambio %}
-                    <div class="pt-paso mt-3" id="pt-cambio-{{ c.pk }}" hidden data-pt-agenda data-url-horas="{{ url_horas }}?cita={{ c.pk }}" data-action="reprogramar" data-cita="{{ c.pk }}">
-                        <h3 class="pt-paso-titulo">Elija el nuevo día y hora</h3>
-                        {% include 'public/portal/parciales/selector_dias.html' with dias=c.dias_cambio %}
-                        <div class="pt-horas mt-3" data-horas aria-live="polite"></div>
-                        <form class="pt-form mt-3" data-form-cambio novalidate hidden>
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="reprogramar">
-                            <input type="hidden" name="cita" value="{{ c.pk }}">
-                            <input type="hidden" name="inicio" value="">
-                            <p class="pt-resumen-fecha" data-resumen></p>
-                            <p class="pt-error" data-error role="alert" hidden></p>
-                            <button type="submit" class="btn btn-success pt-boton">Confirmar el cambio</button>
-                        </form>
+    <div class="row gx-3 gy-4 ag-cuerpo">
+        <div class="col-lg-8">
+            <section aria-labelledby="mx-proximas">
+                <h2 class="ci-h2 mx-h2" id="mx-proximas">{{ t.mx_proximas }}</h2>
+                {% if proximas %}
+                    <ul class="mx-lista">
+                        {% for c in proximas %}
+                            <li>
+                                <article class="mx-boleto" id="cita-{{ c.pk }}" aria-labelledby="mx-fecha-{{ c.pk }}">
+                                    <div class="mx-boleto-fila">
+                                        <div class="mx-boleto-cuerpo">
+                                            <span class="ag-hoja ci-hoja" aria-hidden="true"><span class="ag-hoja-mes">{{ c.inicio|date:"M" }}</span><span class="ag-hoja-dia">{{ c.inicio|date:"j" }}</span></span>
+                                            <div class="mx-boleto-datos">
+                                                <p class="ci-fecha-larga" id="mx-fecha-{{ c.pk }}">{{ c.inicio|date:t.formato_fecha|capfirst }}</p>
+                                                <p class="mx-hora">{{ c.inicio|time:"H:i" }} {{ t.ci_a }} {{ c.fin|time:"H:i" }}</p>
+                                                <p class="ld-ticket-dato mx-producto"><i class="fas fa-video" aria-hidden="true"></i>{{ c.nombre_mostrar }}</p>
+                                                <p class="mx-codigo">{{ t.ci_codigo }}: <strong>{{ c.codigo }}</strong><span class="ci-estado ci-estado-{{ c.estado }}">{{ c.estado_texto }}</span></p>
+                                                {% if not c.enlace_meet %}<p class="mx-aviso"><i class="far fa-envelope" aria-hidden="true"></i>{{ t.ci_enlace_pendiente }}</p>{% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="mx-boleto-talon">
+                                            {% if c.enlace_meet %}<a href="{{ c.enlace_meet }}" class="btn btn-success ld-agendar" target="_blank" rel="noopener"><i class="fas fa-video" aria-hidden="true"></i>{{ t.mx_entrar }}<span class="visually-hidden"> ({{ t.ld_nueva_pestana }})</span></a>{% endif %}
+                                            {% if c.dias_cambio %}<button type="button" class="btn btn-light ag-boton-suave" data-abrir="pt-cambio-{{ c.pk }}" aria-expanded="false" aria-controls="pt-cambio-{{ c.pk }}"><i class="far fa-calendar" aria-hidden="true"></i>{{ t.mx_cambiar }}<span class="visually-hidden"> {{ c.codigo }}</span></button>{% endif %}
+                                            <button type="button" class="btn btn-light ag-boton-suave" data-abrir="pt-cancelar-{{ c.pk }}" aria-expanded="false" aria-controls="pt-cancelar-{{ c.pk }}"><i class="fas fa-xmark" aria-hidden="true"></i>{{ t.mx_cancelar }}<span class="visually-hidden"> {{ c.codigo }}</span></button>
+                                        </div>
+                                    </div>
+                                    {% if c.dias_cambio %}
+                                        {% include 'public/portal/parciales/panel_cambio.html' with clase='mx-panel' panel_id='pt-cambio-' grupo=c.pk nivel='h3' cita_pk=c.pk dias=c.dias_cambio %}
+                                    {% endif %}
+                                    {% include 'public/portal/parciales/panel_cancelar.html' with clase='mx-panel' panel_id='pt-cancelar-' grupo=c.pk nivel='h3' cita_pk=c.pk %}
+                                </article>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="ci-panel">
+                        <p class="mx-vacio-titulo">{{ t.mx_sin_proximas }}</p>
+                        <p class="ag-nota">{{ t.mx_sin_proximas_texto }}</p>
                     </div>
                 {% endif %}
-                <div class="pt-paso mt-3" id="pt-cancelar-{{ c.pk }}" hidden>
-                    <form class="pt-form" data-form-cancelar novalidate>
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="cancelar">
-                        <input type="hidden" name="cita" value="{{ c.pk }}">
-                        <label class="form-label" for="pt-motivo-{{ c.pk }}">¿Por qué cancela? <span class="pt-opcional">(opcional)</span></label>
-                        <input type="text" class="form-control" id="pt-motivo-{{ c.pk }}" name="motivo" maxlength="200">
-                        <p class="pt-error" data-error role="alert" hidden></p>
-                        <button type="submit" class="btn btn-danger pt-boton mt-3">Sí, cancelar esta cita</button>
-                    </form>
-                </div>
             </section>
-        {% empty %}
-            <p class="pt-vacio">No tiene citas próximas.{% if productos %} Elija un producto a la izquierda para agendar una.{% endif %}</p>
-        {% endfor %}
 
-        {% if pasadas %}
-            <h2 class="pt-paso-titulo mt-5">Historial</h2>
-            <ul class="pt-historial">
-                {% for c in pasadas %}
-                    <li>
-                        <span>{{ c.inicio|date:"d/m/Y H:i" }}</span>
-                        <span>{% if c.producto %}{{ c.producto.nombre }}{% else %}{{ c.titulo }}{% endif %}</span>
-                        <span class="pt-tag">{{ c.get_estado_display }}</span>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% endif %}
+            {% if pasadas %}
+                <section class="mx-historial-bloque" aria-labelledby="mx-historial">
+                    <h2 class="ci-h2 mx-h2" id="mx-historial">{{ t.mx_historial }}</h2>
+                    <ul class="mx-historial">
+                        {% for c in pasadas %}
+                            <li class="mx-historial-fila">
+                                <span class="mx-historial-fecha">{{ c.inicio|date:"j M Y" }} · {{ c.inicio|time:"H:i" }}</span>
+                                <span class="mx-historial-nombre">{{ c.nombre_mostrar }} <span class="mx-historial-codigo">{{ c.codigo }}</span></span>
+                                <span class="ci-estado ci-estado-{{ c.estado }}">{{ c.estado_texto }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <div class="ag-lateral">
+                {% if productos %}
+                    <section class="ci-panel" aria-labelledby="mx-agendar">
+                        <h2 class="ag-ayuda-titulo mx-agendar-titulo" id="mx-agendar">{{ t.ci_agendar_otra }}</h2>
+                        <ul class="mx-productos">
+                            {% for p in productos %}
+                                <li><a href="/agendar/{{ p.slug }}/" class="mx-producto-enlace"><span>{{ p.nombre }}</span><i class="fas fa-arrow-right" aria-hidden="true"></i></a></li>
+                            {% endfor %}
+                        </ul>
+                    </section>
+                {% endif %}
+                {% include 'public/parciales/ayuda.html' with ayuda_id='mx-ayuda-titulo' %}
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
 
-{% block jscript %}
-    <script src="/static/js/public/portal.js?v1.0"></script>
+{% block js_pagina %}
+    <script src="/static/js/public/portal.js?v2.7"></script>
 {% endblock %}
