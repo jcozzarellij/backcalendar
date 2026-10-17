@@ -1,24 +1,32 @@
 {% extends 'public/base_landing.html' %}
 
 {% block meta_pagina %}
-    <meta name="description" content="{{ t.ld_meta }}">
+    <meta name="description" content="{% if idioma == 'es' and confi.descripcion %}{{ confi.descripcion }}{% else %}{{ t.ld_meta }}{% endif %}">
 {% endblock %}
 
 {% block pagina %}
 <section class="ld-hero" aria-labelledby="ld-titulo">
-    <div class="row gx-3 gy-4 align-items-end">
+    <div class="row gx-3 gy-4 align-items-center">
         <div class="col-lg-7">
-            <h1 id="ld-titulo" class="ld-titulo">{{ t.ld_titulo }}</h1>
-            <p class="ld-bajada">{{ t.ld_bajada }}</p>
+            <h1 id="ld-titulo" class="ld-hero-titulo">{{ t.ld_hero_titulo }}</h1>
+            <p class="ld-hero-bajada"><strong>{% if idioma == 'es' and confi.descripcion %}{{ confi.descripcion }}{% else %}{{ t.ld_hero_equipo }}{% endif %}</strong> {{ t.ld_hero_bajada }}</p>
+            <div class="ld-hero-accion">
+                <a href="#ld-productos" class="btn btn-success ld-agendar">{{ t.ld_hero_boton }}<i class="fas fa-arrow-down" aria-hidden="true"></i></a>
+                <p class="ld-hero-cita"><strong>{{ t.ld_ya_cita }}</strong> {{ t.ld_ya_cita_texto }} <a href="/mi-cita/" class="ld-hero-buscar">{{ t.ld_buscar_cita }}</a></p>
+            </div>
+            {% include 'public/parciales/contacto.html' with clase='ld-hero-contacto' %}
         </div>
         <div class="col-lg-5">
-            <div class="ld-ayuda">
-                {% include 'public/parciales/contacto.html' with clase='ld-ayuda-bloque' %}
-                <p class="ld-ayuda-bloque">
-                    <strong>{{ t.ld_ya_cita }}</strong>
-                    {{ t.ld_ya_cita_texto }}
-                </p>
-            </div>
+            <figure class="ld-hero-ilustracion">
+                <div class="ld-hero-lienzo">
+                    <img src="/static/images/turno/hero_calendario.svg?v1" alt="{{ t.ld_ilustracion_alt }}" class="ld-hero-ilustracion-svg" width="646" height="405" fetchpriority="high">
+                    <div class="ld-hero-ticket">
+                        <span class="ld-hero-dia" aria-hidden="true">{{ fecha|date:"j" }}</span>
+                        <span class="ld-hero-ticket-texto"><strong>{{ t.ld_ticket_cita_titulo }}</strong>{{ t.ld_ticket_cita_texto }}</span>
+                        <span class="ld-hero-ticket-talon"><img src="/static/images/turno/qr_ejemplo.svg" alt="" class="ld-hero-qr" width="124" height="124"></span>
+                    </div>
+                </div>
+            </figure>
         </div>
     </div>
 </section>
@@ -61,7 +69,7 @@
 <section class="ld-banda" id="ld-empresa" aria-labelledby="ld-empresa-titulo">
     <div class="row g-4 align-items-center">
         <div class="col-lg-8">
-            <img src="/static/images/turno/logo_turno_blanco.png" alt="Turno de Exducere Online" class="ld-banda-logo" width="200" height="59">
+            {% if confi.logo_sistema_white %}<img src="{{ confi.logo_sistema_white.url }}" alt="{{ confi.titulo|default:nombreempresa }}" class="ld-banda-logo">{% endif %}
             <h2 id="ld-empresa-titulo" class="ld-h2 ld-banda-titulo">{{ t.ld_empresa_titulo }}</h2>
             <ul class="ld-banda-lista">
                 <li>{{ t.ld_empresa_1 }}</li>

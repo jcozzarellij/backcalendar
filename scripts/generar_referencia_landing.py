@@ -22,7 +22,7 @@ django.setup()
 
 from django.template.loader import render_to_string
 
-from agenda.funciones_portal import textos
+from agenda.funciones_portal import con_marca, textos
 
 ATENCION = '40 ' + textos('es')['minutos_video']
 
@@ -44,16 +44,17 @@ PRODUCTOS = [
 
 
 def generar():
-    t = textos('es')
+    t = con_marca(textos('es'), 'Exducere Online', 'Turno')
     html = render_to_string('public/landing.html', {
         'productos': PRODUCTOS,
         'total_productos': 9,
-        'confi': SimpleNamespace(web='https://exducereonline.com', logo_sistema_white=None),
+        'confi': SimpleNamespace(web='https://exducereonline.com', titulo='Turno de Exducere Online', descripcion='Agenda de citas del equipo de Exducere Online.', logo_sistema_white=None),
         't': t,
         'idioma': 'es',
         'contacto_telefono': '099 000 0000',
         'contacto_correo': '',
-        'titulo': t['ld_titulo'],
+        'titulo': t['ld_hero_titulo'],
+        'fecha': date.today(),
         'ruta': '/',
         'logo': '/static/images/turno/logo_turno_color.png',
         'nombreempresa': 'Turno de Exducere Online',
