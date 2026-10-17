@@ -1,8 +1,6 @@
 (function () {
     var raiz = document.getElementById('pt-portal');
     var T = raiz ? raiz.dataset : {};
-    var clases = {popup: 'ag-swal', confirmButton: 'btn ag-swal-si', cancelButton: 'btn ag-swal-no'};
-    var Alerta = Swal.mixin({buttonsStyling: false, customClass: clases});
 
     function csrf(form) {
         var campo = form.querySelector('input[name=csrfmiddlewaretoken]');
@@ -50,7 +48,7 @@
             cancelButtonText: no,
             reverseButtons: true,
             focusCancel: !!peligro,
-            customClass: peligro ? Object.assign({}, clases, {confirmButton: clases.confirmButton + ' ag-swal-peligro'}) : clases
+            customClass: peligro ? Object.assign({}, CLASES_ALERTA, {confirmButton: CLASES_ALERTA.confirmButton + ' ag-swal-peligro'}) : CLASES_ALERTA
         }).then(function (r) { return !!r.value; });
     }
 

@@ -1091,3 +1091,71 @@ html.ld-grande {
     text-decoration-thickness: 2px;
     text-underline-offset: 4px;
 }
+
+.swal2-popup.ag-swal {
+    border-radius: 20px;
+    font-family: var(--ld-cuerpo);
+}
+
+.ag-swal .swal2-title {
+    color: var(--ld-tinta);
+    font-family: var(--ld-titulos);
+    font-weight: 800;
+    letter-spacing: -.02em;
+}
+
+.ag-swal .swal2-content {
+    color: var(--ld-texto);
+    font-size: 1.05em;
+}
+
+.ag-swal .swal2-actions {
+    gap: .6rem;
+}
+
+.ag-swal-si,
+.ag-swal-no {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    margin: 0;
+    padding: 0 1.5em;
+    border: 0;
+    border-radius: 999px;
+    font-family: var(--ld-cuerpo);
+    font-size: 1rem;
+}
+
+.ag-swal-si {
+    background: var(--ld-verde-accion);
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.ag-swal-si:hover {
+    background: var(--ld-verde-accion-hover);
+    color: #ffffff;
+}
+
+.ag-swal-si.ag-swal-peligro {
+    background: var(--ld-peligro);
+}
+
+.ag-swal-no {
+    background: var(--ld-nube-oscura);
+    color: var(--ld-tinta);
+    font-weight: 600;
+}
+
+.ag-swal-no:hover {
+    background: var(--ld-linea);
+    color: var(--ld-tinta);
+}
+
+.ag-swal-si:focus-visible,
+.ag-swal-no:focus-visible {
+    outline: 3px solid var(--ld-azul);
+    outline-offset: 2px;
+    box-shadow: none;
+}

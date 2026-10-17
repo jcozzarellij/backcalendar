@@ -1,6 +1,9 @@
 <link rel="stylesheet" href="/static/sweetalert2/sweetalert2.css">
 <script src="/static/sweetalert2/sweetalert2.js"></script>
 <script>
+    var CLASES_ALERTA = {popup: 'ag-swal', confirmButton: 'btn ag-swal-si', cancelButton: 'btn ag-swal-no'};
+    var Alerta = Swal.mixin({buttonsStyling: false, customClass: CLASES_ALERTA});
+
     $.ajaxSetup({
         beforeSend: function (xhr, settings) {
             function getCookie(name) {
