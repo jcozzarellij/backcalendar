@@ -3,14 +3,14 @@
         <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
             <div>
                 <a href="?portal={{ portal_actual.pk }}&producto={{ p.pk }}" class="po-producto-nombre">{% if nivel %}{{ p.padre.nombre }} · {% endif %}{{ p.nombre }}</a>
-                <div class="agenda-sub"><code>/agendar/{{ p.slug }}/</code>{% if nivel %} · subproducto{% elif p.hijos %} · {{ p.hijos|length }} subproducto{{ p.hijos|length|pluralize }}{% endif %}{% if p.duracion_min %} · {{ p.duracion_min }} min{% endif %}{% if p.equipo %} · {{ p.equipo.nombre }}{% elif not nivel %} · <span class="text-warning">sin equipo</span>{% endif %}</div>
+                <div class="agenda-sub"><code>{{ p.ruta }}</code>{% if nivel %} · subproducto{% elif p.hijos %} · {{ p.hijos|length }} subproducto{{ p.hijos|length|pluralize }}{% endif %}{% if p.duracion_min %} · {{ p.duracion_min }} min{% endif %}{% if p.equipo %} · {{ p.equipo.nombre }}{% elif not nivel %} · <span class="text-warning">sin equipo</span>{% endif %}</div>
             </div>
             <span class="badge {% if p.activo %}bg-success{% else %}bg-secondary{% endif %}">{% if p.activo %}Activo{% else %}En pausa{% endif %}</span>
             {% if p.destacado and not nivel %}<span class="badge bg-primary">Destacado</span>{% endif %}
         </div>
         <div class="d-flex flex-wrap gap-2 mt-2">
             <a href="?portal={{ portal_actual.pk }}&producto={{ p.pk }}" class="btn btn-light btn-sm"><i class="fas fa-qrcode me-1"></i>QR y compartir</a>
-            <a href="/agendar/{{ p.slug }}/" target="_blank" rel="noopener" class="btn btn-light btn-sm"><i class="fas fa-external-link-alt me-1"></i>Ver portal</a>
+            <a href="{{ p.ruta }}" target="_blank" rel="noopener" class="btn btn-light btn-sm"><i class="fas fa-external-link-alt me-1"></i>Ver portal</a>
             {% if puede_editar %}
                 {% if not nivel %}<button type="button" class="btn btn-light btn-sm" onclick="formModal({{ portal_actual.pk }}, 'Nuevo subproducto de {{ p.nombre|escapejs }}', 'addproducto', {padre: {{ p.pk }}})"><i class="fas fa-plus me-1"></i>Añadir subproducto</button>{% endif %}
                 <button type="button" class="btn btn-light btn-sm" onclick="formModal({{ p.pk }}, 'Editar producto', 'changeproducto')"><i class="fas fa-edit me-1"></i>Editar</button>

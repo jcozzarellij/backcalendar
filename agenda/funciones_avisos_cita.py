@@ -99,7 +99,7 @@ def _al_cliente(cita, evento, url_cita='', url_cliente='', anterior=None, por_cl
                 'texto': _texto_cliente(t, evento, por_cliente),
                 'url_cita': url_cita,
                 'url_cliente': url_cliente,
-                'url_agendar': f'{base}/agendar/{cita.producto.slug}/' if cita.producto_id else f'{base}/',
+                'url_agendar': f'{base}{cita.producto.ruta}' if cita.producto_id else f'{base}/',
                 'ayuda_codigo': funciones_portal.formatear(t['em_codigo_ayuda'], sitio=f'{base}/mi-cita/'),
                 'pie': funciones_portal.formatear(t['em_pie'], marca=confi.titulo or marca),
                 'anterior': _anterior(anterior, t['formato_fecha_larga']),

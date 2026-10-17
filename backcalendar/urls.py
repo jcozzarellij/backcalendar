@@ -16,6 +16,7 @@ from seguridad.models import Configuracion
 from seguridad.urls import seguridad_urls
 from seguridad.view_index import index
 from core.media_publica import media_publica
+from public.view_portal import agendar
 from core.consultas import consultas
 from seguridad.view_notificaciones import notificacionesView
 
@@ -88,6 +89,9 @@ for u in urls_sistema:
             urlpatterns.append(path('{}'.format(u["url"]), u["include"], name=u["name"]))
         else:
             urlpatterns.append(path('{}'.format(u["url"]), u["include"]))
+
+urlpatterns.append(path('<slug:slug>/', agendar))
+urlpatterns.append(path('<slug:padre>/<slug:slug>/', agendar))
 
 
 admin.site.site_header = "{} {}".format("Administración", "backcalendar")

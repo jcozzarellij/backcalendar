@@ -147,7 +147,7 @@ def portalView(request):
                     return JsonResponse({'result': True, 'data': template.render(data)})
                 elif action == 'enlace':
                     producto = Producto.objects.select_related('portal').get(pk=int(request.GET['pk']), status=True)
-                    url = f'{base_publica()}/agendar/{producto.slug}/'
+                    url = f'{base_publica()}{producto.ruta}'
                     data.update({'producto': producto, 'url': url, 'qr': qr_data_uri(url)})
                     template = get_template('agenda/portal/enlace.html')
                     return JsonResponse({'result': True, 'data': template.render(data)})
@@ -177,7 +177,7 @@ def portalView(request):
             producto_actual = next((p for p in candidatos if str(p.pk) == pk_prod), candidatos[0] if candidatos else None)
         compartir = None
         if producto_actual is not None:
-            url = f'{base_publica()}/agendar/{producto_actual.slug}/'
+            url = f'{base_publica()}{producto_actual.ruta}'
             compartir = {
                 'producto': producto_actual, 'url': url, 'url_ventana': url + '?ventana=1', 'qr': qr_data_uri(url),
                 'iframe': f'<iframe src="{url}?ventana=1" title="Agendar una cita" style="width:100%;min-height:720px;border:0;border-radius:16px" loading="lazy"></iframe>',

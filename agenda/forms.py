@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 
 from autenticacion.models import Usuario
 from core.custom_models import FormBase, ModelFormBase
+from .funciones_portal import RUTAS_RESERVADAS
 from .models import (CierreCita, Cliente, Equipo, ExcepcionTurno, Feriado, MiembroEquipo, Portal, Producto, Proyecto,
                      Solicitud)
 
@@ -236,6 +237,8 @@ class BuscarCitaForm(FormBase):
     correo = forms.EmailField()
 
     def clean_codigo(self):
+        if slug in RUTAS_RESERVADAS:
+            raise ValidationError({'slug': 'Esta ruta está reservada por el sistema, elija otra'})
         from .funciones_citas import normalizar_codigo_cita
         return normalizar_codigo_cita(self.cleaned_data['codigo'])
 

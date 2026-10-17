@@ -39,9 +39,22 @@ def _parametro_int(clave, default):
         return default
 
 
-def producto_por_slug(slug):
+RUTAS_RESERVADAS = frozenset({
+    'admin', 'health', 'panel', 'notificaciones', 'perfilpanel', 'consultas', 'ajaxrequest', 'redirect-to-url',
+    'favicon', 'clear-site-data', 'select2', 'webpush', 'media', 'static', 'catalogo', 'login', 'logout',
+    'restorepass', 'restoreusername', 'changepass', 'privacidad', 'terminosycondiciones', 'proteccion-datos',
+    'agendar', 'mi-cita', 'cita', 'conectar', 'incrustar', 'agenda', 'area-geografica', 'autenticacion',
+    'seguridad', 'manifest', 'serviceworker', 'offline', 'pwa',
+})
+
+
+def producto_por_slug(slug, padre=None):
+    """Producto raíz por su ruta, o subproducto por la ruta de su padre y la propia. Sin `padre`, una ruta que
+    solo existe como subproducto también se resuelve (la vista redirige a su ruta completa)."""
     base = Producto.objects.filter(status=True, activo=True, slug=slug, portal__status=True, portal__activo=True)
     relacionados = ('portal', 'equipo', 'padre', 'padre__equipo')
+    if padre:
+        return base.filter(padre__slug=padre, padre__status=True, padre__activo=True).select_related(*relacionados).first()
     return (base.filter(padre__isnull=True).select_related(*relacionados).first()
             or base.select_related(*relacionados).first())
 
@@ -342,9 +355,11 @@ def _tarjetas(productos, idioma, t):
         'nombre': nombre_producto(p, idioma),
         'descripcion': descripcion_producto(p, idioma),
         'slug': p.slug,
+        'ruta': f'/{p.slug}/',
         'sitio_web': p.sitio_web,
         'atencion': atencion_de(p, t),
-        'partes': [{'nombre': nombre_producto(s, idioma), 'descripcion': descripcion_producto(s, idioma), 'slug': s.slug}
+        'partes': [{'nombre': nombre_producto(s, idioma), 'descripcion': descripcion_producto(s, idioma),
+                    'slug': s.slug, 'ruta': f'/{p.slug}/{s.slug}/'}
                    for s in p.partes_activas],
     } for p in productos]
 

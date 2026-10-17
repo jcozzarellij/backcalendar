@@ -1,7 +1,7 @@
 <tr class="{% if nivel %}po-sub{% endif %}">
     <td>
         {% if nivel %}<i class="fas fa-level-up-alt fa-rotate-90 me-2 text-muted"></i>{% endif %}{{ p.nombre }}
-        <div class="agenda-sub"><code>/agendar/{{ p.slug }}/</code>{% if p.descripcion %} · {{ p.descripcion|truncatechars:70 }}{% endif %}</div>
+        <div class="agenda-sub"><code>{{ p.ruta }}</code>{% if p.descripcion %} · {{ p.descripcion|truncatechars:70 }}{% endif %}</div>
     </td>
     <td>{% if p.equipo %}{{ p.equipo.nombre }}{% elif nivel %}<span class="agenda-sub">Hereda del padre</span>{% else %}<span class="badge bg-warning">Sin equipo</span>{% endif %}</td>
     <td class="text-center agenda-sub">
@@ -20,7 +20,7 @@
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
                 <li><a class="dropdown-item" href="javascript:void(0)" onclick="formModal({{ p.pk }}, 'Enlace y QR de {{ p.nombre|escapejs }}', 'enlace')"><i class="fas fa-qrcode me-2 text-primary"></i>Enlace y QR</a></li>
-                <li><a class="dropdown-item" href="/agendar/{{ p.slug }}/" target="_blank" rel="noopener"><i class="fas fa-external-link-alt me-2 text-secondary"></i>Ver como cliente</a></li>
+                <li><a class="dropdown-item" href="{{ p.ruta }}" target="_blank" rel="noopener"><i class="fas fa-external-link-alt me-2 text-secondary"></i>Ver como cliente</a></li>
                 {% if puede_editar %}
                     {% if not nivel %}<li><a class="dropdown-item" href="javascript:void(0)" onclick="formModal({{ portal.pk }}, 'Nuevo subproducto de {{ p.nombre|escapejs }}', 'addproducto', {padre: {{ p.pk }}})"><i class="fas fa-plus me-2 text-success"></i>Agregar subproducto</a></li>{% endif %}
                     <li><a class="dropdown-item" href="javascript:void(0)" onclick="formModal({{ p.pk }}, 'Editar producto', 'changeproducto')"><i class="fas fa-edit me-2 text-primary"></i>Editar</a></li>

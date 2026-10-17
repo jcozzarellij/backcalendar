@@ -16,7 +16,7 @@
     {% if partes %}
         <nav class="ag-partes" aria-label="{{ t.ag_partes }}">
             <span class="ag-partes-etiqueta">{{ t.ag_partes }}</span>
-            {% for s in partes %}<a href="/agendar/{{ s.slug }}/{% if ventana %}?ventana=1{% endif %}" class="ag-parte">{{ s.nombre }}<i class="fas fa-arrow-right" aria-hidden="true"></i></a>{% endfor %}
+            {% for s in partes %}<a href="{{ s.ruta }}{% if ventana %}?ventana=1{% endif %}" class="ag-parte">{{ s.nombre }}<i class="fas fa-arrow-right" aria-hidden="true"></i></a>{% endfor %}
         </nav>
     {% endif %}
 </section>

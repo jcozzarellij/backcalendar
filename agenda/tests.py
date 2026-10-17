@@ -220,13 +220,13 @@ class PortalTests(TestCase):
     def test_paginas_publicas(self):
         from django.test import Client as Navegador
         navegador = Navegador()
-        r = navegador.get('/agendar/kawana/')
+        r = navegador.get('/kawana/')
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, '¿Qué día le queda bien?')
-        r = navegador.get(f'/agendar/kawana/?action=horas&fecha={self.lunes:%Y-%m-%d}')
+        r = navegador.get(f'/kawana/?action=horas&fecha={self.lunes:%Y-%m-%d}')
         self.assertEqual(len(r.json()['data']), 3)
         with patch.object(self.funciones_portal.funciones_avisos_cita, 'avisar_reserva'):
-            r = navegador.post('/agendar/kawana/', dict(self.datos, action='reservar',
+            r = navegador.post('/kawana/', dict(self.datos, action='reservar',
                                                         inicio=f'{self.lunes:%Y-%m-%d}T09:40'))
         self.assertFalse(r.json()['error'], r.json())
         destino = r.json()['to']
@@ -246,7 +246,7 @@ class PortalTests(TestCase):
 
     def test_pedir_llamada_entra_en_cola(self):
         from django.test import Client as Navegador
-        r = Navegador().post('/agendar/kawana/', dict(self.datos, action='llamar', telefono='0999999999'))
+        r = Navegador().post('/kawana/', dict(self.datos, action='llamar', telefono='0999999999'))
         self.assertFalse(r.json()['error'], r.json())
         from .models import Solicitud
         self.assertEqual(Solicitud.objects.filter(estado='en_cola', origen='portal').count(), 1)
@@ -270,7 +270,7 @@ class PortalTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertIn('https://exducereonline.com', r['Content-Security-Policy'])
         self.assertNotIn('X-Frame-Options', r)
-        r = Navegador().get('/agendar/kawana/?ventana=1')
+        r = Navegador().get('/kawana/?ventana=1')
         self.assertEqual(r.status_code, 200)
         self.assertNotContains(r, 'pb-header')
 

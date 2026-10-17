@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta
 
 from django.db import transaction
 from django.http import Http404, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.utils import translation
 from django.views.decorators.clickjacking import xframe_options_exempt
 
@@ -23,10 +23,12 @@ RELACIONES_CITA = ('cliente', 'producto', 'producto__portal', 'producto__equipo'
 
 @xframe_options_exempt
 @rate_limit(limit=60, seconds=60)
-def agendar(request, slug):
-    producto = funciones_portal.producto_por_slug(slug)
+def agendar(request, slug, padre=None):
+    producto = funciones_portal.producto_por_slug(slug, padre)
     if producto is None:
         raise Http404('Producto no encontrado')
+    if producto.ruta != request.path:
+        return redirect(producto.ruta + (f'?{request.META["QUERY_STRING"]}' if request.META.get('QUERY_STRING') else ''))
     idioma = funciones_portal.idioma_de(request)
     t = funciones_portal.textos(idioma)
     data = {
@@ -105,7 +107,7 @@ def agendar(request, slug):
             'nombre_producto': nombre,
             'descripcion_producto': funciones_portal.descripcion_producto(producto, idioma),
             'nombre_padre': funciones_portal.nombre_producto(producto.padre, idioma) if producto.padre_id else '',
-            'partes': [{'nombre': funciones_portal.nombre_producto(s, idioma), 'slug': s.slug}
+            'partes': [{'nombre': funciones_portal.nombre_producto(s, idioma), 'ruta': s.ruta}
                        for s in producto.subproductos.filter(status=True, activo=True).order_by('orden', 'nombre')],
             'dias_semana': t['dias_semana'].split(','),
             'semanas': semanas,

@@ -78,7 +78,7 @@
                         <h2 class="ag-ayuda-titulo mx-agendar-titulo" id="mx-agendar">{{ t.ci_agendar_otra }}</h2>
                         <ul class="mx-productos">
                             {% for p in productos %}
-                                <li><a href="/agendar/{{ p.slug }}/" class="mx-producto-enlace"><span>{{ p.nombre }}</span><i class="fas fa-arrow-right" aria-hidden="true"></i></a></li>
+                                <li><a href="/{{ p.slug }}/" class="mx-producto-enlace"><span>{{ p.nombre }}</span><i class="fas fa-arrow-right" aria-hidden="true"></i></a></li>
                             {% endfor %}
                         </ul>
                     </section>

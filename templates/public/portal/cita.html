@@ -50,7 +50,7 @@
             <div class="ci-columna">
                 <section class="ci-panel" aria-labelledby="ci-titulo">
                     {% if fase != 'activa' %}
-                        {% if producto %}<a href="/agendar/{{ producto.slug }}/{% if ventana %}?ventana=1{% endif %}" class="btn btn-success ld-agendar"><i class="fas fa-calendar-plus" aria-hidden="true"></i>{{ t.ci_agendar_otra }}</a>{% endif %}
+                        {% if producto %}<a href="{{ producto.ruta }}{% if ventana %}?ventana=1{% endif %}" class="btn btn-success ld-agendar"><i class="fas fa-calendar-plus" aria-hidden="true"></i>{{ t.ci_agendar_otra }}</a>{% endif %}
                     {% else %}
                         {% if cita.enlace_meet or cita.enlace_evento %}
                             <div class="ag-acciones ci-acciones-principales">

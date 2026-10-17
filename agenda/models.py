@@ -225,6 +225,10 @@ class Producto(ModeloBase):
     def __str__(self):
         return f'{self.padre} · {self.nombre}' if self.padre_id else self.nombre
 
+    @property
+    def ruta(self):
+        return f'/{self.padre.slug}/{self.slug}/' if self.padre_id else f'/{self.slug}/'
+
     class Meta:
         verbose_name = 'Producto'
         verbose_name_plural = 'Productos'
