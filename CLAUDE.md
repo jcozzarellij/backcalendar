@@ -35,6 +35,7 @@ Correr `pycheck` (sangría y sintaxis). El developer revisa en el navegador y co
   nueva: antes, skill `arquitectura-backcalendar`.
 - **Templates, CSS, JS, botones, selects** (cualquier `.html`, `.css`, `.js`): leer `docs/agentes/templates.md`.
 - **Pantalla nueva o rediseño visual**: leer `docs/agentes/diseno-frontend.md`.
+- **Identidad visual**: landing público → skill `design-guidelines-landing`; panel → skill `design-guidelines-panel` (índice en `DESIGN.md`).
 - **`agenda/`** (micrositio, turnos, citas): leer `docs/agentes/agenda.md`.
 - Estudios previos de agendamiento: `docs/` y `.ai/docs/`. Revisión de diff contra reglas: agente `revisor-reglas`, solo
   si se pide.

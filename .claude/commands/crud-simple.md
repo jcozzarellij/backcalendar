@@ -5,7 +5,7 @@ argument-hint: <app> <recurso> [Modelo]
 
 Generar un CRUD simple para backcalendar a partir de: `$ARGUMENTS`
 
-Interpretar como `<app> <recurso> [Modelo]`. Si el modelo o sus campos no están claros, preguntar al usuario qué modelo y qué columnas/campos mostrar antes de generar nada. Leer las skills `django-backend`, `formmodal` y `diseno-backcalendar`, y replicar `area_geografica/view_pais.py` + `templates/area_geografica/pais/`. Todo el copy en español.
+Interpretar como `<app> <recurso> [Modelo]`. Si el modelo o sus campos no están claros, preguntar al usuario qué modelo y qué columnas/campos mostrar antes de generar nada. Leer las skills `django-backend`, `formmodal` y `design-guidelines-panel`, y replicar `area_geografica/view_pais.py` + `templates/area_geografica/pais/`. Todo el copy en español.
 
 Si el modelo no existe, primero crearlo en `<app>/models.py` heredando `core.custom_models.ModeloBase` (choices a nivel de módulo) y avisar que hace falta `makemigrations`/`migrate` (aditivo).
 

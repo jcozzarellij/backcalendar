@@ -1,45 +1,18 @@
 ---
-name: diseno-backcalendar
-description: Identidad visual y patrones de interfaz del panel de backcalendar (Bootstrap 5.3 sobre el tema assets_riz): tokens reales, listados, filtros, tablas, modales, botones, badges, tarjetas de métricas y estados vacíos. Usar al crear o retocar cualquier template o CSS del panel o de las páginas públicas.
+name: design-guidelines-panel
+description: "Patrones de interfaz del panel de backcalendar (Bootstrap 5.3, tema assets_riz): listados, filtros, tablas, modales, botones, badges, KPIs, carga y estados vacíos. Usar al crear o retocar cualquier template o CSS bajo `templates/<app>/` o `static/css/<app>/` del panel, y para decidir la apariencia de una pantalla interna."
 ---
 
-# Diseño backcalendar
+# Panel de Turno
 
-Cómo se ve y se arma una pantalla de backcalendar. Las reglas de `CLAUDE.md`, `docs/agentes/templates.md` y `docs/agentes/diseno-frontend.md` mandan (Bootstrap 5 grid, **nunca degradados**, CSS en `static/css/<app>/` con `?v`, rutas absolutas `/static/...`, sin `<style>`, sin comentarios en HTML/CSS/JS, copy en español). Esta skill no inventa paleta: todo sale de los archivos citados. Para el método de diseño y la auditoría final siguen valiendo `frontend-design`, `high-end-visual-design` y `web-design-guidelines` (subordinadas a esto).
+Cómo se arma una pantalla del panel. Tokens, colores, sombras y tipografía: `DESIGN-panel.md` y `static/base_adicional.css`; esta skill no los repite ni inventa paleta. Landing público y páginas que extienden `base_landing.html`: skill `design-guidelines-landing`.
 
-## Base del panel
+`CLAUDE.md` y `docs/agentes/templates.md` mandan (grid de Bootstrap 5, CSS en `static/css/<app>/` con `?v`, rutas absolutas `/static/...`, sin `<style>`, sin comentarios). Para pantalla nueva, el método está en `docs/agentes/diseno-frontend.md`.
 
-- Tema: `static/assets_riz/css/bootstrap.min.css` (Bootstrap **5.3.3**) + `app.min.css` (layout `topbar` / `startbar` / `page-wrapper` / `container-xxl`). Fuente del tema: `"Be Vietnam Pro"` vía `--bs-font-sans-serif`; no cambiar `font-family`.
-- Ajustes globales: `static/base_adicional.css` (tokens `--bs-*`, cards, botones, `.btn-mini`) y `static/base_tablas.css` (tablas).
-- Íconos: Font Awesome 5 (`fa`, `fas`) y Line Awesome (`icons.min.css`).
+## Base
+
 - Interacción: `static/css/core/interaccion.css` (press `scale` en `.btn`, `.dropdown-item`, `.page-link`; skeleton `.io-esqueleto`; bloque de error `.io-fallo`; todo con `prefers-reduced-motion`).
 - Sin sidebar: `body.sin-sidebar` en `static/css/core/sin_sidebar.css` (`data['ocultar_sidebar']`).
-
-## Tokens del panel (`static/base_adicional.css`, `:root`)
-
-| Token | Valor | Rol |
-|---|---|---|
-| `--bs-primary` | `#0d6efd` | acción principal, enlaces, info de navegación |
-| `--bs-success` | `#16C784` | guardar, confirmar, estados completos |
-| `--bs-warning` | `#F59E0B` | pendiente, atención |
-| `--bs-danger` | `#EF4444` | error, eliminar, cancelar en modales |
-| `--bs-info` | `#06B6D4` | dato informativo secundario |
-| `--bs-secondary` | `#64748B` | texto secundario, labels |
-| `--bs-body-bg` | `#F6F7FB` | fondo de página |
-| `--bs-border-radius` / `-sm` / `-lg` | `.85rem` / `.55rem` / `1.1rem` | radios |
-| `--bs-box-shadow-sm` / `--bs-box-shadow` | sombras azuladas `rgba(5, 44, 101, …)` | card en reposo / hover |
-
-Cada color tiene su `*-bg-subtle` y `*-border-subtle`: usarlos para pills, contenedores de ícono y alertas suaves en vez de inventar tintes. En CSS propio referenciar `var(--bs-…)`, no hex sueltos.
-
-Tablas (`base_tablas.css`): `th` con fondo `rgb(243,243,243)`, bordes `#e4e7ea`, hover `#f2f4f5`, fila enfocada `.tableRowFocus`.
-
-### Páginas públicas (`static/css/public/auth.css`, `publico.css`)
-
-Paleta institucional propia: `--app-azul #1C3F86`, `--app-rojo #D3112A`, `--app-amarillo #FFD100`, `--app-tinta #16324f`, `--app-texto #3d4c5c`, `--app-muted #5b6b7a`, `--app-fondo #f4f7fa`, `--app-borde #DCE4F3`; tipografía `--au-font-display` (Poppins) y `--au-font-body` (Segoe UI). Solo para `templates/public/`; no mezclarla con el panel.
-
-### Legado que no se copia
-
-`base_adicional.css` tiene degradados en `.btn-primary`, `.btn-success` y el ítem activo del `startbar`, y `static/css/autenticacion/listado_cards.css` en `.membresia-pill`; `crons.css` usa franja de color a la izquierda (`border-left-width: 4px`). Son previos a la regla: no tocarlos sin pedido y **no replicarlos** en CSS nuevo. Un fondo plano con `*-bg-subtle` resuelve lo mismo.
 
 ## Listado estándar
 
@@ -84,9 +57,9 @@ Referencia: `templates/area_geografica/pais/listado.html`. Orden vertical:
 
 ## Evitar
 
-- Degradados de cualquier tipo, glassmorphism, sombras pesadas.
-- Paleta nueva o hex fuera de los tokens.
-- Franjas de color a la izquierda de tarjetas.
+- Degradados, glassmorphism y sombras fuera de las tres de `DESIGN-panel.md`.
+- Hex fuera de los tokens.
+- Franjas de color a la izquierda de tarjetas (`static/css/seguridad/crons.css` tiene una previa: no replicarla ni tocarla sin pedido).
 - `{% static %}`, `<style>`, comentarios, `style=""` estructural.
 - `data-toggle`/`data-dismiss` de Bootstrap 4: en BS5 son `data-bs-*`.
 - Texto en inglés o descripciones largas en la UI.

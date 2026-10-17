@@ -5,7 +5,7 @@ description: Método de arquitectura de backcalendar — dónde va cada pieza (a
 
 # Arquitectura backcalendar
 
-Hechos del sistema y método para ubicar código nuevo. `CLAUDE.md` manda; esta skill lo ordena para diseñar. Implementación concreta: skills `django-backend`, `formmodal`, `diseno-backcalendar`.
+Hechos del sistema y método para ubicar código nuevo. `CLAUDE.md` manda; esta skill lo ordena para diseñar. Implementación concreta: skills `django-backend`, `formmodal`, `design-guidelines-panel`.
 
 ## El sistema en una mirada
 
@@ -81,7 +81,7 @@ Una app nueva se suma a `urls_sistema` en `backcalendar/urls.py` con `nombre`, `
 1. **Spec** — skill `spec`: abre `specs/<área>/YYYY-MM-DD-<nombre>.md` y conduce la conversación.
 2. **Grilling** — skill `grilling`: rondas de preguntas con recomendación hasta tener archivos, primer/último paso y observable de verificación.
 3. **Diseño** — decidir con esta tabla: ¿app existente o nueva? ¿recurso nuevo (vista + templates) o acción nueva en una vista que ya existe? Por defecto, acción nueva antes que tocar un `add`/`change` que funciona. ¿Qué es dominio (va a `funciones_*.py`) y qué es CRUD (inline)?
-4. **Implementar** — `django-backend` + `formmodal` (+ `formmodal-data-preview`, `batch-process`, `inline-ajax-autosave` según el caso) y `diseno-backcalendar` para la UI; `/crud-simple` para un CRUD de catálogo.
+4. **Implementar** — `django-backend` + `formmodal` (+ `formmodal-data-preview`, `batch-process`, `inline-ajax-autosave` según el caso) y `design-guidelines-panel` para la UI; `/crud-simple` para un CRUD de catálogo.
 5. **Revisión del usuario** — el desarrollador corre el servidor en PyCharm.
 6. **Verificación a fondo** si toca la lista de `CLAUDE.md`: migraciones que van a producción, autenticación/gates de seguridad, registros de evidencia, contabilidad. Leer el código real de la API usada y probar casos borde.
 7. **Revisión de reglas** — agente `revisor-reglas` sobre el diff, si el usuario lo pide.
