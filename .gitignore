@@ -30,6 +30,7 @@ credenciales.json.bak*
 # Entorno virtual y config local de Claude Code
 .venv/
 .claude/settings.local.json
+.claude/scheduled_tasks.lock
 
 # Migraciones de todas las apps: nunca se versionan (se regeneran en cada entorno)
 **/migrations/*.py
@@ -37,6 +38,8 @@ credenciales.json.bak*
 
 # Salidas de Playwright (MCP/plugin): capturas, snapshots, trazas, videos, reportes
 .playwright-mcp/
+.impeccable/mocks/
+.impeccable/review/
 .playwright/
 playwright-report/
 test-results/
