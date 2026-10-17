@@ -4,27 +4,26 @@
 - `tiempos_de(producto)` — duración, antelación, ventana, margen y límites, heredando padre → parámetros.
 - `dias_con_cupo(producto, desde, dias)` — fechas con al menos un espacio común del equipo.
 - `espacios_del_dia(producto, fecha)` — inicios libres (datetime) del equipo ese día.
-- `reservar(producto, inicio, datos, request)` — crea cliente, cita, tokens y manda el correo. Dentro de `atomic()`.
+- `reservar(producto, inicio, datos, request)` — crea cliente, cita y tokens; los avisos van por `funciones_avisos_cita`. Dentro de `atomic()`.
 - `pedir_llamada(producto, datos, request)` — solicitud en cola con teléfono.
 - `cancelar_por_cliente` / `reprogramar_por_cliente` — acciones de la página de la cita.
-- `qr_data_uri(texto)` — QR en SVG para la página de la cita.
+- `qr_data_uri(texto)` / `qr_png(texto)` — QR en SVG para la página de la cita y en PNG para los correos.
 - `productos_publicos(portal, idioma, t)` / `productos_destacados(portal, idioma, t)` — tickets del catálogo y del landing.
 - `atencion_de(producto, t)` — «40 minutos, por videollamada».
 """
+import io
 from collections import Counter
 from datetime import datetime, timedelta
+from functools import lru_cache
 
 import segno
 from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Prefetch, prefetch_related_objects
-from django.template.loader import get_template
-from django.utils.formats import date_format
 
-from core import correos
-from seguridad.models import Configuracion, ParametroSistema
-from . import funciones_tokens
+from seguridad.models import ParametroSistema
+from . import funciones_avisos_cita, funciones_tokens
 from .funciones_citas import (cancelar_cita, codigo_solicitud, crear_cita, mover_cita, obtener_o_crear_cliente,
                               responsables_de)
 from .funciones_disponibilidad import espacios_comunes_rango
@@ -41,8 +40,9 @@ def _parametro_int(clave, default):
 
 def producto_por_slug(slug):
     base = Producto.objects.filter(status=True, activo=True, slug=slug, portal__status=True, portal__activo=True)
-    return (base.filter(padre__isnull=True).select_related('portal', 'equipo', 'padre').first()
-            or base.select_related('portal', 'equipo', 'padre').first())
+    relacionados = ('portal', 'equipo', 'padre', 'padre__equipo')
+    return (base.filter(padre__isnull=True).select_related(*relacionados).first()
+            or base.select_related(*relacionados).first())
 
 
 def equipo_de(producto):
@@ -194,7 +194,7 @@ def reservar(producto, inicio, datos, request=None, sesion=None):
     token_cliente = funciones_tokens.emitir('cliente', cliente=cliente, request=request)
     url_cita = funciones_tokens.url_cita(token_cita)
     url_cliente = funciones_tokens.url_cliente(producto.portal, token_cliente)
-    transaction.on_commit(lambda: enviar_confirmacion(cita.pk, url_cita, url_cliente))
+    transaction.on_commit(lambda: funciones_avisos_cita.avisar_reserva(cita.pk, url_cita, url_cliente))
     if sesion:
         liberar(producto, inicio, sesion)
     return cita, token_cita
@@ -219,7 +219,7 @@ def cancelar_por_cliente(cita, motivo, request=None):
         raise ValueError('Esta cita ya se realizó y no se puede cancelar.')
     if cita.inicio < datetime.now():
         raise ValueError('Esta cita ya pasó.')
-    return cancelar_cita(cita, f'Canceló el cliente. {motivo}'.strip(), request)
+    return cancelar_cita(cita, f'Canceló el cliente. {motivo}'.strip(), request, por_cliente=True)
 
 
 def reprogramar_por_cliente(cita, inicio, request=None):
@@ -233,57 +233,81 @@ def reprogramar_por_cliente(cita, inicio, request=None):
     if inicio not in espacios_del_dia(producto, inicio.date()) and inicio != cita.inicio:
         raise ValueError('Ese horario se acaba de ocupar. Elija otro, por favor.')
     fin = inicio + (cita.fin - cita.inicio)
-    return mover_cita(cita, inicio, fin, request, 'Cambio pedido por el cliente.')
+    return mover_cita(cita, inicio, fin, request, 'Cambio pedido por el cliente.', por_cliente=True)
 
 
+@lru_cache(maxsize=256)
 def qr_data_uri(texto):
     return segno.make(texto, error='m').svg_data_uri(scale=4, border=1, dark='#1d1d1f')
 
 
-def enviar_confirmacion(cita_pk, url_cita, url_cliente):
-    cita = Cita.objects.select_related('cliente', 'producto', 'equipo').get(pk=cita_pk)
-    if not cita.cliente.correo:
-        return
-    confi = Configuracion.get_instancia()
-    contexto = {
-        'cita': cita,
-        'cliente': cita.cliente,
-        'producto': cita.producto,
-        'fecha_larga': date_format(cita.inicio, r'l j \d\e F \d\e Y').capitalize(),
-        'hora': cita.inicio.strftime('%H:%M'),
-        'hora_fin': cita.fin.strftime('%H:%M'),
-        'url_cita': url_cita,
-        'url_cliente': url_cliente,
-        'nombreempresa': confi.nombre_empresa or 'Turno',
-        'logo': f"{funciones_tokens.base_publica()}{confi.logo_sistema_white.url}" if confi.logo_sistema_white else '',
-        'sucursal': confi.nombre_empresa or 'Turno',
-    }
-    html = get_template('email/cita_confirmada.html').render(contexto)
-    asunto = f'Su cita del {cita.inicio:%d/%m/%Y} a las {cita.inicio:%H:%M} · {cita.codigo}'
-    correos.despachar(correos.armar(asunto, html, to=[cita.cliente.correo]))
+def qr_png(texto):
+    """QR en PNG para los correos: los clientes de correo no muestran el SVG en línea de la página."""
+    salida = io.BytesIO()
+    segno.make(texto, error='m').save(salida, kind='png', scale=8, border=2, dark='#1A2B3C')
+    return salida.getvalue()
 
 
 IDIOMAS_PORTAL = ('es', 'en', 'pt')
 
 
-def idioma_de(request):
-    """Idioma del portal: `?idioma=` manda, luego la sesión, luego español."""
+def idioma_de(request, preferido=None):
+    """Idioma del portal: `?idioma=` manda, luego la sesión, luego el idioma guardado del cliente o la cita
+    (`preferido`), luego español."""
     pedido = request.GET.get('idioma') or request.POST.get('idioma') or ''
     if pedido in IDIOMAS_PORTAL:
         request.session['idioma_portal'] = pedido
         return pedido
-    return request.session.get('idioma_portal') or 'es'
+    return request.session.get('idioma_portal') or (preferido if preferido in IDIOMAS_PORTAL else 'es')
 
 
 def textos(idioma='es'):
-    """Diccionario clave → texto en el idioma pedido (con español de respaldo)."""
+    """Diccionario clave → texto en el idioma pedido (con español de respaldo). Cacheado por idioma;
+    `TextoPortal.save` lo invalida y el TTL corto cubre a los demás procesos."""
     from .models import TextoPortal
-    from .textos_portal import TEXTOS
-    columna = {'es': 1, 'en': 2, 'pt': 3}.get(idioma, 1)
-    salida = {fila[0]: fila[columna] or fila[1] for fila in TEXTOS}
-    for fila in TextoPortal.objects.filter(status=True):
-        salida[fila.clave] = (getattr(fila, idioma, '') if idioma != 'es' else '') or fila.es
-    return salida
+
+    def _armar():
+        from .textos_portal import TEXTOS
+        columna = {'es': 1, 'en': 2, 'pt': 3}.get(idioma, 1)
+        salida = {fila[0]: fila[columna] or fila[1] for fila in TEXTOS}
+        for fila in TextoPortal.objects.filter(status=True):
+            salida[fila.clave] = (getattr(fila, idioma, '') if idioma != 'es' else '') or fila.es
+        return salida
+
+    return cache.get_or_set(TextoPortal.CACHE_CLAVE.format(idioma), _armar, 300)
+
+
+def formatear(texto, **valores):
+    """Reemplaza `{clave}` por su valor; deja intacto el resto del texto."""
+    for clave, valor in valores.items():
+        texto = texto.replace('{' + clave + '}', str(valor or ''))
+    return texto
+
+
+def con_marca(textos, empresa, marca):
+    """Reemplaza {empresa} (nombre del portal) y {marca} (nombre de la empresa en Configuración) en los textos."""
+    return {clave: formatear(texto, empresa=empresa, marca=marca) if '{' in texto else texto
+            for clave, texto in textos.items()}
+
+
+def portal_principal():
+    from .models import Portal
+    return Portal.objects.filter(status=True, activo=True, principal=True).first()
+
+
+def contexto_publico(request, data, portal=None, preferido=None):
+    """Completa `data` (ya pasado por `addData`) con idioma, textos con la marca y el contacto del portal:
+    teléfono del portal, si no el de la empresa; correo de la empresa. Devuelve los textos."""
+    idioma = idioma_de(request, preferido)
+    marca = data['confi'].nombre_empresa or ''
+    t = con_marca(textos(idioma), (portal.nombre if portal else '') or marca, marca)
+    data.update({
+        'idioma': idioma,
+        't': t,
+        'contacto_telefono': (portal.telefono_atencion if portal else '') or data.get('telefonoempresa', ''),
+        'contacto_correo': data['confi'].email or '',
+    })
+    return t
 
 
 def nombre_producto(producto, idioma='es'):

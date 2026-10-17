@@ -377,8 +377,24 @@ class TextoPortal(ModeloBase):
     en = models.TextField(blank=True, default='', verbose_name='Inglés')
     pt = models.TextField(blank=True, default='', verbose_name='Portugués')
 
+    CACHE_CLAVE = 'agenda:textos_portal:{}'
+
     def __str__(self):
         return self.clave
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.limpiar_cache()
+
+    def delete(self, *args, **kwargs):
+        resultado = super().delete(*args, **kwargs)
+        self.limpiar_cache()
+        return resultado
+
+    @classmethod
+    def limpiar_cache(cls):
+        from django.core.cache import cache
+        cache.delete_many([cls.CACHE_CLAVE.format(idioma) for idioma in ('es', 'en', 'pt')])
 
     class Meta:
         verbose_name = 'Texto del portal'

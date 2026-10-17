@@ -230,6 +230,16 @@ class ReservaPublicaForm(FormBase):
         return 'Revise los datos.'
 
 
+class BuscarCitaForm(FormBase):
+    """«Ver mi cita»: el cliente abre su cita con el código y el correo con el que agendó."""
+    codigo = forms.CharField(max_length=20)
+    correo = forms.EmailField()
+
+    def clean_codigo(self):
+        from .funciones_citas import normalizar_codigo_cita
+        return normalizar_codigo_cita(self.cleaned_data['codigo'])
+
+
 class ClienteForm(ModelFormBase):
     class Meta:
         model = Cliente
