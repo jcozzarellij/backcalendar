@@ -4,12 +4,14 @@ Interfaz:
 - `duracion_turno()` — minutos de cada espacio (parámetro global).
 - `franjas_del_dia(usuario, fecha)` — horas disponibles declaradas ese día, ya descontadas las
   excepciones y los feriados. Es la base del motor de disponibilidad.
+- `datos_turnos(usuario, desde, hasta)` + `franjas_en(datos, fecha)` — lo mismo para un rango de días con
+  tres consultas en total: se precarga una vez y cada día se resuelve en memoria.
 - `aplicar_semana_tipo(usuario, franjas_por_dia, desde, hasta, request)` — guarda una semana tipo y recorta
   las vigencias de las anteriores para que nunca se solapen.
 """
 from datetime import datetime, time, timedelta
 
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 
 from seguridad.models import ParametroSistema
 from .models import ExcepcionTurno, Feriado, FranjaTurno, PatronTurno
@@ -48,31 +50,46 @@ def patron_vigente(usuario, fecha):
             .first())
 
 
-def _es_feriado(usuario, fecha):
-    equipos = usuario.membresias_agenda.filter(status=True).values_list('equipo_id', flat=True)
-    return Feriado.objects.filter(status=True, fecha=fecha).filter(
-        Q(equipo__isnull=True) | Q(equipo_id__in=list(equipos))).exists()
+def datos_turnos(usuario, desde, hasta):
+    """Feriados, excepciones y semanas tipo (con sus franjas activas) que tocan el rango [desde, hasta]."""
+    equipos = list(usuario.membresias_agenda.filter(status=True).values_list('equipo_id', flat=True))
+    return {
+        'feriados': set(Feriado.objects.filter(status=True, fecha__range=(desde, hasta))
+                        .filter(Q(equipo__isnull=True) | Q(equipo_id__in=equipos)).values_list('fecha', flat=True)),
+        'excepciones': list(ExcepcionTurno.objects.filter(status=True, usuario=usuario, fecha_desde__lte=hasta,
+                                                          fecha_hasta__gte=desde)),
+        'patrones': list(PatronTurno.objects
+                         .filter(status=True, usuario=usuario, vigencia_desde__lte=hasta)
+                         .filter(Q(vigencia_hasta__isnull=True) | Q(vigencia_hasta__gte=desde))
+                         .order_by('-vigencia_desde')
+                         .prefetch_related(Prefetch('franjas', to_attr='franjas_activas',
+                                                    queryset=FranjaTurno.objects.filter(status=True).order_by('hora_inicio')))),
+    }
 
 
-def franjas_del_dia(usuario, fecha):
-    """Lista ordenada de (hora_inicio, hora_fin) que el usuario declaró disponibles ese día."""
-    if _es_feriado(usuario, fecha):
+def franjas_en(datos, fecha):
+    """Lista ordenada de (hora_inicio, hora_fin) disponibles en `fecha`, a partir de `datos_turnos`."""
+    if fecha in datos['feriados']:
         return []
-    excepciones = list(ExcepcionTurno.objects.filter(
-        status=True, usuario=usuario, fecha_desde__lte=fecha, fecha_hasta__gte=fecha))
+    excepciones = [e for e in datos['excepciones'] if e.fecha_desde <= fecha <= e.fecha_hasta]
     especiales = [e for e in excepciones if e.tipo == 'horario_especial' and e.hora_inicio and e.hora_fin]
     if especiales:
         return sorted((e.hora_inicio, e.hora_fin) for e in especiales)
     if any(not (e.hora_inicio and e.hora_fin) for e in excepciones):
         return []
-    patron = patron_vigente(usuario, fecha)
+    patron = next((p for p in datos['patrones']
+                   if p.vigencia_desde <= fecha and (p.vigencia_hasta is None or p.vigencia_hasta >= fecha)), None)
     if not patron:
         return []
-    franjas = [(f.hora_inicio, f.hora_fin) for f in
-               patron.franjas.filter(status=True, dia_semana=fecha.weekday()).order_by('hora_inicio')]
+    franjas = [(f.hora_inicio, f.hora_fin) for f in patron.franjas_activas if f.dia_semana == fecha.weekday()]
     for e in excepciones:
         franjas = _restar(franjas, e.hora_inicio, e.hora_fin)
     return franjas
+
+
+def franjas_del_dia(usuario, fecha):
+    """Lista ordenada de (hora_inicio, hora_fin) que el usuario declaró disponibles ese día."""
+    return franjas_en(datos_turnos(usuario, fecha, fecha), fecha)
 
 
 def _restar(franjas, inicio, fin):

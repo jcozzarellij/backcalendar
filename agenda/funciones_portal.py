@@ -9,6 +9,7 @@
 - `cancelar_por_cliente` / `reprogramar_por_cliente` — acciones de la página de la cita.
 - `qr_data_uri(texto)` — QR en SVG para la página de la cita.
 """
+from collections import Counter
 from datetime import datetime, timedelta
 
 import segno
@@ -23,7 +24,7 @@ from seguridad.models import Configuracion, ParametroSistema
 from . import funciones_tokens
 from .funciones_citas import (cancelar_cita, codigo_solicitud, crear_cita, mover_cita, obtener_o_crear_cliente,
                               responsables_de)
-from .funciones_disponibilidad import espacios_comunes
+from .funciones_disponibilidad import espacios_comunes_rango
 from .funciones_turnos import duracion_turno
 from .models import CapturaTecnica, Cita, Producto, Solicitud
 
@@ -96,25 +97,7 @@ def apartado_por_otro(producto, inicio, sesion=None):
 
 
 def espacios_del_dia(producto, fecha, sesion=None):
-    equipo = equipo_de(producto)
-    if equipo is None:
-        return []
-    responsables = responsables_de(equipo)
-    if not responsables:
-        return []
-    t = tiempos_de(producto)
-    minimo = _minimo(producto)
-    if fecha < minimo.date():
-        return []
-    desde_hora = minimo if fecha == minimo.date() else None
-    espacios = espacios_comunes(responsables, fecha, t['duracion'], t['margen'], desde_hora=desde_hora)
-    if t['limite_dia']:
-        dia_ini = datetime.combine(fecha, datetime.min.time())
-        ya = Cita.objects.filter(status=True, equipo=equipo, inicio__gte=dia_ini, inicio__lt=dia_ini + timedelta(days=1)) \
-            .exclude(estado='cancelada').count()
-        if ya >= t['limite_dia']:
-            return []
-    return [e for e in espacios if not apartado_por_otro(producto, e, sesion)]
+    return _espacios_rango(producto, fecha, fecha, sesion).get(fecha, [])
 
 
 def dias_con_cupo(producto, desde=None, dias=None):
@@ -122,13 +105,31 @@ def dias_con_cupo(producto, desde=None, dias=None):
     minimo = _minimo(producto)
     fecha = max(desde or minimo.date(), minimo.date())
     tope = minimo.date() + timedelta(days=dias if dias is not None else t['ventana'])
-    salida = []
-    while fecha <= tope:
-        n = len(espacios_del_dia(producto, fecha))
-        if n:
-            salida.append({'fecha': fecha, 'espacios': n})
-        fecha += timedelta(days=1)
-    return salida
+    if fecha > tope:
+        return []
+    return [{'fecha': f, 'espacios': len(e)} for f, e in sorted(_espacios_rango(producto, fecha, tope).items()) if e]
+
+
+def _espacios_rango(producto, desde, hasta, sesion=None):
+    """{fecha: inicios libres del equipo} entre `desde` y `hasta`, respetando antelación, límite diario y
+    horarios apartados por otra sesión. Carga turnos, bloques, Google y citas una vez para todo el rango."""
+    equipo = equipo_de(producto)
+    responsables = responsables_de(equipo) if equipo else []
+    if not responsables:
+        return {}
+    t = tiempos_de(producto)
+    minimo = _minimo(producto)
+    desde = max(desde, minimo.date())
+    if desde > hasta:
+        return {}
+    por_dia = espacios_comunes_rango(responsables, desde, hasta, t['duracion'], t['margen'], desde_hora=minimo)
+    if t['limite_dia']:
+        rango_ini = datetime.combine(desde, datetime.min.time())
+        citas = Counter(Cita.objects.filter(status=True, equipo=equipo, inicio__gte=rango_ini,
+                                            inicio__lt=datetime.combine(hasta, datetime.min.time()) + timedelta(days=1))
+                        .exclude(estado='cancelada').values_list('inicio__date', flat=True))
+        por_dia = {f: ([] if citas[f] >= t['limite_dia'] else e) for f, e in por_dia.items()}
+    return {f: [e for e in espacios if not apartado_por_otro(producto, e, sesion)] for f, espacios in por_dia.items()}
 
 
 def _organizador(equipo):

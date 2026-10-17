@@ -193,6 +193,16 @@ class PortalTests(TestCase):
         espacios = self.funciones_portal.espacios_del_dia(self.producto, self.lunes)
         self.assertEqual([e.strftime('%H:%M') for e in espacios], ['09:00', '09:40', '10:20'])
 
+    def test_dias_con_cupo_no_consulta_por_dia(self):
+        from django.test.utils import CaptureQueriesContext
+        self.funciones_portal.dias_con_cupo(self.producto, dias=7)
+        with CaptureQueriesContext(connection) as semana:
+            self.funciones_portal.dias_con_cupo(self.producto, dias=7)
+        with CaptureQueriesContext(connection) as mes:
+            dias = self.funciones_portal.dias_con_cupo(self.producto, dias=30)
+        self.assertEqual(len(mes), len(semana))
+        self.assertIn(self.lunes, [d['fecha'] for d in dias])
+
     def test_reservar_crea_cita_tokens_y_bloquea_el_horario(self):
         inicio = datetime.combine(self.lunes, time(9, 0))
         with patch.object(self.funciones_portal, 'enviar_confirmacion'):

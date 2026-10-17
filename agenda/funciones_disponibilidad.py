@@ -3,6 +3,8 @@
 Interfaz:
 - `espacios_libres(usuario, fecha, duracion=None, margen=0)` — inicios de espacio libres del día.
 - `espacios_comunes(usuarios, fecha, duracion=None, margen=0)` — inicios en que coinciden todos.
+- `espacios_libres_rango` / `espacios_comunes_rango(..., desde, hasta, ...)` — lo mismo para varios días: {fecha: inicios},
+  con las consultas y la petición a Google hechas una vez para todo el rango.
 - `ocupacion_del_dia(usuario, fecha)` — bloques (inicio, fin, tipo) para pintar la agenda del equipo:
   tipo ∈ {'turno', 'cita', 'google', 'manual'}.
 - `ocupados_google(usuario, desde, hasta)` — bloques ocupados en Google, cacheados.
@@ -17,7 +19,7 @@ from django.core.cache import cache
 
 from seguridad.models import ParametroSistema
 from . import funciones_google
-from .funciones_turnos import duracion_turno, franjas_del_dia
+from .funciones_turnos import datos_turnos, duracion_turno, franjas_del_dia, franjas_en
 from .models import BloqueOcupado, ConexionAplicacion
 
 logger = logging.getLogger(__name__)
@@ -67,38 +69,53 @@ def _ocupado_en(inicio, fin, bloques, margen):
 
 def espacios_libres(usuario, fecha, duracion=None, margen=0, paso=None, desde_hora=None):
     """Inicios (datetime) de los espacios libres de `usuario` en `fecha`, ordenados."""
+    return espacios_libres_rango(usuario, fecha, fecha, duracion, margen, paso, desde_hora)[fecha]
+
+
+def espacios_libres_rango(usuario, desde, hasta, duracion=None, margen=0, paso=None, desde_hora=None):
+    """{fecha: inicios libres} de cada día entre `desde` y `hasta`, con una sola carga de turnos y bloques."""
     duracion = duracion or duracion_turno()
     paso = paso or duracion
-    franjas = franjas_del_dia(usuario, fecha)
-    if not franjas:
-        return []
-    dia_ini = datetime.combine(fecha, datetime.min.time())
-    dia_fin = dia_ini + timedelta(days=1)
-    bloques = bloques_propios(usuario, dia_ini, dia_fin) + ocupados_google(usuario, dia_ini, dia_fin)
+    datos = datos_turnos(usuario, desde, hasta)
+    fechas = [desde + timedelta(days=i) for i in range((hasta - desde).days + 1)]
+    franjas_por_dia = {fecha: franjas_en(datos, fecha) for fecha in fechas}
+    bloques = []
+    if any(franjas_por_dia.values()):
+        rango_ini = datetime.combine(desde, datetime.min.time())
+        rango_fin = datetime.combine(hasta, datetime.min.time()) + timedelta(days=1)
+        bloques = bloques_propios(usuario, rango_ini, rango_fin) + ocupados_google(usuario, rango_ini, rango_fin)
     largo, salto = timedelta(minutes=duracion), timedelta(minutes=paso)
-    libres = []
-    for hora_ini, hora_fin in franjas:
-        actual = datetime.combine(fecha, hora_ini)
-        tope = datetime.combine(fecha, hora_fin)
-        while actual + largo <= tope:
-            if (desde_hora is None or actual >= desde_hora) and not _ocupado_en(actual, actual + largo, bloques, margen):
-                libres.append(actual)
-            actual += salto
-    return libres
+    salida = {}
+    for fecha, franjas in franjas_por_dia.items():
+        libres = []
+        for hora_ini, hora_fin in franjas:
+            actual = datetime.combine(fecha, hora_ini)
+            tope = datetime.combine(fecha, hora_fin)
+            while actual + largo <= tope:
+                if (desde_hora is None or actual >= desde_hora) and not _ocupado_en(actual, actual + largo, bloques, margen):
+                    libres.append(actual)
+                actual += salto
+        salida[fecha] = libres
+    return salida
 
 
 def espacios_comunes(usuarios, fecha, duracion=None, margen=0, paso=None, desde_hora=None):
     """Inicios en los que TODOS los usuarios están libres."""
+    return espacios_comunes_rango(usuarios, fecha, fecha, duracion, margen, paso, desde_hora).get(fecha, [])
+
+
+def espacios_comunes_rango(usuarios, desde, hasta, duracion=None, margen=0, paso=None, desde_hora=None):
+    """{fecha: inicios en que TODOS los usuarios están libres} para cada día del rango."""
     usuarios = list(usuarios)
     if not usuarios:
-        return []
+        return {}
     comunes = None
     for usuario in usuarios:
-        propios = set(espacios_libres(usuario, fecha, duracion, margen, paso, desde_hora))
-        comunes = propios if comunes is None else comunes & propios
-        if not comunes:
-            return []
-    return sorted(comunes)
+        propios = {f: set(h) for f, h in espacios_libres_rango(usuario, desde, hasta, duracion, margen, paso, desde_hora).items()}
+        comunes = propios if comunes is None else {f: comunes[f] & propios[f] for f in comunes}
+        if not any(comunes.values()):
+            break
+    return {f: sorted(h) for f, h in comunes.items()}
 
 
 def ocupacion_del_dia(usuario, fecha):
@@ -118,10 +135,6 @@ def primer_espacio(usuarios, desde, dias=14, duracion=None, margen=0, antelacion
     """Primer inicio común desde `desde` (datetime) dentro de `dias`, respetando la antelación."""
     antelacion = antelacion_horas if antelacion_horas is not None else _parametro_int('agenda_antelacion_horas', 24)
     minimo = desde + timedelta(hours=antelacion)
-    fecha = minimo.date()
-    for _ in range(dias + 1):
-        espacios = espacios_comunes(usuarios, fecha, duracion, margen, desde_hora=minimo if fecha == minimo.date() else None)
-        if espacios:
-            return espacios[0]
-        fecha += timedelta(days=1)
-    return None
+    por_dia = espacios_comunes_rango(usuarios, minimo.date(), minimo.date() + timedelta(days=dias), duracion, margen,
+                                     desde_hora=minimo)
+    return next((espacios[0] for _, espacios in sorted(por_dia.items()) if espacios), None)
