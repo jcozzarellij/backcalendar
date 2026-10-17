@@ -10,7 +10,7 @@
             <div>
                 <strong>Google Calendar todavía no está configurado en el sistema.</strong>
                 {% if request.user.is_superuser %}
-                    Carga <code>GOOGLE_OAUTH_CLIENT_ID</code> y <code>GOOGLE_OAUTH_CLIENT_SECRET</code> en <code>credenciales.json</code> y registra en Google Cloud la URI de redirección <code>{{ google_redirect_uri }}</code>.
+                    Carga el ID y el secreto del cliente OAuth en <a href="/seguridad/configuracion/">Configuración › Conexión Google</a> y registra en Google Cloud la URI de redirección <code>{{ google_redirect_uri }}</code>.
                 {% else %}
                     Pide al administrador que active la conexión.
                 {% endif %}

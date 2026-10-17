@@ -110,7 +110,7 @@ def parametrosAgendaView(request):
             'google_configurado': funciones_google.configurada(),
             'google_conectadas': conexiones.filter(conectada=True).count(),
             'google_total': conexiones.count(),
-            'google_redirect': getattr(settings, 'GOOGLE_OAUTH_REDIRECT_URI', ''),
+            'google_redirect': funciones_google.cliente_oauth()['redirect'],
             'zona_horaria': settings.TIME_ZONE,
             'remitente': getattr(settings, 'DEFAULT_FROM_EMAIL', '') or getattr(settings, 'EMAIL_HOST_USER', ''),
             'push_configurado': bool(getattr(settings, 'WEBPUSH_SETTINGS', {}).get('VAPID_PUBLIC_KEY', '')),

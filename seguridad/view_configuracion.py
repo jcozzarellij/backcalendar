@@ -1,6 +1,7 @@
 import sys
 from datetime import date
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -10,7 +11,7 @@ from django.shortcuts import render, redirect
 from core.custom_models import FormError
 from core.funciones import addData, secure_module, log, remover_caracteres_especiales_unicode, generar_nombre
 from core.funciones_adicionales import salva_logs
-from seguridad.forms import ConfiguracionForm
+from seguridad.forms import ConfiguracionForm, SECRETOS_CONEXIONES
 from seguridad.models import Configuracion
 
 
@@ -112,6 +113,15 @@ def configuracion(request):
         return JsonResponse(res_json, safe=False)
 
     elif request.method == 'GET':
+        if 'action' in request.GET:
+            data['action'] = action = request.GET['action']
+            if action == 'ver_secreto':
+                campo = request.GET.get('campo', '')
+                if campo not in SECRETOS_CONEXIONES:
+                    return JsonResponse({'result': False, 'message': 'Campo no permitido.'})
+                valor = getattr(model.objects.get(pk=confi.pk), campo) or ''
+                log(f'Consultó el secreto «{model._meta.get_field(campo).verbose_name}» de la configuración', request, 'change', obj=confi.pk)
+                return JsonResponse({'result': True, 'valor': valor})
         data["form"] = Formulario(instance=confi)
         data["pk"] = confi.pk
         data['tabs_config'] = [
@@ -122,6 +132,30 @@ def configuracion(request):
              'campos': ['ico', 'logo_sistema', 'logo_sistema_white', 'fondo_landing']},
             {'clave': 'plataforma', 'titulo': 'Configuración de plataforma', 'icono': 'fa-gears',
              'campos': ['pg_dump_cmd', 'backup_retencion']},
+            {'clave': 'google', 'titulo': 'Conexión Google', 'icono': 'fa-calendar-check',
+             'campos': ['google_client_id', 'google_client_secret', 'google_redirect_uri'],
+             'nota': _nota_google(confi)},
+            {'clave': 'teams', 'titulo': 'Conexión Teams', 'icono': 'fa-users',
+             'campos': ['teams_client_id', 'teams_client_secret', 'teams_tenant_id', 'teams_redirect_uri'],
+             'nota': NOTA_PENDIENTE.format('Microsoft Teams')},
+            {'clave': 'zoom', 'titulo': 'Conexión Zoom', 'icono': 'fa-video',
+             'campos': ['zoom_client_id', 'zoom_client_secret', 'zoom_redirect_uri'],
+             'nota': NOTA_PENDIENTE.format('Zoom')},
         ]
         return render(request, 'seguridad/configuracion/form.html', data)
     return None
+
+
+NOTA_PENDIENTE = ('Las claves de la aplicación de {} quedan guardadas aquí (el secreto, cifrado). La conexión de cada '
+                  'persona con su cuenta se habilita en Conexiones cuando se active esa integración.')
+
+
+def _nota_google(confi):
+    """Texto de ayuda de la pestaña Google: qué URI registrar y de dónde salen hoy las claves."""
+    nota = (f'Cliente OAuth de tipo «Aplicación web». En Google Cloud registra como URI de redirección '
+            f'{confi.google_redirect_uri or settings.GOOGLE_OAUTH_REDIRECT_URI} y habilita la Google Calendar API.')
+    if not confi.google_client_id and settings.GOOGLE_OAUTH_CLIENT_ID:
+        nota += ' Hoy se usan las claves de credenciales.json; al guardar aquí un ID de cliente pasan a usarse estas.'
+    if confi.google_client_id:
+        nota += ' Si cambias el ID de cliente, cada persona tendrá que volver a conectar su Google en Conexiones.'
+    return nota

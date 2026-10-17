@@ -1,7 +1,6 @@
 import sys
 from datetime import date
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -89,5 +88,5 @@ def aplicacionesView(request):
             for clave, nombre in PROVEEDOR_APLICACION
         ]
         data['google_configurado'] = funciones_google.configurada()
-        data['google_redirect_uri'] = settings.GOOGLE_OAUTH_REDIRECT_URI
+        data['google_redirect_uri'] = funciones_google.cliente_oauth()['redirect']
         return render(request, 'agenda/aplicaciones/listado.html', data)

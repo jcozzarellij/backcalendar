@@ -7,6 +7,7 @@ from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils import timezone
 
+from core.crypto import EncryptedTextField
 from core.custom_models import ModeloBase, NormalModel
 from core.validadores import FileMaxSizeInMbValidator
 from backcalendar.settings import AUTH_USER_MODEL
@@ -188,6 +189,25 @@ class Configuracion(ModeloBase):
         default=15, verbose_name='Backups a conservar',
         help_text='Cuántos backups de BD se guardan antes de rotar (borrar los más viejos).'
     )
+
+    google_client_id = models.CharField(max_length=300, blank=True, default='', verbose_name='ID de cliente de Google',
+                                        help_text='Google Cloud › Google Auth Platform › Clientes. Termina en .apps.googleusercontent.com.')
+    google_client_secret = EncryptedTextField(blank=True, default='', verbose_name='Secreto de cliente de Google',
+                                              help_text='Se guarda cifrado. Déjalo vacío para conservar el actual.')
+    google_redirect_uri = models.CharField(max_length=500, blank=True, default='', verbose_name='URI de redirección de Google',
+                                           help_text='Vacío = la URI por defecto del sistema, que se muestra arriba.')
+    teams_client_id = models.CharField(max_length=300, blank=True, default='', verbose_name='ID de aplicación (cliente) de Microsoft',
+                                       help_text='Microsoft Entra › Registros de aplicaciones › Información general.')
+    teams_client_secret = EncryptedTextField(blank=True, default='', verbose_name='Secreto de cliente de Microsoft',
+                                             help_text='Se guarda cifrado. Déjalo vacío para conservar el actual.')
+    teams_tenant_id = models.CharField(max_length=100, blank=True, default='', verbose_name='ID de directorio (inquilino) de Microsoft',
+                                       help_text='Vacío = «common», para cuentas de cualquier organización.')
+    teams_redirect_uri = models.CharField(max_length=500, blank=True, default='', verbose_name='URI de redirección de Microsoft')
+    zoom_client_id = models.CharField(max_length=300, blank=True, default='', verbose_name='Client ID de Zoom',
+                                      help_text='Zoom App Marketplace › tu app OAuth › App Credentials.')
+    zoom_client_secret = EncryptedTextField(blank=True, default='', verbose_name='Client Secret de Zoom',
+                                            help_text='Se guarda cifrado. Déjalo vacío para conservar el actual.')
+    zoom_redirect_uri = models.CharField(max_length=500, blank=True, default='', verbose_name='URI de redirección de Zoom')
 
     CACHE_CLAVE = 'seguridad:configuracion:instancia'
 

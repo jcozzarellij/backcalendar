@@ -35,13 +35,31 @@
                         <div class="tab-content">
                             {% for tab in tabs_config %}
                                 <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="tabcfg-{{ tab.clave }}" role="tabpanel">
+                                    {% if tab.nota %}
+                                        <div class="alert alert-info d-flex align-items-start gap-2 small py-2" role="note">
+                                            <i class="fa fa-circle-info mt-1" aria-hidden="true"></i>
+                                            <div>{{ tab.nota }}</div>
+                                        </div>
+                                    {% endif %}
                                     <div class="row g-1">
                                         {% for field in form %}
                                             {% if not field.is_hidden and field.name in tab.campos %}
                                                 <div class="col-lg-{{ field.field.widget.attrs.col }}">
                                                     <div class="mb-2">
                                                         <label class="form-label small mb-1" for="id_{{ field.name }}">{{ field.label }}</label><br>
-                                                        {{ field }}
+                                                        {% if field.name in form.campos_secretos %}
+                                                            <div class="input-group">
+                                                                {{ field }}
+                                                                {% if field.name in form.secretos_guardados %}
+                                                                    <button type="button" class="btn btn-light cfg-ver-secreto" data-campo="{{ field.name }}" aria-controls="id_{{ field.name }}" aria-pressed="false">
+                                                                        <i class="fa fa-eye me-1" aria-hidden="true"></i><span>Mostrar</span>
+                                                                    </button>
+                                                                {% endif %}
+                                                            </div>
+                                                        {% else %}
+                                                            {{ field }}
+                                                        {% endif %}
+                                                        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
                                                         <div class="invalid-feedback" id="errorMessage{{ field.name }}"></div>
                                                     </div>
                                                 </div>
@@ -72,6 +90,42 @@
 {% block jscript %}
     <script src="/static/js/forms.js?version=2"></script>
     <script>
+        (function () {
+            document.querySelectorAll('.cfg-ver-secreto').forEach(function (boton) {
+                var campo = document.getElementById('id_' + boton.dataset.campo);
+                var etiqueta = boton.querySelector('span');
+                var icono = boton.querySelector('i');
+                function pintar(visible) {
+                    campo.type = visible ? 'text' : 'password';
+                    etiqueta.textContent = visible ? 'Ocultar' : 'Mostrar';
+                    icono.className = 'fa ' + (visible ? 'fa-eye-slash' : 'fa-eye') + ' me-1';
+                    boton.setAttribute('aria-pressed', visible ? 'true' : 'false');
+                }
+                boton.addEventListener('click', function () {
+                    if (campo.type === 'text') {
+                        pintar(false);
+                        return;
+                    }
+                    if (campo.value) {
+                        pintar(true);
+                        return;
+                    }
+                    boton.disabled = true;
+                    $.getJSON('{{ ruta }}', {action: 'ver_secreto', campo: boton.dataset.campo}, function (data) {
+                        boton.disabled = false;
+                        if (data.result) {
+                            campo.value = data.valor;
+                            pintar(true);
+                        } else {
+                            Swal.fire(data.message || 'No se pudo mostrar el secreto.', '', 'error');
+                        }
+                    }).fail(function () {
+                        boton.disabled = false;
+                        Swal.fire('Error de conexión.', '', 'error');
+                    });
+                });
+            });
+        })();
         (function () {
             var form = document.querySelector('form.form');
             if (!form) return;

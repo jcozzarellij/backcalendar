@@ -37,6 +37,36 @@ class ConfiguracionForm(ModelFormBase):
                 self.fields[k].widget.attrs['pattern'] = r"[\d\s()+\-]*"
                 self.fields[k].widget.attrs['title'] = "Números, espacios, + ( ) -"
 
+        for k in CAMPOS_CONEXIONES:
+            if k in self.fields:
+                self.fields[k].widget.attrs['col'] = "6"
+                self.fields[k].widget.attrs['autocomplete'] = "off"
+        for k in SECRETOS_CONEXIONES:
+            if k in self.fields:
+                attrs = dict(self.fields[k].widget.attrs)
+                attrs.pop('rows', None)
+                attrs['autocomplete'] = "new-password"
+                attrs['placeholder'] = "••••••••" if getattr(self.instance, k, '') else "Pega aquí el secreto"
+                self.fields[k].widget = forms.PasswordInput(render_value=False, attrs=attrs)
+        self.campos_secretos = SECRETOS_CONEXIONES
+        self.secretos_guardados = [k for k in SECRETOS_CONEXIONES if getattr(self.instance, k, '')]
+
+    def clean(self):
+        datos = super().clean()
+        for k in SECRETOS_CONEXIONES:
+            if k in datos and not (datos.get(k) or '').strip():
+                datos[k] = getattr(self.instance, k, '') or ''
+        for k in CAMPOS_CONEXIONES:
+            if isinstance(datos.get(k), str):
+                datos[k] = datos[k].strip()
+        return datos
+
+
+SECRETOS_CONEXIONES = ('google_client_secret', 'teams_client_secret', 'zoom_client_secret')
+CAMPOS_CONEXIONES = ('google_client_id', 'google_client_secret', 'google_redirect_uri',
+                     'teams_client_id', 'teams_client_secret', 'teams_tenant_id', 'teams_redirect_uri',
+                     'zoom_client_id', 'zoom_client_secret', 'zoom_redirect_uri')
+
 
 class ConfiguracionTerminosForm(ModelFormBase):
     class Meta:
