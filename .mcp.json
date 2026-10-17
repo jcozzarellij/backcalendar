@@ -15,6 +15,7 @@
       "command": "npx",
       "args": [
         "@playwright/mcp@latest",
+        "--isolated",
         "--output-dir",
         ".playwright-mcp"
       ],
