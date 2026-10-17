@@ -253,3 +253,11 @@
         display: none;
     }
 }
+
+.cal-rejilla tbody tr:first-child .cal-hora {
+    transform: none;
+}
+
+.cal-rejilla:not(:has(thead th:nth-child(3))) {
+    min-width: 0;
+}

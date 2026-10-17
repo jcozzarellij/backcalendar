@@ -1,4 +1,11 @@
 (function () {
+    const parametros = new URLSearchParams(window.location.search);
+    const vistaGuardada = document.cookie.split('; ').some(c => c.startsWith('cal_vista='));
+    if (!parametros.has('vista') && !vistaGuardada && window.matchMedia('(max-width: 575.98px)').matches) {
+        parametros.set('vista', 'dia');
+        window.location.replace(window.location.pathname + '?' + parametros.toString());
+        return;
+    }
     const rejilla = document.querySelector('.cal-rejilla');
     const ruta = window.location.pathname;
     const paso = rejilla ? parseInt(rejilla.dataset.paso, 10) || 40 : 40;
