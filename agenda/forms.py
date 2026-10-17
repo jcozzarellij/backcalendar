@@ -36,7 +36,7 @@ class ProyectoForm(ModelFormBase):
 class EquipoForm(ModelFormBase):
     class Meta:
         model = Equipo
-        exclude = EXCLUIR_AUDITORIA
+        exclude = EXCLUIR_AUDITORIA + ('ultimo_asignado',)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -44,6 +44,7 @@ class EquipoForm(ModelFormBase):
         self.fields['lider'].queryset = usuarios_agenda()
         for campo in ('proyecto', 'nombre'):
             self.fields[campo].widget.attrs['col'] = '6'
+        self.fields['modo_asignacion'].widget.attrs['class'] = 'select2'
 
     def clean(self):
         datos = super().clean()

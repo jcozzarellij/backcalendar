@@ -55,7 +55,7 @@
                             <input type="hidden" name="producto" value="{{ actual.producto_id|default:'' }}">
                             <input type="hidden" name="titulo" value="{% if actual.producto %}{{ actual.producto.nombre }}{% else %}Cita{% endif %} · {{ actual.cliente.nombres }}">
                             <h5 class="mb-1">Espacios sugeridos</h5>
-                            <p class="agenda-sub mb-2">Los más cercanos en que coinciden los responsables del equipo.</p>
+                            <p class="agenda-sub mb-2">{% if por_persona %}Los más cercanos en que al menos una persona del equipo está libre.{% else %}Los más cercanos en que coinciden los responsables del equipo.{% endif %}</p>
                             <div class="co-espacios" role="radiogroup" aria-label="Espacios sugeridos">
                                 {% for h in sugeridos %}
                                     <label class="co-espacio">
@@ -86,8 +86,22 @@
                                     <label class="form-label" for="co-manual">O un horario a mano</label>
                                     <input type="datetime-local" class="form-control" id="co-manual" step="600">
                                 </div>
+                                <div class="col-md-7">
+                                    <label class="form-label" for="co-organizador">Asignar a</label>
+                                    <select name="organizador" id="co-organizador" class="select2">
+                                        <option value="">Automático</option>
+                                    </select>
+                                    <p class="agenda-sub mt-1 mb-0" id="co-nota"></p>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label" for="{{ plataformas.id_for_label }}">{{ plataformas.label }}</label>
+                                    {{ plataformas }}
+                                </div>
+                                <div class="col-12">
+                                    <p class="agenda-sub mb-0">{{ plataformas.help_text }}</p>
+                                </div>
                             </div>
-                            <p class="agenda-sub mt-3 mb-2">Se crea la cita con videollamada, se bloquea el horario de los responsables y se envía la invitación al cliente.</p>
+                            <p class="agenda-sub mt-3 mb-2">Se crea la cita con videollamada, se bloquea el horario de {% if por_persona %}la persona asignada{% else %}los responsables{% endif %} y se envía la invitación al cliente.</p>
                             <div class="d-flex flex-wrap gap-2">
                                 <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-1"></i>Asignar y enviar invitación</button>
                                 <button type="button" class="btn btn-light" onclick="cerrarSolicitud({{ actual.pk }}, '{{ actual.codigo|escapejs }}')">Cerrar sin cita</button>
@@ -106,4 +120,14 @@
     <script src="/static/js/agenda/crud.js?v1.1"></script>
     <script src="/static/js/agenda/solicitud.js?v1.0"></script>
     <script src="/static/js/agenda/cola.js?v1.0"></script>
+    <script src="/static/js/agenda/asignar_organizador.js?v1.1"></script>
+    <script>
+        selectorOrganizador({
+            url: '/agenda/solicitudes/', organizador: '#co-organizador', nota: '#co-nota',
+            cambios: ['#co-equipo', '#co-duracion', '#co-manual', 'input[name=inicio]'],
+            equipo: function () { return $('#co-equipo').val(); },
+            inicio: function () { return $('#co-manual').val() || $('input[name=inicio]:checked').val() || ''; },
+            duracion: function () { return $('#co-duracion').val(); }
+        });
+    </script>
 {% endblock %}

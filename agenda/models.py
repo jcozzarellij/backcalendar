@@ -48,12 +48,24 @@ class Proyecto(ModeloBase):
         ]
 
 
+MODO_ASIGNACION = (
+    ('equipo', 'Todo el equipo: asisten todos los responsables'),
+    ('persona', 'Una persona: va al responsable libre con menos carga, por turnos'),
+)
+
+
 class Equipo(ModeloBase):
     proyecto = models.ForeignKey(Proyecto, on_delete=models.PROTECT, related_name='equipos', verbose_name='Proyecto')
     nombre = models.CharField(max_length=150, verbose_name='Nombre')
     lider = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.PROTECT, blank=True, null=True,
                               related_name='equipos_liderados', verbose_name='Líder del equipo')
     activo = models.BooleanField(default=True, verbose_name='Activo')
+    modo_asignacion = models.CharField(max_length=10, choices=MODO_ASIGNACION, default='equipo',
+                                       verbose_name='Modo de asignación',
+                                       help_text='Todo el equipo: se ofrecen las horas en que todos los responsables están '
+                                                 'libres. Una persona: se ofrecen las horas en que alguno lo está.')
+    ultimo_asignado = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True,
+                                        related_name='+', verbose_name='Último asignado (rotación)')
 
     def __str__(self):
         return f'{self.nombre} · {self.proyecto}'

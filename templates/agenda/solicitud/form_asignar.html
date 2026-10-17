@@ -13,6 +13,17 @@
             <div class="invalid-feedback" id="errorMessageequipo"></div>
         </div>
     </div>
+    <div class="col-lg-12">
+        <div class="mb-2">
+            <label class="form-label small mb-1" for="id_organizador">Asignar a</label>
+            <select name="organizador" id="id_organizador" class="select2">
+                <option value="">Automático</option>
+            </select>
+            <div class="form-text" id="asg-nota"></div>
+            <div class="form-text">La videollamada se crea en la cuenta de esta persona. Sin su cuenta conectada, la cita se crea igual y el enlace llega cuando la conecte.</div>
+            <div class="invalid-feedback" id="errorMessageorganizador"></div>
+        </div>
+    </div>
     {% for field in form %}
         <div class="col-lg-{{ field.field.widget.attrs.col|default:'12' }}">
             <div class="mb-2">
@@ -20,6 +31,8 @@
                 {{ field }}
                 {% if field.name == 'inicio' %}
                     <div class="form-text">{% if sugerido %}Primer espacio libre del equipo: {{ sugerido|date:"D d/m H:i" }}.{% else %}El equipo no tiene espacios libres en las próximas dos semanas; elige a mano.{% endif %}</div>
+                {% elif field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
                 {% endif %}
                 <div class="invalid-feedback" id="errorMessage{{ field.name }}"></div>
             </div>
@@ -38,3 +51,13 @@
     </button>
 </div>
 {% include 'base_formulario_modal.html' %}
+<script src="/static/js/agenda/asignar_organizador.js?v1.1"></script>
+<script>
+    selectorOrganizador({
+        url: '/agenda/solicitudes/', organizador: '#id_organizador', nota: '#asg-nota',
+        cambios: ['#id_equipo', '#id_inicio', '#id_duracion'],
+        equipo: function () { return $('#id_equipo').val(); },
+        inicio: function () { return $('#id_inicio').val(); },
+        duracion: function () { return $('#id_duracion').val(); }
+    });
+</script>

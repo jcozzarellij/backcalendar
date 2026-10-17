@@ -23,7 +23,7 @@ from django.utils import timezone
 from . import funciones_google
 from .funciones_disponibilidad import bloques_propios, invalidar_google, ocupados_google
 from .models import (ActividadCita, BloqueOcupado, Cita, Cliente, ConexionAplicacion, MiembroEquipo,
-                     ParticipanteCita, Solicitud)
+                     ParticipanteCita, Reunion, Solicitud)
 
 ALFABETO = string.ascii_uppercase.replace('O', '').replace('I', '') + string.digits.replace('0', '').replace('1', '')
 
@@ -98,16 +98,22 @@ def _verificar_libres(usuarios, inicio, fin, excluir_cita=None):
             propios = propios.exclude(cita=excluir_cita)
         if propios.exists():
             raise ValueError(f'{usuario.get_full_name() or usuario.username} ya tiene algo en ese horario.')
+        if Reunion.objects.filter(status=True, organizador=usuario, eliminada=False, inicio__lt=fin, fin__gt=inicio).exists():
+            raise ValueError(f'{usuario.get_full_name() or usuario.username} tiene una reunión en ese horario.')
         if any(b_ini < fin and b_fin > inicio for b_ini, b_fin in ocupados_google(usuario, inicio, fin)):
             raise ValueError(f'{usuario.get_full_name() or usuario.username} está ocupado en Google Calendar a esa hora.')
 
 
 def crear_cita(*, cliente, inicio, fin, organizador, titulo, equipo=None, proyecto=None, producto=None,
-               solicitud=None, asignada_por='coordinador', idioma='es', request=None):
-    """Crea la cita con sus participantes y bloques. Llamar dentro de `transaction.atomic()`."""
+               solicitud=None, asignada_por='coordinador', idioma='es', plataforma='google', request=None):
+    """Crea la cita con sus participantes y bloques. Llamar dentro de `transaction.atomic()`. `plataforma` es
+    donde se genera la videollamada, en la cuenta del organizador; si está caída, la cita igual se crea.
+    Si el equipo asigna por persona, asiste solo el organizador (más los en copia) y se avanza la rotación;
+    el organizador lo elige `funciones_asignacion.organizador_para`."""
     if fin <= inicio:
         raise ValueError('La hora final debe ser posterior a la inicial.')
-    responsables = responsables_de(equipo) if equipo else []
+    por_persona = equipo is not None and equipo.modo_asignacion == 'persona'
+    responsables = responsables_de(equipo) if equipo and not por_persona else []
     copias = copias_de(equipo) if equipo else []
     obligatorios = list({u.pk: u for u in [organizador] + responsables}.values())
     from autenticacion.models import Usuario
@@ -116,7 +122,7 @@ def crear_cita(*, cliente, inicio, fin, organizador, titulo, equipo=None, proyec
     sesion = Cita.objects.filter(status=True, cliente=cliente).exclude(estado='cancelada').count() + 1
     cita = Cita(codigo=codigo_cita(), solicitud=solicitud, cliente=cliente, producto=producto, proyecto=proyecto,
                 equipo=equipo, organizador=organizador, titulo=titulo, inicio=inicio, fin=fin, estado='confirmada',
-                asignada_por=asignada_por, numero_sesion=sesion, idioma=idioma)
+                asignada_por=asignada_por, numero_sesion=sesion, idioma=idioma, plataforma=plataforma)
     cita.save(request)
     ParticipanteCita(cita=cita, usuario=organizador, rol='organizador').save(request)
     for u in responsables:
@@ -127,6 +133,8 @@ def crear_cita(*, cliente, inicio, fin, organizador, titulo, equipo=None, proyec
             ParticipanteCita(cita=cita, usuario=u, rol='copia').save(request)
     for u in obligatorios:
         BloqueOcupado(usuario=u, inicio=inicio, fin=fin, fuente='cita', cita=cita).save(request)
+    if por_persona:
+        type(equipo).objects.filter(pk=equipo.pk).update(ultimo_asignado=organizador)
     if solicitud is not None:
         solicitud.estado = 'asignada'
         solicitud.equipo = solicitud.equipo or equipo
@@ -164,6 +172,11 @@ def _invitados(cita):
 def sincronizar_google(cita):
     """Crea o actualiza el evento en el Google del organizador. Nunca lanza: deja el estado en la cita."""
     cita = Cita.objects.select_related('cliente', 'organizador').get(pk=cita.pk)
+    if cita.plataforma != 'google':
+        cita.sincronizada_google = False
+        cita.error_google = f'{cita.get_plataforma_display()}: la integración todavía no está disponible.'
+        cita.save(update_fields=['sincronizada_google', 'error_google'])
+        return False
     conexion = _conexion_organizador(cita)
     if conexion is None:
         cita.sincronizada_google = False
@@ -190,6 +203,10 @@ def sincronizar_google(cita):
     except funciones_google.ErrorGoogle as ex:
         cita.sincronizada_google = False
         cita.error_google = str(ex)[:300]
+    except Exception as ex:
+        logger.warning('Sincronizar %s con Google falló: %s', cita.codigo, ex)
+        cita.sincronizada_google = False
+        cita.error_google = 'No se pudo sincronizar con Google; se reintentará.'
     cita.save(update_fields=['google_event_id', 'enlace_meet', 'enlace_evento', 'sincronizada_google', 'error_google'])
     invalidar_google(cita.organizador)
     return cita.sincronizada_google
@@ -280,3 +297,9 @@ def limite_pendientes(dias=30):
 def _avisos():
     from . import funciones_avisos_cita
     return funciones_avisos_cita
+
+
+def personas_de(equipo):
+    """Quién puede organizar la cita del equipo: su líder (o el del proyecto) y sus responsables."""
+    lider = equipo.lider or (equipo.proyecto.lider if equipo.proyecto_id else None)
+    return list({u.pk: u for u in ([lider] if lider else []) + responsables_de(equipo)}.values())

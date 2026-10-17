@@ -27,7 +27,7 @@ from . import funciones_avisos_cita, funciones_tokens
 from .funciones_alertas import avisar_solicitud_nueva
 from .funciones_citas import (cancelar_cita, codigo_solicitud, crear_cita, mover_cita, obtener_o_crear_cliente,
                               responsables_de)
-from .funciones_disponibilidad import espacios_comunes_rango
+from .funciones_asignacion import espacios_equipo_rango, organizador_para
 from .funciones_turnos import duracion_turno
 from .models import CapturaTecnica, Cita, Producto, Solicitud
 
@@ -139,7 +139,7 @@ def _espacios_rango(producto, desde, hasta, sesion=None):
     desde = max(desde, minimo.date())
     if desde > hasta:
         return {}
-    por_dia = espacios_comunes_rango(responsables, desde, hasta, t['duracion'], t['margen'], desde_hora=minimo)
+    por_dia = espacios_equipo_rango(equipo, desde, hasta, t['duracion'], t['margen'], desde_hora=minimo)
     if t['limite_dia']:
         rango_ini = datetime.combine(desde, datetime.min.time())
         citas = Counter(Cita.objects.filter(status=True, equipo=equipo, inicio__gte=rango_ini,
@@ -147,15 +147,6 @@ def _espacios_rango(producto, desde, hasta, sesion=None):
                         .exclude(estado='cancelada').values_list('inicio__date', flat=True))
         por_dia = {f: ([] if citas[f] >= t['limite_dia'] else e) for f, e in por_dia.items()}
     return {f: [e for e in espacios if not apartado_por_otro(producto, e, sesion)] for f, espacios in por_dia.items()}
-
-
-def _organizador(equipo):
-    if equipo.lider_id:
-        return equipo.lider
-    responsables = responsables_de(equipo)
-    if responsables:
-        return responsables[0]
-    return equipo.proyecto.lider
 
 
 def _reservas_activas(cliente):
@@ -199,7 +190,11 @@ def reservar(producto, inicio, datos, request=None, sesion=None):
                           mensaje=(datos.get('mensaje') or '')[:2000], motivo=f'Reserva web · {producto}'[:300])
     solicitud.save(request)
     fin = inicio + timedelta(minutes=t['duracion'])
-    cita = crear_cita(cliente=cliente, inicio=inicio, fin=fin, organizador=_organizador(equipo),
+    try:
+        organizador = organizador_para(equipo, inicio, fin)
+    except ValueError:
+        raise ValueError('Ese horario se acaba de ocupar. Elija otro, por favor.')
+    cita = crear_cita(cliente=cliente, inicio=inicio, fin=fin, organizador=organizador,
                       titulo=f'{producto.nombre} · {cliente.nombres}'[:200], equipo=equipo, proyecto=equipo.proyecto,
                       producto=producto, solicitud=solicitud, asignada_por='cliente', idioma=cliente.idioma,
                       request=request)

@@ -34,6 +34,7 @@
                             <td>
                                 {{ l.nombre }}
                                 <div class="agenda-sub">{{ l.proyecto.nombre }}</div>
+                                <span class="badge {% if l.modo_asignacion == 'persona' %}bg-info{% else %}bg-secondary{% endif %} mt-1">{% if l.modo_asignacion == 'persona' %}Reparte: una persona{% else %}Todo el equipo{% endif %}</span>
                             </td>
                             <td>{{ l.lider|default:'Sin líder' }}</td>
                             <td>

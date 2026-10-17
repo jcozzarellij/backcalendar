@@ -5,8 +5,9 @@ from django.db.models import Q
 from django.shortcuts import render
 
 from core.funciones import addData, secure_module
+from .forms import CitaRapidaForm
+from .funciones_asignacion import es_por_persona, espacios_equipo_rango
 from .funciones_citas import responsables_de
-from .funciones_disponibilidad import espacios_comunes
 from .funciones_permisos import equipos_visibles, es_admin_proyectos
 from .funciones_portal import tiempos_de
 from .models import Solicitud
@@ -17,7 +18,7 @@ from .models import Solicitud
 def colaView(request):
     data = {
         'titulo': 'Cola de solicitudes',
-        'descripcion': 'Solicitudes que no encontraron un espacio común dentro de su ventana. Elige un espacio y el sistema crea la cita con Meet y envía la invitación.',
+        'descripcion': 'Solicitudes que no encontraron un espacio común dentro de su ventana. Elige un espacio, a quién se asigna y en qué plataforma; el sistema crea la cita con su videollamada y envía la invitación.',
         'modulo': 'Agenda',
         'ruta': request.path,
         'fecha': str(date.today()),
@@ -37,23 +38,17 @@ def colaView(request):
             if equipo is not None:
                 t = tiempos_de(actual.producto) if actual.producto_id else None
                 duracion = t['duracion'] if t else None
-                responsables = responsables_de(equipo)
-                fecha = date.today()
                 minimo = datetime.now()
-                for _ in range(14):
-                    for h in espacios_comunes(responsables, fecha, duracion, t['margen'] if t else 0,
-                                              desde_hora=minimo if fecha == minimo.date() else None):
-                        sugeridos.append(h)
-                        if len(sugeridos) >= 6:
-                            break
-                    if len(sugeridos) >= 6:
-                        break
-                    fecha += timedelta(days=1)
+                por_dia = espacios_equipo_rango(equipo, minimo.date(), minimo.date() + timedelta(days=13), duracion,
+                                                t['margen'] if t else 0, desde_hora=minimo)
+                sugeridos = [h for _, horas in sorted(por_dia.items()) for h in horas][:6]
             actual.ventana_hasta = actual.fecha_registro + timedelta(hours=48)
         data.update({
             'cola': cola, 'actual': actual, 'equipo': equipo, 'sugeridos': sugeridos, 'duracion': duracion or 40,
             'equipos': visibles.select_related('proyecto'),
             'responsables': responsables_de(equipo) if equipo else [],
+            'por_persona': es_por_persona(equipo),
+            'plataformas': CitaRapidaForm()['plataforma'],
         })
         return render(request, 'agenda/cola/listado.html', data)
     return render(request, 'agenda/cola/listado.html', data)

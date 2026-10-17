@@ -14,8 +14,8 @@ from core.funciones import addData, log, paginador, secure_module
 from core.funciones_adicionales import salva_logs
 from .forms import CitaRapidaForm, SolicitudForm
 from .funciones_alertas import avisar_solicitud_nueva
-from .funciones_citas import crear_cita, responsables_de
-from .funciones_disponibilidad import primer_espacio
+from .funciones_asignacion import candidatos, es_por_persona, organizador_para, primer_espacio_equipo
+from .funciones_citas import crear_cita
 from .funciones_permisos import equipos_visibles, es_admin_proyectos
 from .funciones_portal import tiempos_de
 from .models import ESTADO_SOLICITUD, Equipo, Solicitud
@@ -76,12 +76,16 @@ def solicitudView(request):
                     equipo = visibles.filter(pk=int(equipo_pk)).first() if equipo_pk.isdigit() else filtro.equipo
                     if equipo is None:
                         raise ValueError('Elige el equipo que atenderá la solicitud.')
-                    organizador = equipo.lider or equipo.proyecto.lider or request.user
                     inicio = d['inicio']
-                    cita = crear_cita(cliente=filtro.cliente, inicio=inicio, fin=inicio + timedelta(minutes=d['duracion']),
+                    fin = inicio + timedelta(minutes=d['duracion'])
+                    organizador_pk = request.POST.get('organizador', '')
+                    organizador = organizador_para(equipo, inicio, fin, elegido=organizador_pk if organizador_pk.isdigit() else None,
+                                                   respaldo=request.user)
+                    cita = crear_cita(cliente=filtro.cliente, inicio=inicio, fin=fin,
                                       organizador=organizador, titulo=d['titulo'], equipo=equipo, proyecto=equipo.proyecto,
                                       producto=d.get('producto') or filtro.producto, solicitud=filtro,
-                                      asignada_por='coordinador', idioma=filtro.cliente.idioma, request=request)
+                                      asignada_por='coordinador', idioma=filtro.cliente.idioma,
+                                      plataforma=d['plataforma'], request=request)
                     log(f'Asignó la solicitud {filtro.codigo} a la cita {cita.codigo}', request, 'change', obj=filtro.id)
                     messages.success(request, f'Cita {cita.codigo} creada para el {inicio:%d/%m/%Y %H:%M}.')
                     res_json.append({'error': False, 'to': f'/agenda/citas/{cita.pk}/'})
@@ -136,7 +140,7 @@ def solicitudView(request):
                     if equipo is not None:
                         t = tiempos_de(solicitud.producto) if solicitud.producto_id else None
                         duracion = t['duracion'] if t else None
-                        sugerido = primer_espacio(responsables_de(equipo), datetime.now(), duracion=duracion,
+                        sugerido = primer_espacio_equipo(equipo, datetime.now(), duracion=duracion,
                                                   margen=t['margen'] if t else 0, antelacion_horas=0)
                     data['form'] = CitaRapidaForm(initial={
                         'nombres': solicitud.cliente.nombres, 'correo': solicitud.cliente.correo,
@@ -151,6 +155,18 @@ def solicitudView(request):
                     data['sugerido'] = sugerido
                     template = get_template('agenda/solicitud/form_asignar.html')
                     return JsonResponse({'result': True, 'data': template.render(data)})
+                elif action == 'candidatos':
+                    equipo_pk = request.GET.get('equipo', '')
+                    equipo = visibles.select_related('proyecto', 'lider').filter(pk=int(equipo_pk)).first() if equipo_pk.isdigit() else None
+                    try:
+                        inicio = datetime.strptime(request.GET.get('inicio', '')[:16], '%Y-%m-%dT%H:%M')
+                        duracion = max(5, int(request.GET.get('duracion') or 40))
+                    except ValueError:
+                        inicio, duracion = None, 40
+                    if equipo is None or inicio is None:
+                        return JsonResponse({'result': True, 'personas': [], 'por_persona': es_por_persona(equipo)})
+                    return JsonResponse({'result': True, 'por_persona': es_por_persona(equipo),
+                                         'personas': candidatos(equipo, inicio, inicio + timedelta(minutes=duracion))})
                 return JsonResponse({'result': False, 'message': 'Acción no permitida.'})
             except Exception as ex:
                 salva_logs(request, __file__, request.method, action, type(ex).__name__,
