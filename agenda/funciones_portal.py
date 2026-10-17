@@ -8,6 +8,8 @@
 - `pedir_llamada(producto, datos, request)` — solicitud en cola con teléfono.
 - `cancelar_por_cliente` / `reprogramar_por_cliente` — acciones de la página de la cita.
 - `qr_data_uri(texto)` — QR en SVG para la página de la cita.
+- `productos_publicos(portal, idioma, t)` / `productos_destacados(portal, idioma, t)` — tickets del catálogo y del landing.
+- `atencion_de(producto, t)` — «40 minutos, por videollamada».
 """
 from collections import Counter
 from datetime import datetime, timedelta
@@ -16,6 +18,7 @@ import segno
 from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction
+from django.db.models import Prefetch, prefetch_related_objects
 from django.template.loader import get_template
 from django.utils.formats import date_format
 
@@ -289,6 +292,49 @@ def nombre_producto(producto, idioma='es'):
 
 def descripcion_producto(producto, idioma='es'):
     return (getattr(producto, f'descripcion_{idioma}', '') if idioma != 'es' else '') or producto.descripcion
+
+
+DESTACADOS_LANDING = 4
+
+
+def atencion_de(producto, t, tiempos=None):
+    """Texto «40 minutos, por videollamada» del producto, con su duración heredada."""
+    return f"{(tiempos or tiempos_de(producto))['duracion']} {t['minutos_video']}"
+
+
+def productos_raiz(portal):
+    """Productos raíz que el público puede agendar: la única definición de «producto visible»."""
+    return Producto.objects.filter(status=True, activo=True, portal=portal, padre__isnull=True).order_by('orden', 'nombre')
+
+
+def _tarjetas(productos, idioma, t):
+    prefetch_related_objects(productos, Prefetch(
+        'subproductos', queryset=Producto.objects.filter(status=True, activo=True).order_by('orden', 'nombre'),
+        to_attr='partes_activas'))
+    return [{
+        'nombre': nombre_producto(p, idioma),
+        'descripcion': descripcion_producto(p, idioma),
+        'slug': p.slug,
+        'sitio_web': p.sitio_web,
+        'atencion': atencion_de(p, t),
+        'partes': [{'nombre': nombre_producto(s, idioma), 'descripcion': descripcion_producto(s, idioma), 'slug': s.slug}
+                   for s in p.partes_activas],
+    } for p in productos]
+
+
+def productos_publicos(portal, idioma, t):
+    """Tickets de todos los productos raíz visibles, con sus partes, ya traducidos."""
+    return _tarjetas(list(productos_raiz(portal)), idioma, t) if portal else []
+
+
+def productos_destacados(portal, idioma, t):
+    """Tickets del landing y total de productos visibles, en una consulta: los marcados como destacados
+    (máximo `DESTACADOS_LANDING`) o, si no hay ninguno, los primeros por orden."""
+    if portal is None:
+        return [], 0
+    raices = list(productos_raiz(portal))
+    elegidos = [p for p in raices if p.destacado][:DESTACADOS_LANDING] or raices[:DESTACADOS_LANDING]
+    return _tarjetas(elegidos, idioma, t), len(raices)
 
 
 def calendario_mes(producto, primero, cupos, sesion=None):

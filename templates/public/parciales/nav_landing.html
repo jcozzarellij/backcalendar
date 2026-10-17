@@ -1,0 +1,11 @@
+<nav class="ld-nav" aria-label="{{ t.ld_productos }}">
+    <a href="/catalogo/" class="ld-nav-enlace"{% if ruta == '/catalogo/' %} aria-current="page"{% endif %}>{{ t.ld_catalogo }}</a>
+    <a href="/#ld-empresa" class="ld-nav-enlace ld-nav-ancla">{{ t.ld_empresas }}</a>
+    <span class="ld-nav-separador" aria-hidden="true"></span>
+    {% include 'public/parciales/idioma.html' %}
+    {% if user.is_authenticated %}
+        {% include 'public/parciales/usuario.html' %}
+    {% else %}
+        <a href="/login/" class="ld-ingresar"><i class="fas fa-arrow-right-to-bracket" aria-hidden="true"></i><span class="ld-ingresar-texto">{{ t.ld_ingresar }}</span></a>
+    {% endif %}
+</nav>

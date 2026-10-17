@@ -8,9 +8,7 @@
 
 {% block nav_publica %}
     <nav class="pb-idiomas" aria-label="Idioma">
-        <a href="?idioma=es{% if ventana %}&ventana=1{% endif %}" class="pb-idioma {% if idioma == 'es' %}activo{% endif %}" hreflang="es"><img src="/static/images/banderas/es.svg" alt="" width="20" height="20">Español</a>
-        <a href="?idioma=en{% if ventana %}&ventana=1{% endif %}" class="pb-idioma {% if idioma == 'en' %}activo{% endif %}" hreflang="en"><img src="/static/images/banderas/en.svg" alt="" width="20" height="20">English</a>
-        <a href="?idioma=pt{% if ventana %}&ventana=1{% endif %}" class="pb-idioma {% if idioma == 'pt' %}activo{% endif %}" hreflang="pt"><img src="/static/images/banderas/pt.svg" alt="" width="20" height="20">Português</a>
+        {% include 'public/parciales/idioma.html' %}
     </nav>
 {% endblock %}
 
@@ -151,7 +149,7 @@
             <p class="pt-resumen-titulo">{{ t.su_cita }}</p>
             <p class="pt-resumen-etq">{{ t.producto }}</p>
             <p class="pt-resumen-val">{{ nombre_producto }}</p>
-            <p class="pt-resumen-detalle">{{ tiempos.duracion }} {{ t.minutos_video }}</p>
+            <p class="pt-resumen-detalle">{{ atencion }}</p>
             <div class="pt-resumen-linea"></div>
             <p class="pt-resumen-etq"><i class="far fa-calendar" aria-hidden="true"></i>{{ t.dia }}</p>
             <p class="pt-resumen-val" id="pt-res-dia">{{ t.por_elegir }}</p>
@@ -172,5 +170,6 @@
 {% endblock %}
 
 {% block jscript %}
+    <script src="/static/js/public/menus.js?v1.0"></script>
     <script src="/static/js/public/portal.js?v2.0"></script>
 {% endblock %}

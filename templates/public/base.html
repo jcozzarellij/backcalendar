@@ -7,11 +7,11 @@
     {% if favicon %}<link href="{{ favicon }}" rel="shortcut icon"/>{% endif %}
     <link href="/static/fonts/fontawesome/css/all.css?v=6.1.1" rel="stylesheet"/>
     <link href="/static/assets_riz/css/bootstrap.css?v1.1" rel="stylesheet" type="text/css"/>
-    <link rel="stylesheet" href="/static/fonts/turno_fuentes.css?v1.2">
-    <link rel="stylesheet" href="/static/css/public/publico.css?v2.1"/>
+    <link rel="stylesheet" href="/static/fonts/turno_fuentes.css?v1.3">
+    <link rel="stylesheet" href="/static/css/public/publico.css?v2.7"/>
     {% block head %}{% endblock %}
 </head>
-<body class="pb-body{% if ventana %} pb-ventana{% endif %}">
+<body class="pb-body{% if ventana %} pb-ventana{% endif %}{% block body_clase %}{% endblock %}">
 {% if not ventana %}
 <header class="pb-header">
     <div class="container pb-header-inner">

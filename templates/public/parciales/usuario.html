@@ -1,0 +1,20 @@
+<details class="pb-menu pb-usuario-menu">
+    <summary title="{{ t.ld_cuenta }}">
+        <img src="{{ request.user.get_foto_gris }}" alt="" class="pb-usuario-foto" width="40" height="40">
+        <span class="visually-hidden">{{ t.ld_cuenta }}: {{ user.get_full_name|default:user.username }}</span>
+    </summary>
+    <ul class="pb-menu-lista">
+        <li class="pb-menu-cabecera">
+            <img src="{{ request.user.get_foto_gris }}" alt="" class="pb-usuario-foto-grande" width="44" height="44">
+            <span class="pb-menu-cabecera-texto">
+                <span class="pb-menu-titulo">{{ user.get_full_name|default:user.username }}</span>
+                {% if user.email %}<span class="pb-menu-sub">{{ user.email }}</span>{% endif %}
+            </span>
+        </li>
+        {% if user.is_staff %}
+            <li><a href="/panel/"><i class="fas fa-table-columns" aria-hidden="true"></i>{{ t.ld_panel }}</a></li>
+            <li><a href="/perfilpanel/"><i class="fas fa-user" aria-hidden="true"></i>{{ t.ld_perfil }}</a></li>
+        {% endif %}
+        <li><a href="/logout/" class="pb-menu-salir"><i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i>{{ t.ld_salir }}</a></li>
+    </ul>
+</details>

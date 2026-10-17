@@ -1,0 +1,5 @@
+{% if contacto_telefono %}
+    <p class="{{ clase }}"><strong>{{ t.ld_llamar_titulo }}</strong> {{ t.ld_llamar_texto }} <a href="tel:{{ contacto_telefono|cut:' ' }}" class="ld-ayuda-tel">{{ contacto_telefono }}</a></p>
+{% elif contacto_correo %}
+    <p class="{{ clase }}"><strong>{{ t.ld_escribir_titulo }}</strong> {{ t.ld_escribir_texto }} <a href="mailto:{{ contacto_correo }}" class="ld-ayuda-tel">{{ contacto_correo }}</a></p>
+{% endif %}

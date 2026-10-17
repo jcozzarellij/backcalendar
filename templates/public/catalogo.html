@@ -1,0 +1,45 @@
+{% extends 'public/base_landing.html' %}
+
+{% block meta_pagina %}
+    <meta name="description" content="{{ t.ct_bajada }}">
+{% endblock %}
+
+{% block pagina %}
+<section class="ct-cabecera" aria-labelledby="ct-titulo">
+    <a href="/" class="ct-volver"><i class="fas fa-arrow-left" aria-hidden="true"></i>{{ t.ct_volver }}</a>
+    <div class="row gx-3 gy-4 align-items-end">
+        <div class="col-lg-7">
+            <h1 id="ct-titulo" class="ld-titulo ct-titulo">{{ t.ct_titulo }}</h1>
+            <p class="ld-bajada">{{ t.ct_bajada }}</p>
+        </div>
+        {% if productos|length > 1 %}
+            <div class="col-lg-5">
+                <label for="ct-buscar" class="ct-buscar-etiqueta">{{ t.ct_buscar }}</label>
+                <div class="ct-buscar">
+                    <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                    <input type="search" id="ct-buscar" class="ct-buscar-campo" placeholder="{{ t.ct_buscar_ayuda }}" autocomplete="off" aria-describedby="ct-cuenta">
+                </div>
+                <p class="ct-cuenta" id="ct-cuenta" aria-live="polite" data-sufijo="{{ t.ld_productos_cuenta }}" data-sufijo-uno="{{ t.ld_producto_uno }}">{{ productos|length }} {{ t.ld_productos_cuenta }}</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<section class="ld-destacados" aria-labelledby="ct-titulo">
+    {% if productos %}
+        <ul class="ld-tickets row g-3" id="ct-lista">
+            {% for p in productos %}
+                {% include 'public/parciales/ticket.html' %}
+            {% endfor %}
+        </ul>
+        <p class="ct-sin-resultados" id="ct-sin-resultados" hidden>{{ t.ct_sin_resultados }}</p>
+        {% include 'public/parciales/contacto.html' with clase='ct-ayuda' %}
+    {% else %}
+        {% include 'public/parciales/ticket_vacio.html' with encabezado='h2' %}
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block js_pagina %}
+    <script src="/static/js/public/catalogo.js?v1.1"></script>
+{% endblock %}

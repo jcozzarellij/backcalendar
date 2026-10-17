@@ -1,0 +1,19 @@
+<div class="ld-ticket ld-ticket-vacio">
+    <div class="row g-0">
+        <div class="col-sm ld-ticket-cuerpo">
+            <{{ encabezado|default:'h3' }} class="ld-ticket-nombre">{{ t.ld_vacio_titulo }}</{{ encabezado|default:'h3' }}>
+            {% if contacto_telefono or contacto_correo %}
+                <p class="ld-ticket-desc">{{ t.ld_vacio_contacto }}</p>
+                <ul class="ld-vacio-contacto">
+                    {% if contacto_telefono %}<li><a href="tel:{{ contacto_telefono|cut:' ' }}"><i class="fas fa-phone" aria-hidden="true"></i>{{ contacto_telefono }}</a></li>{% endif %}
+                    {% if contacto_correo %}<li><a href="mailto:{{ contacto_correo }}"><i class="fas fa-envelope" aria-hidden="true"></i>{{ contacto_correo }}</a></li>{% endif %}
+                </ul>
+            {% else %}
+                <p class="ld-ticket-desc">{{ t.ld_vacio_texto }}</p>
+            {% endif %}
+        </div>
+        <div class="col-sm-auto ld-ticket-talon">
+            <p class="ld-vacio-sello"><i class="fas fa-hourglass-half" aria-hidden="true"></i>{{ t.ld_pronto }}</p>
+        </div>
+    </div>
+</div>

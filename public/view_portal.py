@@ -117,6 +117,8 @@ def agendar(request, slug):
                 return JsonResponse({'result': True, 'minutos': funciones_portal.minutos_apartado()})
             return JsonResponse({'result': False, 'message': 'Acción no permitida.'})
         idioma = funciones_portal.idioma_de(request)
+        t = funciones_portal.textos(idioma)
+        tiempos = funciones_portal.tiempos_de(producto)
         dias = _dias(producto)
         cupos = {d['fecha']: d['espacios'] for d in dias}
         try:
@@ -130,13 +132,14 @@ def agendar(request, slug):
             'producto': producto,
             'portal': producto.portal,
             'equipo': funciones_portal.equipo_de(producto),
-            'tiempos': funciones_portal.tiempos_de(producto),
+            'tiempos': tiempos,
             'dias': dias,
             'destacadas': dias[:DESTACADAS],
             'telefono': producto.portal.telefono_atencion,
             'url_horas': request.path,
             'idioma': idioma,
-            't': funciones_portal.textos(idioma),
+            't': t,
+            'atencion': funciones_portal.atencion_de(producto, t, tiempos),
             'nombre_producto': funciones_portal.nombre_producto(producto, idioma),
             'descripcion_producto': funciones_portal.descripcion_producto(producto, idioma),
             'semanas': semanas,

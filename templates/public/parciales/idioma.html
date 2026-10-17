@@ -1,0 +1,13 @@
+<details class="pb-menu pb-idioma-menu">
+    <summary>
+        <i class="fas fa-globe" aria-hidden="true"></i>
+        <span class="visually-hidden">{{ t.idioma }}: </span>
+        <span class="pb-idioma-nombre">{% if idioma == 'en' %}English{% elif idioma == 'pt' %}Português{% else %}Español{% endif %}</span>
+        <i class="fas fa-chevron-down pb-menu-flecha" aria-hidden="true"></i>
+    </summary>
+    <ul class="pb-menu-lista">
+        <li><a href="?idioma=es{% if ventana %}&ventana=1{% endif %}" hreflang="es" lang="es"{% if idioma == 'es' or not idioma %} aria-current="true"{% endif %}><img src="/static/images/banderas/es.svg" alt="" width="22" height="22">Español</a></li>
+        <li><a href="?idioma=en{% if ventana %}&ventana=1{% endif %}" hreflang="en" lang="en"{% if idioma == 'en' %} aria-current="true"{% endif %}><img src="/static/images/banderas/en.svg" alt="" width="22" height="22">English</a></li>
+        <li><a href="?idioma=pt{% if ventana %}&ventana=1{% endif %}" hreflang="pt" lang="pt"{% if idioma == 'pt' %} aria-current="true"{% endif %}><img src="/static/images/banderas/pt.svg" alt="" width="22" height="22">Português</a></li>
+    </ul>
+</details>

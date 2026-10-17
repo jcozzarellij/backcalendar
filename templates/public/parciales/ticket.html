@@ -1,0 +1,39 @@
+<li class="col-12 ld-ticket-celda" data-buscar="{{ p.nombre }} {{ p.descripcion }}{% for s in p.partes %} {{ s.nombre }} {{ s.descripcion }}{% endfor %}">
+    <article class="ld-ticket">
+        <div class="row g-0 h-100">
+            <div class="{% if p.partes %}col-lg-5{% else %}col-sm{% endif %} ld-ticket-cuerpo">
+                <h3 class="ld-ticket-nombre">{{ p.nombre }}</h3>
+                {% if p.descripcion %}<p class="ld-ticket-desc">{{ p.descripcion }}</p>{% endif %}
+                <p class="ld-ticket-meta">
+                    <span class="ld-ticket-dato"><i class="fas fa-video" aria-hidden="true"></i>{{ p.atencion }}</span>
+                    {% if p.sitio_web %}
+                        <a href="{{ p.sitio_web }}" class="ld-ticket-sitio" target="_blank" rel="noopener">{{ t.ld_ver_sitio }}<span class="visually-hidden"> {{ p.nombre }} ({{ t.ld_nueva_pestana }})</span><i class="fas fa-arrow-up-right-from-square ms-2" aria-hidden="true"></i></a>
+                    {% endif %}
+                </p>
+            </div>
+            {% if p.partes %}
+                <div class="col-lg-7 ld-ticket-talon ld-ticket-partes">
+                    <ul class="row g-2">
+                        {% for s in p.partes %}
+                            <li class="col-md-6">
+                                <a href="/agendar/{{ s.slug }}/" class="ld-parte">
+                                    <span class="ld-parte-texto">
+                                        <span class="ld-parte-nombre">{{ s.nombre }}</span>
+                                        {% if s.descripcion %}<span class="ld-parte-desc">{{ s.descripcion }}</span>{% endif %}
+                                    </span>
+                                    <span class="ld-parte-accion">{{ t.ld_agendar }}<span class="visually-hidden"> {{ p.nombre }} · {{ s.nombre }}</span></span>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% else %}
+                <div class="col-sm-auto ld-ticket-talon">
+                    <a href="/agendar/{{ p.slug }}/" class="btn btn-success ld-agendar">
+                        <i class="fas fa-calendar-check" aria-hidden="true"></i>{{ t.ld_agendar }}<span class="visually-hidden"> {{ p.nombre }}</span>
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </article>
+</li>

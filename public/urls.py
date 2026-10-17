@@ -1,7 +1,7 @@
 from django.urls import path, re_path
 
 from .view_changepass import changepass
-from .view_landing import landing
+from .view_landing import catalogo, landing
 from .view_restaurar import restaurar
 from .view_login import login_tienda, logout_tienda
 from .view_portal import agendar, cita_cliente, conectar, incrustar
@@ -10,6 +10,7 @@ from .view_terminoscondiciones import proteccion_datos, terminosycondiciones
 
 urlpatterns = [
     path('', landing),
+    path('catalogo/', catalogo),
     re_path(r'^login/', login_tienda),
     re_path(r'^logout/', logout_tienda),
     re_path(r'^restorepass/', restaurar),
