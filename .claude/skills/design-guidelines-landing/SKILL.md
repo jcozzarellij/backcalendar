@@ -10,7 +10,7 @@ Cada producto se presenta como un **ticket** de mostrador y el cliente solo puls
 Fuentes de verdad, en este orden:
 
 - Tokens: bloque `:root` de `static/css/public/landing.css`.
-- Sistema y reglas de marca: `DESIGN.md` (sección Overview, párrafo «Landing pública»).
+- Tokens en el frontmatter de `DESIGN.md`; sistema y reglas de marca: `DESIGN-landing.md`.
 - Contrato de dirección: `.impeccable/surfaces/templates-public-landing-html.md`.
 - Referencia visual plana: `static/referencias/landing_base.html`, generada con `python scripts/generar_referencia_landing.py`.
 
