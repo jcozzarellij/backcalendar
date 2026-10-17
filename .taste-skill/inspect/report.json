@@ -1,0 +1,2294 @@
+{
+ "url": "http://127.0.0.1:8008/",
+ "at": "2026-10-17T01:14:25.095Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 3,
+   "filled": [
+    0.49,
+    0.72,
+    0.61
+   ],
+   "motion": {
+    "elements": 8,
+    "css": 8,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 2289,
+     "screens": 2.5,
+     "words": 276,
+     "img": 6,
+     "video": 0,
+     "canvas": 0,
+     "svg": 0,
+     "sections": 4,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 1,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "hero_videollamada.jpg"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": []
+    },
+    "hero": {
+     "text": "Agende una videollamada.",
+     "words": 3,
+     "chars": 24,
+     "lines": 2,
+     "size": 86.4,
+     "vw": 6,
+     "font": "Manrope",
+     "weight": 800,
+     "tracking": -0.04,
+     "leading": 0.98,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "left",
+     "widthRatio": 0.52,
+     "top": 244,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Agende una videollamada.",
+     "words": 3,
+     "lines": 2,
+     "size": 86.4,
+     "font": "Manrope"
+    },
+    "headings": [
+     {
+      "text": "Agende una videollamada.",
+      "words": 3,
+      "chars": 24,
+      "lines": 2,
+      "size": 86.4,
+      "vw": 6,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.52,
+      "top": 244,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Productos destacados",
+      "words": 2,
+      "chars": 20,
+      "lines": 1,
+      "size": 38.2,
+      "vw": 2.7,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.28,
+      "top": 754,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Kawana Proctoring",
+      "words": 2,
+      "chars": 17,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 2.2,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.69,
+      "top": 865,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Moodle con IA",
+      "words": 3,
+      "chars": 13,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 2.2,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.69,
+      "top": 1042,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Moodle",
+      "words": 1,
+      "chars": 6,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 2.2,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.33,
+      "top": 1218,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Servidores",
+      "words": 1,
+      "chars": 10,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 2.2,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.69,
+      "top": 1424,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Turno, también para su empresa",
+      "words": 5,
+      "chars": 30,
+      "lines": 1,
+      "size": 38.2,
+      "vw": 2.7,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.55,
+      "top": 1884,
+      "tag": "h2",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 7,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 2,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.86,
+       "mono": false
+      },
+      {
+       "family": "Manrope",
+       "share": 0.14,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      14,
+      16,
+      17,
+      18,
+      19,
+      21,
+      22,
+      25,
+      31,
+      38,
+      86
+     ],
+     "sizeCount": 11,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 19,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 9
+     },
+     "measureChars": 60,
+     "max": {
+      "size": 86.4,
+      "vw": 6,
+      "font": "Manrope",
+      "text": "Agende una videollamada."
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.01,
+     "centerShare": 0.06,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#e6f0f5",
+     "bodyBgHsl": {
+      "h": 200,
+      "s": 0.43,
+      "l": 0.93
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#005082",
+       "top": 1749,
+       "hsl": {
+        "h": 203,
+        "s": 1,
+        "l": 0.25
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#1a2b3c",
+       "share": 0.4
+      },
+      {
+       "color": "#3a4b5c",
+       "share": 0.27
+      },
+      {
+       "color": "#e3eef6",
+       "share": 0.13
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.11
+      },
+      {
+       "color": "#005082",
+       "share": 0.09
+      }
+     ],
+     "button": {
+      "bg": "#3f7f00",
+      "hsl": {
+       "h": 90,
+       "s": 1,
+       "l": 0.25
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 7,
+     "inHero": 4,
+     "radius": "pill",
+     "height": 56,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Iniciar sesión",
+      "Elegir el producto",
+      "Agendar Kawana Proctoring",
+      "Aa Letra más grande"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "section.ld-pasos 1296px",
+      "footer.pb-footer 1440px"
+     ],
+     "outlinedBoxes": 1,
+     "dashed": 4,
+     "blurred": 1,
+     "roundedBoxes": 8,
+     "boxRadius": 20,
+     "squareMedia": 0,
+     "roundedMedia": 1,
+     "mediaRadius": 176,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.22
+     }
+    ],
+    "nav": {
+     "links": 6,
+     "fixed": true,
+     "height": 84,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "font awesome 6 free",
+     "manrope",
+     "dm sans"
+    ]
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 1024,
+   "height": 768,
+   "load": "load",
+   "screens": 3,
+   "filled": [
+    0.61,
+    0.64,
+    0.59
+   ],
+   "motion": {
+    "elements": 8,
+    "css": 8,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1024,
+     "h": 768
+    },
+    "page": {
+     "height": 2172,
+     "screens": 2.8,
+     "words": 276,
+     "img": 6,
+     "video": 0,
+     "canvas": 0,
+     "svg": 0,
+     "sections": 4,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 1,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "hero_videollamada.jpg"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": []
+    },
+    "hero": {
+     "text": "Agende una videollamada.",
+     "words": 3,
+     "chars": 24,
+     "lines": 2,
+     "size": 61.4,
+     "vw": 6,
+     "font": "Manrope",
+     "weight": 800,
+     "tracking": -0.04,
+     "leading": 0.98,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "left",
+     "widthRatio": 0.52,
+     "top": 130,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Agende una videollamada.",
+     "words": 3,
+     "lines": 2,
+     "size": 61.4,
+     "font": "Manrope"
+    },
+    "headings": [
+     {
+      "text": "Agende una videollamada.",
+      "words": 3,
+      "chars": 24,
+      "lines": 2,
+      "size": 61.4,
+      "vw": 6,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.52,
+      "top": 130,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Productos destacados",
+      "words": 2,
+      "chars": 20,
+      "lines": 1,
+      "size": 33.2,
+      "vw": 3.2,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.34,
+      "top": 583,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Kawana Proctoring",
+      "words": 2,
+      "chars": 17,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 3.1,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.61,
+      "top": 688,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Moodle con IA",
+      "words": 3,
+      "chars": 13,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 3.1,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.61,
+      "top": 865,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Moodle",
+      "words": 1,
+      "chars": 6,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 3.1,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.32,
+      "top": 1042,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Servidores",
+      "words": 1,
+      "chars": 10,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 3.1,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.61,
+      "top": 1278,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Turno, también para su empresa",
+      "words": 5,
+      "chars": 30,
+      "lines": 1,
+      "size": 33.2,
+      "vw": 3.2,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.54,
+      "top": 1784,
+      "tag": "h2",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 7,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 2,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.86,
+       "mono": false
+      },
+      {
+       "family": "Manrope",
+       "share": 0.14,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      14,
+      16,
+      17,
+      18,
+      19,
+      21,
+      22,
+      25,
+      31,
+      33,
+      61
+     ],
+     "sizeCount": 11,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 19,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 9
+     },
+     "measureChars": 49,
+     "max": {
+      "size": 61.4,
+      "vw": 6,
+      "font": "Manrope",
+      "text": "Agende una videollamada."
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.01,
+     "centerShare": 0.06,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#e6f0f5",
+     "bodyBgHsl": {
+      "h": 200,
+      "s": 0.43,
+      "l": 0.93
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#005082",
+       "top": 1660,
+       "hsl": {
+        "h": 203,
+        "s": 1,
+        "l": 0.25
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#1a2b3c",
+       "share": 0.4
+      },
+      {
+       "color": "#3a4b5c",
+       "share": 0.27
+      },
+      {
+       "color": "#e3eef6",
+       "share": 0.13
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.11
+      },
+      {
+       "color": "#005082",
+       "share": 0.09
+      }
+     ],
+     "button": {
+      "bg": "#3f7f00",
+      "hsl": {
+       "h": 90,
+       "s": 1,
+       "l": 0.25
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 7,
+     "inHero": 4,
+     "radius": "pill",
+     "height": 56,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Iniciar sesión",
+      "Elegir el producto",
+      "Agendar Kawana Proctoring",
+      "Aa Letra más grande"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "section.ld-pasos 936px",
+      "footer.pb-footer 1024px"
+     ],
+     "outlinedBoxes": 1,
+     "dashed": 4,
+     "blurred": 1,
+     "roundedBoxes": 8,
+     "boxRadius": 20,
+     "squareMedia": 0,
+     "roundedMedia": 1,
+     "mediaRadius": 176,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.19
+     }
+    ],
+    "nav": {
+     "links": 6,
+     "fixed": true,
+     "height": 84,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "font awesome 6 free",
+     "manrope",
+     "dm sans"
+    ]
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 3,
+   "filled": [
+    0.66,
+    0.76,
+    0.6
+   ],
+   "motion": {
+    "elements": 8,
+    "css": 8,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 2843,
+     "screens": 2.8,
+     "words": 274,
+     "img": 6,
+     "video": 0,
+     "canvas": 0,
+     "svg": 0,
+     "sections": 4,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 1,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "hero_videollamada.jpg"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": []
+    },
+    "hero": {
+     "text": "Agende una videollamada.",
+     "words": 3,
+     "chars": 24,
+     "lines": 1,
+     "size": 46.1,
+     "vw": 6,
+     "font": "Manrope",
+     "weight": 800,
+     "tracking": -0.04,
+     "leading": 0.98,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "center",
+     "widthRatio": 0.91,
+     "top": 119,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Agende una videollamada.",
+     "words": 3,
+     "lines": 1,
+     "size": 46.1,
+     "font": "Manrope"
+    },
+    "headings": [
+     {
+      "text": "Agende una videollamada.",
+      "words": 3,
+      "chars": 24,
+      "lines": 1,
+      "size": 46.1,
+      "vw": 6,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.91,
+      "top": 119,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Productos destacados",
+      "words": 2,
+      "chars": 20,
+      "lines": 1,
+      "size": 30.1,
+      "vw": 3.9,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.41,
+      "top": 854,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Kawana Proctoring",
+      "words": 2,
+      "chars": 17,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 4.1,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.51,
+      "top": 956,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Moodle con IA",
+      "words": 3,
+      "chars": 13,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 4.1,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.51,
+      "top": 1164,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Moodle",
+      "words": 1,
+      "chars": 6,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 4.1,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.83,
+      "top": 1400,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Servidores",
+      "words": 1,
+      "chars": 10,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 4.1,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.51,
+      "top": 1766,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Turno, también para su empresa",
+      "words": 5,
+      "chars": 30,
+      "lines": 1,
+      "size": 30.1,
+      "vw": 3.9,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.83,
+      "top": 2376,
+      "tag": "h2",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 7,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 2,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.86,
+       "mono": false
+      },
+      {
+       "family": "Manrope",
+       "share": 0.14,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      14,
+      16,
+      17,
+      18,
+      19,
+      21,
+      22,
+      25,
+      30,
+      31,
+      46
+     ],
+     "sizeCount": 11,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 19,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 9
+     },
+     "measureChars": 60,
+     "max": {
+      "size": 46.1,
+      "vw": 6,
+      "font": "Manrope",
+      "text": "Agende una videollamada."
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.01,
+     "centerShare": 0.06,
+     "smallText": 0
+    },
+    "eyebrows": [
+     {
+      "text": "Foto: ,",
+      "above": "Productos destacados",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 13.7,
+      "top": 806
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#e6f0f5",
+     "bodyBgHsl": {
+      "h": 200,
+      "s": 0.43,
+      "l": 0.93
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#d6e6ef",
+       "top": 397,
+       "hsl": {
+        "h": 202,
+        "s": 0.44,
+        "l": 0.89
+       }
+      },
+      {
+       "color": "#ffffff",
+       "top": 1377,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      },
+      {
+       "color": "#005082",
+       "top": 2260,
+       "hsl": {
+        "h": 203,
+        "s": 1,
+        "l": 0.25
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#1a2b3c",
+       "share": 0.39
+      },
+      {
+       "color": "#3a4b5c",
+       "share": 0.28
+      },
+      {
+       "color": "#e3eef6",
+       "share": 0.13
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.11
+      },
+      {
+       "color": "#005082",
+       "share": 0.09
+      }
+     ],
+     "button": {
+      "bg": "#3f7f00",
+      "hsl": {
+       "h": 90,
+       "s": 1,
+       "l": 0.25
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 7,
+     "inHero": 4,
+     "radius": "pill",
+     "height": 56,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Iniciar sesión",
+      "Elegir el producto",
+      "Agendar Kawana Proctoring",
+      "Aa Letra más grande"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "section.ld-pasos 696px",
+      "footer.pb-footer 768px"
+     ],
+     "outlinedBoxes": 1,
+     "dashed": 4,
+     "blurred": 1,
+     "roundedBoxes": 8,
+     "boxRadius": 20,
+     "squareMedia": 0,
+     "roundedMedia": 1,
+     "mediaRadius": 112,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.35
+     }
+    ],
+    "nav": {
+     "links": 5,
+     "fixed": true,
+     "height": 84,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "font awesome 6 free",
+     "manrope",
+     "dm sans"
+    ]
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 5,
+   "filled": [
+    0.71,
+    0.76,
+    0.82,
+    0.74,
+    0.69
+   ],
+   "motion": {
+    "elements": 8,
+    "css": 8,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 3664,
+     "screens": 4.3,
+     "words": 272,
+     "img": 6,
+     "video": 0,
+     "canvas": 0,
+     "svg": 0,
+     "sections": 4,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 1,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "hero_videollamada.jpg"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": []
+    },
+    "hero": {
+     "text": "Agende una videollamada.",
+     "words": 3,
+     "chars": 24,
+     "lines": 2,
+     "size": 42.9,
+     "vw": 11,
+     "font": "Manrope",
+     "weight": 800,
+     "tracking": -0.04,
+     "leading": 0.98,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "center",
+     "widthRatio": 0.94,
+     "top": 116,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Agende una videollamada.",
+     "words": 3,
+     "lines": 2,
+     "size": 42.9,
+     "font": "Manrope"
+    },
+    "headings": [
+     {
+      "text": "Agende una videollamada.",
+      "words": 3,
+      "chars": 24,
+      "lines": 2,
+      "size": 42.9,
+      "vw": 11,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.94,
+      "top": 116,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Productos destacados",
+      "words": 2,
+      "chars": 20,
+      "lines": 1,
+      "size": 28.5,
+      "vw": 7.3,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.76,
+      "top": 885,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Kawana Proctoring",
+      "words": 2,
+      "chars": 17,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 8.1,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.78,
+      "top": 984,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Moodle con IA",
+      "words": 3,
+      "chars": 13,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 8.1,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.78,
+      "top": 1296,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Moodle",
+      "words": 1,
+      "chars": 6,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 8.1,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.78,
+      "top": 1636,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Servidores",
+      "words": 1,
+      "chars": 10,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 8.1,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.78,
+      "top": 2237,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Tres pasos y queda agendado",
+      "words": 5,
+      "chars": 27,
+      "lines": 1,
+      "size": 24.7,
+      "vw": 6.3,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.94,
+      "top": 2598,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Turno, también para su empresa",
+      "words": 5,
+      "chars": 30,
+      "lines": 2,
+      "size": 28.5,
+      "vw": 7.3,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.84,
+      "top": 3057,
+      "tag": "h2",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 8,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 2,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.86,
+       "mono": false
+      },
+      {
+       "family": "Manrope",
+       "share": 0.14,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      14,
+      16,
+      17,
+      18,
+      19,
+      21,
+      22,
+      25,
+      29,
+      31,
+      43
+     ],
+     "sizeCount": 11,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 19,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 9
+     },
+     "measureChars": 33,
+     "max": {
+      "size": 42.9,
+      "vw": 11,
+      "font": "Manrope",
+      "text": "Agende una videollamada."
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.01,
+     "centerShare": 0.05,
+     "smallText": 0
+    },
+    "eyebrows": [
+     {
+      "text": "Foto: ,",
+      "above": "Productos destacados",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 13.7,
+      "top": 836
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#e6f0f5",
+     "bodyBgHsl": {
+      "h": 200,
+      "s": 0.43,
+      "l": 0.93
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#ffffff",
+       "top": 961,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      },
+      {
+       "color": "#005082",
+       "top": 2951,
+       "hsl": {
+        "h": 203,
+        "s": 1,
+        "l": 0.25
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#1a2b3c",
+       "share": 0.39
+      },
+      {
+       "color": "#3a4b5c",
+       "share": 0.29
+      },
+      {
+       "color": "#e3eef6",
+       "share": 0.14
+      },
+      {
+       "color": "#005082",
+       "share": 0.09
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.09
+      }
+     ],
+     "button": {
+      "bg": "#3f7f00",
+      "hsl": {
+       "h": 90,
+       "s": 1,
+       "l": 0.25
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 5,
+     "inHero": 1,
+     "radius": "pill",
+     "height": 56,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Elegir el producto"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "section.ld-pasos 366px",
+      "footer.pb-footer 390px"
+     ],
+     "outlinedBoxes": 1,
+     "dashed": 4,
+     "blurred": 1,
+     "roundedBoxes": 8,
+     "boxRadius": 20,
+     "squareMedia": 0,
+     "roundedMedia": 1,
+     "mediaRadius": 72,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.28
+     }
+    ],
+    "nav": {
+     "links": 4,
+     "fixed": true,
+     "height": 84,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "font awesome 6 free",
+     "manrope",
+     "dm sans"
+    ]
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 320,
+   "height": 200,
+   "load": "load",
+   "screens": 12,
+   "filled": [
+    0.74,
+    0.81,
+    0.78,
+    0.88,
+    0.65,
+    0.91,
+    0.83,
+    0.93,
+    0.85,
+    0.91,
+    0.77,
+    0.81
+   ],
+   "motion": {
+    "elements": 8,
+    "css": 8,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 320,
+     "h": 200
+    },
+    "page": {
+     "height": 4156,
+     "screens": 20.8,
+     "words": 272,
+     "img": 6,
+     "video": 0,
+     "canvas": 0,
+     "svg": 0,
+     "sections": 4,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 1,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "hero_videollamada.jpg"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": []
+    },
+    "hero": {
+     "text": "Agende una videollamada.",
+     "words": 3,
+     "chars": 24,
+     "lines": 2,
+     "size": 35.2,
+     "vw": 11,
+     "font": "Manrope",
+     "weight": 800,
+     "tracking": -0.04,
+     "leading": 0.98,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "center",
+     "widthRatio": 0.93,
+     "top": 116,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "Agende una videollamada.",
+     "words": 3,
+     "lines": 2,
+     "size": 35.2,
+     "font": "Manrope"
+    },
+    "headings": [
+     {
+      "text": "Agende una videollamada.",
+      "words": 3,
+      "chars": 24,
+      "lines": 2,
+      "size": 35.2,
+      "vw": 11,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.04,
+      "leading": 0.98,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.93,
+      "top": 116,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "Productos destacados",
+      "words": 2,
+      "chars": 20,
+      "lines": 2,
+      "size": 28.5,
+      "vw": 8.9,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.93,
+      "top": 869,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Kawana Proctoring",
+      "words": 2,
+      "chars": 17,
+      "lines": 2,
+      "size": 31.4,
+      "vw": 9.8,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.74,
+      "top": 1001,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Moodle con IA",
+      "words": 3,
+      "chars": 13,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 9.8,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.74,
+      "top": 1401,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Moodle",
+      "words": 1,
+      "chars": 6,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 9.8,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.74,
+      "top": 1796,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Servidores",
+      "words": 1,
+      "chars": 10,
+      "lines": 1,
+      "size": 31.4,
+      "vw": 9.8,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.74,
+      "top": 2475,
+      "tag": "h3",
+      "kind": "heading"
+     },
+     {
+      "text": "Tres pasos y queda agendado",
+      "words": 5,
+      "chars": 27,
+      "lines": 2,
+      "size": 24.7,
+      "vw": 7.7,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.93,
+      "top": 2919,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "Turno, también para su empresa",
+      "words": 5,
+      "chars": 30,
+      "lines": 2,
+      "size": 28.5,
+      "vw": 8.9,
+      "font": "Manrope",
+      "weight": 800,
+      "tracking": -0.03,
+      "leading": 1.12,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.8,
+      "top": 3463,
+      "tag": "h2",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 8,
+     "maxLines": 2,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 2,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "DM Sans",
+       "share": 0.86,
+       "mono": false
+      },
+      {
+       "family": "Manrope",
+       "share": 0.14,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      14,
+      16,
+      17,
+      18,
+      19,
+      21,
+      22,
+      25,
+      29,
+      31,
+      35
+     ],
+     "sizeCount": 11,
+     "notLoaded": [],
+     "body": {
+      "font": "DM Sans",
+      "size": 19,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 9
+     },
+     "measureChars": 27,
+     "max": {
+      "size": 35.2,
+      "vw": 11,
+      "font": "Manrope",
+      "text": "Agende una videollamada."
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.01,
+     "centerShare": 0.05,
+     "smallText": 0
+    },
+    "eyebrows": [
+     {
+      "text": "Foto: ,",
+      "above": "Productos destacados",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 13.7,
+      "top": 821
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#e6f0f5",
+     "bodyBgHsl": {
+      "h": 200,
+      "s": 0.43,
+      "l": 0.93
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#ffffff",
+       "top": 60,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      },
+      {
+       "color": "#d6e6ef",
+       "top": 555,
+       "hsl": {
+        "h": 202,
+        "s": 0.44,
+        "l": 0.89
+       }
+      },
+      {
+       "color": "#e6f0f5",
+       "top": 2074,
+       "hsl": {
+        "h": 200,
+        "s": 0.43,
+        "l": 0.93
+       }
+      },
+      {
+       "color": "#005082",
+       "top": 3357,
+       "hsl": {
+        "h": 203,
+        "s": 1,
+        "l": 0.25
+       }
+      },
+      {
+       "color": "#3f7f00",
+       "top": 3847,
+       "hsl": {
+        "h": 90,
+        "s": 1,
+        "l": 0.25
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#1a2b3c",
+       "share": 0.39
+      },
+      {
+       "color": "#3a4b5c",
+       "share": 0.29
+      },
+      {
+       "color": "#e3eef6",
+       "share": 0.14
+      },
+      {
+       "color": "#005082",
+       "share": 0.09
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.09
+      }
+     ],
+     "button": {
+      "bg": "#3f7f00",
+      "hsl": {
+       "h": 90,
+       "s": 1,
+       "l": 0.25
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 5,
+     "inHero": 0,
+     "radius": "pill",
+     "height": 56,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": []
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "section.ld-pasos 296px",
+      "footer.pb-footer 320px"
+     ],
+     "outlinedBoxes": 1,
+     "dashed": 4,
+     "blurred": 1,
+     "roundedBoxes": 8,
+     "boxRadius": 20,
+     "squareMedia": 0,
+     "roundedMedia": 1,
+     "mediaRadius": 72,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 4,
+     "fixed": true,
+     "height": 84,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "font awesome 6 free",
+     "manrope",
+     "dm sans"
+    ]
+   },
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "FAIL",
+   "id": "hairline",
+   "width": 1440,
+   "message": "2 thin rule(s)/divider line(s): section.ld-pasos 1296px | footer.pb-footer 1440px",
+   "fix": "Delete. Separate with space, a tone change, or scale. Lines are only for real tables and form fields.",
+   "alsoAt": [
+    1024,
+    768,
+    390,
+    320
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "outlined-box",
+   "width": 1440,
+   "message": "1 box(es) drawn with a 1px outline.",
+   "fix": "Prefer a filled surface or no box.",
+   "alsoAt": [
+    1024,
+    768,
+    390,
+    320
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "dashed",
+   "width": 1440,
+   "message": "4 dashed/dotted border(s).",
+   "fix": "Remove unless it is a real drop zone.",
+   "alsoAt": [
+    1024,
+    768,
+    390,
+    320
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "size-count",
+   "width": 1440,
+   "message": "11 different font sizes (14, 16, 17, 18, 19, 21, 22, 25, 31, 38, 86).",
+   "fix": "A page needs about five: display, heading, lead, body, small.",
+   "alsoAt": [
+    1024,
+    768,
+    390,
+    320
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "few-pictures",
+   "width": 1440,
+   "message": "Only 1 picture(s) on the page (1 photographs, footage or raster images, 0 interface fragments). Drawings in SVG do not count.",
+   "fix": "Find real pictures of the subject's world with scripts/assets.mjs (photographs, archival images, maps, engravings, footage), download them to assets/ and give them room: a hero picture, one per section that has a subject, a full-width band. At least four, usually six to twelve."
+  },
+  {
+   "level": "WARN",
+   "id": "no-footage",
+   "width": 1440,
+   "message": "No video anywhere on the page.",
+   "fix": "Look for one honest clip with scripts/assets.mjs --video (the place, the material, the process) and use it as a muted loop with a poster frame. Defend its absence only if no clip fits the subject."
+  },
+  {
+   "level": "WARN",
+   "id": "still-page",
+   "width": 1440,
+   "message": "Little motion: 8 element(s) moved while the page loaded and scrolled.",
+   "fix": "Give every section an entrance for its parts (not one fade of the whole block) and add one moving picture: a looping clip or a slow move on a photograph."
+  },
+  {
+   "level": "FAIL",
+   "id": "eyebrow",
+   "width": 768,
+   "message": "1 eyebrow/kicker label(s) above headings: \"Foto: ,\" above \"Productos destacados\"",
+   "fix": "Delete them. If the label carried real information, fold it into the headline or the supporting sentence.",
+   "alsoAt": [
+    390,
+    320
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "first-action",
+   "width": 320,
+   "message": "No visible button in the first phone screen.",
+   "fix": "On a phone the first screen still holds the headline, the supporting sentence and the action; move navigation into one row or a menu so it does not push them down."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "D:\\Freelance\\backcalendar\\.taste-skill\\inspect\\desktop-fold.jpg",
+   "pages": [
+    "D:\\Freelance\\backcalendar\\.taste-skill\\inspect\\desktop-page-01.jpg"
+   ]
+  },
+  {
+   "viewport": "tablet",
+   "width": 1024,
+   "fold": "D:\\Freelance\\backcalendar\\.taste-skill\\inspect\\tablet-fold.jpg",
+   "pages": [
+    "D:\\Freelance\\backcalendar\\.taste-skill\\inspect\\tablet-page-01.jpg"
+   ]
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "D:\\Freelance\\backcalendar\\.taste-skill\\inspect\\tablet-fold.jpg",
+   "pages": [
+    "D:\\Freelance\\backcalendar\\.taste-skill\\inspect\\tablet-page-01.jpg"
+   ]
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "D:\\Freelance\\backcalendar\\.taste-skill\\inspect\\mobile-fold.jpg",
+   "pages": [
+    "D:\\Freelance\\backcalendar\\.taste-skill\\inspect\\mobile-page-01.jpg"
+   ]
+  },
+  {
+   "viewport": "mobile",
+   "width": 320,
+   "fold": "D:\\Freelance\\backcalendar\\.taste-skill\\inspect\\mobile-fold.jpg",
+   "pages": [
+    "D:\\Freelance\\backcalendar\\.taste-skill\\inspect\\mobile-page-01.jpg",
+    "D:\\Freelance\\backcalendar\\.taste-skill\\inspect\\mobile-page-02.jpg"
+   ]
+  }
+ ]
+}
