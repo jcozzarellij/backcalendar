@@ -761,8 +761,8 @@ button.ag-mes-dia:hover,
 }
 
 .ci-estado-confirmada {
-    background: var(--ld-ok-fondo);
-    color: var(--ld-ok-texto);
+    background: var(--ld-azul);
+    color: #fff;
 }
 
 .ci-estado-cancelada {
