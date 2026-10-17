@@ -1,11 +1,22 @@
-"""Registra en el panel de crons la tarea de purga de históricos y sesiones.
+"""Registra en el panel de crons las tareas de mantenimiento y de la agenda.
 
 Idempotente: usa `update_or_create` por `clave`, así que re-correrlo no duplica ni pisa el
 `activo`/`schedule` que alguien haya cambiado desde /seguridad/crons/ (solo repone nombre,
 comando, descripción y log).
 
-    python manage.py shell -c "exec(open('scripts/seed_crons_mantenimiento.py').read())"
+    python scripts/seed_crons_mantenimiento.py
 """
+import os
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backcalendar.settings')
+
+import django
+
+django.setup()
+
 from seguridad.models import TareaCron
 
 TAREAS = [

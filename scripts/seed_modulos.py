@@ -8,16 +8,17 @@ Idempotente. Por defecto UNIFICA (merge) sin borrar:
     Nunca se elimina.
   - `ModuloGrupo`: get_or_create por `nombre`. El M2M hace UNION con los
     modulos ya asignados (no pierde vinculos manuales agregados por UI).
-  - `GroupModulo` del grupo `Staff`: UNION con todos los modulos del mapa.
   - `GroupModulo` del grupo `Administrador`: se garantiza que exista (su pk va en
     ID_GRUPO_ADMINISTRADOR de credenciales.json) con todos los modulos del mapa.
-  - is_staff + grupos Administrador y Staff para cada superusuario.
+  - is_staff + grupo Administrador para cada superusuario.
 
 Flags opcionales:
   --authoritative  El archivo es la unica fuente de verdad. Resetea el M2M
-                   de cada seccion y del Staff a exactamente lo del mapa.
+                   de cada seccion y del Administrador a exactamente lo del mapa.
   --reset          Soft-delete (status=False) los Modulos cuya url no este
                    en el mapa. Solo tiene sentido con --authoritative.
+  --purgar         Elimina de la BD los Modulos y secciones (ModuloGrupo) que
+                   no estan en el mapa (restos de otros proyectos).
   --dry-run        No escribe, solo reporta el plan.
   --skip-usuarios  No toca superusuarios.
 
@@ -25,6 +26,7 @@ Uso:
     python scripts/seed_modulos.py                   # merge seguro (default)
     python scripts/seed_modulos.py --authoritative    # reescribe M2Ms exactos
     python scripts/seed_modulos.py --authoritative --reset
+    python scripts/seed_modulos.py --purgar           # limpia restos de otros proyectos
     python scripts/seed_modulos.py --dry-run
     python scripts/seed_modulos.py --skip-usuarios
 """
@@ -47,7 +49,6 @@ from django.db import transaction
 from autenticacion.models import Usuario
 from seguridad.models import GroupModulo, Modulo, ModuloGrupo
 
-ADMIN_GROUP_NAME = 'Staff'
 ADMINISTRADOR_GROUP_NAME = 'Administrador'
 
 
@@ -57,13 +58,13 @@ SECCIONES = [
         'icono':     'fa fa-calendar-check',
         'prioridad': 10,
         'modulos': [
-            ('/agenda/mi-dia/',       'Mi dia',           5),
-            ('/agenda/mi-agenda/',    'Calendario',       8),
-            ('/agenda/citas/',        'Citas',            12),
-            ('/agenda/mis-turnos/',   'Horarios',         15),
-            ('/agenda/buscar/',       'Buscar',           17),
-            ('/agenda/alertas/',      'Alertas',          18),
-            ('/agenda/aplicaciones/', 'Conexiones',       20),
+            ('/agenda/mi-dia/',       'Mi día',           5, 'fa-sun'),
+            ('/agenda/mi-agenda/',    'Calendario',       8, 'fa-calendar'),
+            ('/agenda/citas/',        'Citas',            12, 'fa-video'),
+            ('/agenda/mis-turnos/',   'Horarios',         15, 'fa-clock'),
+            ('/agenda/buscar/',       'Buscar',           17, 'fa-search'),
+            ('/agenda/alertas/',      'Alertas',          18, 'fa-bell'),
+            ('/agenda/aplicaciones/', 'Conexiones',       20, 'fa-plug'),
         ],
     },
     {
@@ -71,44 +72,44 @@ SECCIONES = [
         'icono':     'fa fa-calendar-alt',
         'prioridad': 15,
         'modulos': [
-            ('/agenda/agenda-equipo/', 'Agenda del equipo', 5),
-            ('/agenda/turnos-equipo/', 'Horarios del equipo', 10),
-            ('/agenda/proyectos/',     'Proyectos',         20),
-            ('/agenda/equipos/',       'Equipos',           30),
-            ('/agenda/cola/',          'Cola de solicitudes', 7),
-            ('/agenda/solicitudes/',   'Solicitudes',       8),
-            ('/agenda/clientes/',      'Clientes',          9),
-            ('/agenda/feriados/',      'Feriados',          40),
-            ('/agenda/portales/',      'Portales y productos', 50),
-            ('/agenda/parametros/',    'Parametros', 60),
+            ('/agenda/agenda-equipo/', 'Agenda del equipo', 5, 'fa-users'),
+            ('/agenda/turnos-equipo/', 'Horarios del equipo', 10, 'fa-user-clock'),
+            ('/agenda/proyectos/',     'Proyectos',         20, 'fa-folder'),
+            ('/agenda/equipos/',       'Equipos',           30, 'fa-people-group'),
+            ('/agenda/cola/',          'Cola de solicitudes', 7, 'fa-inbox'),
+            ('/agenda/solicitudes/',   'Solicitudes',       8, 'fa-columns'),
+            ('/agenda/clientes/',      'Clientes',          9, 'fa-id-card'),
+            ('/agenda/feriados/',      'Feriados',          40, 'fa-umbrella-beach'),
+            ('/agenda/portales/',      'Portales y productos', 50, 'fa-globe'),
+            ('/agenda/parametros/',    'Parámetros', 60, 'fa-sliders'),
         ],
     },
     {
-        'nombre':    'Administracion de usuarios',
+        'nombre':    'Administración de usuarios',
         'icono':     'fa fa-users-gear',
         'prioridad': 20,
         'modulos': [
-            ('/autenticacion/usuario/',  'Usuarios', 10),
+            ('/autenticacion/usuario/',  'Usuarios', 10, 'fa-user'),
         ],
     },
     {
-        'nombre':    'Areas geograficas',
+        'nombre':    'Áreas geográficas',
         'icono':     'fa fa-globe',
         'prioridad': 40,
         'modulos': [
-            ('/area-geografica/pais/',      'Pais',      10),
-            ('/area-geografica/provincia/', 'Provincia', 20),
-            ('/area-geografica/ciudad/',    'Ciudad',    30),
+            ('/area-geografica/pais/',      'País',      10, 'fa-flag'),
+            ('/area-geografica/provincia/', 'Provincia', 20, 'fa-map'),
+            ('/area-geografica/ciudad/',    'Ciudad',    30, 'fa-city'),
         ],
     },
     {
-        'nombre':    'Configuracion',
+        'nombre':    'Configuración',
         'icono':     'fa fa-sliders',
         'prioridad': 50,
         'modulos': [
-            ('/seguridad/configuracion/',        'Configuracion del sitio', 10),
-            ('/seguridad/terminosycondiciones/', 'Terminos y condiciones',  20),
-            ('/seguridad/webpush-broadcast/',    'Notificaciones push',    40),
+            ('/seguridad/configuracion/',        'Configuración del sitio', 10, 'fa-gear'),
+            ('/seguridad/terminosycondiciones/', 'Términos y condiciones',  20, 'fa-file-contract'),
+            ('/seguridad/webpush-broadcast/',    'Notificaciones push',    40, 'fa-bullhorn'),
         ],
     },
     {
@@ -116,14 +117,14 @@ SECCIONES = [
         'icono':     'fa fa-gears',
         'prioridad': 70,
         'modulos': [
-            ('/seguridad/grupo/',               'Roles de usuario',      10),
-            ('/seguridad/modulogrupo/',         'Secciones del sidebar', 20),
-            ('/seguridad/modulo/urls/',         'Mantenimiento URLs',    30),
-            ('/seguridad/arbol-de-url/',        'Arbol de URLs',         40),
-            ('/seguridad/arbol-de-grupos-url/', 'Arbol de grupos',       50),
-            ('/seguridad/auditoria/',           'Auditoria',             60),
-            ('/seguridad/databasebackup/',      'Backup BD',             70),
-            ('/seguridad/crons/',               'Tareas programadas',    80),
+            ('/seguridad/grupo/',               'Roles de usuario',      10, 'fa-user-shield'),
+            ('/seguridad/modulogrupo/',         'Secciones del sidebar', 20, 'fa-bars-staggered'),
+            ('/seguridad/modulo/urls/',         'Mantenimiento de URLs',    30, 'fa-link'),
+            ('/seguridad/arbol-de-url/',        'Árbol de URLs',         40, 'fa-sitemap'),
+            ('/seguridad/arbol-de-grupos-url/', 'Árbol de grupos',       50, 'fa-diagram-project'),
+            ('/seguridad/auditoria/',           'Auditoría',             60, 'fa-clipboard-list'),
+            ('/seguridad/databasebackup/',      'Respaldo de la BD',             70, 'fa-database'),
+            ('/seguridad/crons/',               'Tareas programadas',    80, 'fa-clock-rotate-left'),
         ],
     },
 ]
@@ -135,7 +136,7 @@ def log(msg):
 def plan():
     for s in SECCIONES:
         log(f"  [{s['prioridad']:>3}] {s['nombre']} ({s['icono']})")
-        for url, nombre, orden in s['modulos']:
+        for url, nombre, orden, _ in s['modulos']:
             log(f"      {orden:>3}. {nombre:<28} {url}")
 
 
@@ -144,12 +145,14 @@ def upsert_modulos(secciones):
     out = {}
     creados, actualizados, reactivados = 0, 0, 0
     for sec in secciones:
-        for url, nombre, orden in sec['modulos']:
+        for url, nombre, orden, icono in sec['modulos']:
             mod, was_created = Modulo.objects.get_or_create(
-                url=url, defaults={'nombre': nombre, 'orden': orden},
+                url=url, defaults={'nombre': nombre, 'orden': orden, 'icono': icono},
             )
             cambios = []
             if not was_created:
+                if mod.icono != icono:
+                    mod.icono = icono; cambios.append('icono')
                 if mod.nombre != nombre:
                     mod.nombre = nombre; cambios.append('nombre')
                 if mod.orden != orden:
@@ -192,7 +195,7 @@ def upsert_secciones(secciones, modulos_por_url, authoritative):
         else:
             creados += 1
 
-        modulos_del_mapa = [modulos_por_url[url] for (url, _, _) in sec['modulos']]
+        modulos_del_mapa = [modulos_por_url[url] for (url, _, _, _) in sec['modulos']]
         if authoritative:
             mg.modulos.set(modulos_del_mapa)
         else:
@@ -243,6 +246,22 @@ def desactivar_huerfanos(modulos_por_url):
         log('  Sin huerfanos.')
 
 
+def purgar_ajenos(secciones, modulos_por_url):
+    """Elimina Modulos y ModuloGrupo que no estan en el mapa (borra tambien sus vinculos M2M)."""
+    nombres = {sec['nombre'] for sec in secciones}
+    ajenas = ModuloGrupo.objects.exclude(nombre__in=nombres)
+    for mg in ajenas:
+        log(f'      - seccion {mg.nombre}')
+    n_secciones = ajenas.count()
+    ajenas.delete()
+    ajenos = Modulo.objects.exclude(url__in=modulos_por_url.keys())
+    for m in ajenos:
+        log(f'      - modulo {m.url} ({m.nombre})')
+    n_modulos = ajenos.count()
+    ajenos.delete()
+    log(f'  Purga: {n_secciones} seccion(es) y {n_modulos} modulo(s) eliminados.')
+
+
 def asignar_acceso_a_superusuarios(grupo):
     """Cada superusuario queda con is_staff y dentro del grupo dado."""
     n = 0
@@ -256,7 +275,7 @@ def asignar_acceso_a_superusuarios(grupo):
     log(f'  Superusuarios en el grupo "{grupo.name}": {n} agregado(s).')
 
 
-def run(dry_run, authoritative, reset, skip_usuarios):
+def run(dry_run, authoritative, reset, purgar, skip_usuarios):
     total_urls = sum(len(s['modulos']) for s in SECCIONES)
     modo = 'AUTHORITATIVE (reemplaza M2Ms)' if authoritative else 'MERGE (unifica, no borra)'
     log(f'Sembrando {len(SECCIONES)} secciones / {total_urls} URLs [{modo}]...')
@@ -270,13 +289,13 @@ def run(dry_run, authoritative, reset, skip_usuarios):
         modulos_por_url = upsert_modulos(SECCIONES)
         upsert_secciones(SECCIONES, modulos_por_url, authoritative)
         admin_group = asignar_grupo_modulos(ADMINISTRADOR_GROUP_NAME, modulos_por_url, authoritative)
-        staff_group = asignar_grupo_modulos(ADMIN_GROUP_NAME, modulos_por_url, authoritative)
         log(f'  >> ID_GRUPO_ADMINISTRADOR en credenciales.json = {admin_group.pk}')
-        if reset:
+        if purgar:
+            purgar_ajenos(SECCIONES, modulos_por_url)
+        elif reset:
             desactivar_huerfanos(modulos_por_url)
         if not skip_usuarios:
             asignar_acceso_a_superusuarios(admin_group)
-            asignar_acceso_a_superusuarios(staff_group)
 
     log('Listo.')
 
@@ -285,10 +304,12 @@ def main():
     parser = argparse.ArgumentParser(description='Siembra modulos del sidebar, grupos y usuarios base.')
     parser.add_argument('--authoritative', action='store_true',
                         help='El archivo es la unica fuente de verdad: '
-                             'resetea el M2M de cada seccion y de los grupos Staff/Administrador.')
+                             'resetea el M2M de cada seccion y del grupo Administrador.')
     parser.add_argument('--reset', action='store_true',
                         help='Soft-delete (status=False) de Modulos cuya url no este '
                              'en el mapa. Implica --authoritative.')
+    parser.add_argument('--purgar', action='store_true',
+                        help='Elimina de la BD los Modulos y secciones que no esten en el mapa. Implica --authoritative.')
     parser.add_argument('--dry-run', action='store_true', help='No escribe cambios, solo reporta.')
     parser.add_argument('--skip-usuarios', action='store_true',
                         help='No toca superusuarios.')
@@ -296,8 +317,9 @@ def main():
 
     run(
         dry_run=args.dry_run,
-        authoritative=args.authoritative or args.reset,
+        authoritative=args.authoritative or args.reset or args.purgar,
         reset=args.reset,
+        purgar=args.purgar,
         skip_usuarios=args.skip_usuarios,
     )
 
