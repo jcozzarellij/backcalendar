@@ -22,7 +22,7 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Grupo (sidebar)</label>
-                        <select name="grupo" class="form-control">
+                        <select name="grupo" class="form-control select2">
                             <option value="">Todos los grupos</option>
                             {% for g in grupos_filtro %}
                                 <option value="{{ g.id }}" {% if grupo_sel == g.id %}selected{% endif %}>{{ g.nombre }}</option>
@@ -31,7 +31,7 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Rol de usuario</label>
-                        <select name="rol" class="form-control">
+                        <select name="rol" class="form-control select2">
                             <option value="">Todos los roles</option>
                             {% for r in roles_filtro %}
                                 <option value="{{ r.id }}" {% if rol_sel == r.id %}selected{% endif %}>{{ r.group.name }}</option>
@@ -40,7 +40,7 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">En uso</label>
-                        <select name="usadas" class="form-control">
+                        <select name="usadas" class="form-control select2">
                             <option value="">Todas</option>
                             <option value="1" {% if usadas == '1' %}selected{% endif %}>En uso</option>
                             <option value="0" {% if usadas == '0' %}selected{% endif %}>Sin usar</option>
@@ -48,7 +48,7 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Grupos asignados</label>
-                        <select name="grupos_n" class="form-control">
+                        <select name="grupos_n" class="form-control select2">
                             <option value="">Cualquier cantidad</option>
                             <option value="mas2" {% if grupos_n == 'mas2' %}selected{% endif %}>En más de 2 grupos</option>
                             <option value="2" {% if grupos_n == '2' %}selected{% endif %}>En 2 grupos</option>
@@ -58,7 +58,7 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Ordenar por</label>
-                        <select name="orden" class="form-control">
+                        <select name="orden" class="form-control select2">
                             <option value="id_desc" {% if orden == 'id_desc' %}selected{% endif %}>ID desc (más nuevas primero)</option>
                             <option value="id_asc" {% if orden == 'id_asc' %}selected{% endif %}>ID asc</option>
                             <option value="nombre_asc" {% if orden == 'nombre_asc' %}selected{% endif %}>Nombre A-Z</option>

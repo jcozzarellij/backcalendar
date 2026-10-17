@@ -74,7 +74,7 @@
                 <div class="row g-3">
                     <div class="col-lg-3 col-sm-12">
                         <label class="form-label">Prioridad</label>
-                        <select class="form-select" name="prioridad" id="prioridad">
+                        <select class="form-control select2" name="prioridad" id="prioridad">
                             <option value="">Todos</option>
                             {% for prio in PRIORIDAD_NOTIFICACION %}
                                 <option value="{{ prio.0 }}"
@@ -85,7 +85,7 @@
 
                     <div class="col-lg-3 col-sm-12">
                         <label class="form-label">Tipo</label>
-                        <select class="form-select" name="tipo" id="tipo">
+                        <select class="form-control select2" name="tipo" id="tipo">
                             <option value="">Todos</option>
                             {% for tipo in TIPO_NOTIFICACION %}
                                 <option value="{{ tipo.0 }}"
@@ -96,7 +96,7 @@
 
                     <div class="col-lg-3">
                         <label class="form-label">Estado de lectura</label>
-                        <select class="form-select" name="leido" id="leido">
+                        <select class="form-control select2" name="leido" id="leido">
                             <option value="">Todos</option>
                             <option value="1" {% if leido == '1' %}selected{% endif %}>Leído</option>
                             <option value="2" {% if leido == '2' %}selected{% endif %}>No leído</option>

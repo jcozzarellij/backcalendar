@@ -38,7 +38,7 @@ def paisView(request):
                             form.save()
                             log(f"Registro un nuevo pais {form.instance.__str__()}", request, "add", obj=form.instance.id)
                             messages.success(request,
-                                             "Registro Agreado")
+                                             "Registro agregado")
                             res_json.append({'error': False,
                                              "to": redirectAfterPostGet(request)
                                              })

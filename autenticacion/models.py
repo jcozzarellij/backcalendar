@@ -85,6 +85,8 @@ class Usuario(AbstractUser, ModeloBase):
         return "{} {} {}".format(self.documento, self.last_name, self.first_name).title()
 
     def telefono_formateado(self):
+        if not self.telefono:
+            return ''
         if self.ciudad:
             telf = f'+{self.ciudad.provincia.pais.codigotelefono} {self.telefono}'
         else:

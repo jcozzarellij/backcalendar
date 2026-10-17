@@ -17,7 +17,7 @@ from django.contrib.admin.models import LogEntry
 def auditoria(request):
     data = {
         'modulo': 'Seguridad',
-        'titulo': 'ACTIVIDAD DE USUARIOS',
+        'titulo': 'Actividad de usuarios',
         'titulo1': 'Listado de actividades de usuarios',
         'titulo2': 'Auditoria',
         'ruta': '/seguridad/auditoria/',

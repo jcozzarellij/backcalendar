@@ -18,7 +18,7 @@ from django.contrib import messages
 @login_required
 @secure_module
 def ciudadView(request):
-    data = {'titulo': 'Ciudad',
+    data = {'titulo': 'Ciudades',
             'modulo': 'Área Geográfica',
             'ruta': request.path,
             'fecha': str(date.today())

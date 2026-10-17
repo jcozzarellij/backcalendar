@@ -18,7 +18,7 @@ import sys
 @login_required
 @secure_module
 def provinciaView(request):
-    data = {'titulo': 'Provincia',
+    data = {'titulo': 'Provincias',
             'modulo': 'Área Geográfica',
             'ruta': request.path,
             'fecha': str(date.today())

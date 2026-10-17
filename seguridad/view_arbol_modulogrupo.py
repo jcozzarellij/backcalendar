@@ -12,7 +12,7 @@ from django.contrib import messages
 @login_required
 @secure_module
 def arbol_modulo_grupo(request):
-    data = {'titulo': 'Grupos de Urls',
+    data = {'titulo': 'Árbol de grupos',
             'modulo': 'Grupos de Urls',
             'ruta': request.path,
             'ruta_val': request.path,

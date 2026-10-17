@@ -20,7 +20,7 @@ from django.contrib import messages
 @secure_module
 def modulo_grupo(request):
     data = {
-        'titulo': 'Grupos de Url',
+        'titulo': 'Secciones del sidebar',
         'modulo': 'Grupos de Urls',
         'ruta': request.path,
         'fecha': str(date.today())

@@ -22,7 +22,7 @@ def confiTerminos(request):
     confi = Configuracion.get_instancia()
 
     data = {
-        'titulo': 'Terminos y Condiciones {}'.format(confi.nombre_empresa),
+        'titulo': 'Términos y condiciones',
         'modulo': 'Configuración',
         'ruta': request.path,
         'fecha': str(date.today())

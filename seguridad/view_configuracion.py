@@ -22,7 +22,7 @@ def configuracion(request):
     confi = Configuracion.get_instancia()
 
     data = {
-        'titulo': 'Configuración del Sistema {}'.format(confi.nombre_empresa),
+        'titulo': 'Configuración del sitio',
         'modulo': 'Configuración',
         'ruta': request.path,
         'fecha': str(date.today())

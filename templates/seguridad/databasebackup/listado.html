@@ -15,7 +15,7 @@
         <i class="fa fa-circle-info mt-1"></i>
         <div>
             Los respaldos se guardan como <code>.tar</code> en <code>media/backups/año/mes/día/</code> y se generan con <strong>pg_dump</strong> (restaurable con pg_restore) o, si no está instalado en el servidor, con <strong>dumpdata</strong> de Django (restaurable con loaddata).
-            Para automatizarlo, programá <code>python manage.py backup_bd</code> en el cron o el Programador de tareas del servidor.
+            Para automatizarlo, programa <code>python manage.py backup_bd</code> en el cron o el Programador de tareas del servidor.
         </div>
     </div>
 
@@ -52,7 +52,7 @@
                     {% empty %}
                         <tr>
                             <td colspan="5" class="text-center py-4 text-muted">
-                                Todavía no hay respaldos. Generá el primero con «Generar backup ahora».
+                                Todavía no hay respaldos. Genera el primero con «Generar backup ahora».
                             </td>
                         </tr>
                     {% endfor %}

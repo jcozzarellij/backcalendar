@@ -17,7 +17,7 @@ from seguridad.models import Modulo, ModuloGrupo
 @secure_module
 def modulo(request):
     data = {
-        'titulo': 'Árbol de Url',
+        'titulo': 'Árbol de URLs',
         'modulo': 'Url',
         'ruta': request.path,
         'fecha': str(date.today())

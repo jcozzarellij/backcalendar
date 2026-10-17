@@ -19,7 +19,7 @@ from django.contrib import messages
 @login_required
 @secure_module
 def modulossistemaView(request):
-    data = {'titulo': 'Mantenimiento de Url',
+    data = {'titulo': 'Mantenimiento de URLs',
             'modulo': 'Url',
             'ruta': request.path,
             'fecha': str(date.today())

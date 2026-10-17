@@ -17,7 +17,7 @@ from seguridad.forms import GroupForm
 @secure_module
 def grupo(request):
     data = {
-        'titulo': 'Roles de Usuario',
+        'titulo': 'Roles de usuario',
         'modulo': 'Roles de Usuario',
         'ruta': request.path,
         'fecha': str(date.today())

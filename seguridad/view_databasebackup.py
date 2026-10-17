@@ -39,7 +39,7 @@ def databaseBackupView(request):
     )
 
     data = {
-        'titulo': 'Backups de la base de datos',
+        'titulo': 'Respaldo de la base de datos',
         'modulo': 'Seguridad',
         'ruta': request.path,
         'fecha': str(date.today()),

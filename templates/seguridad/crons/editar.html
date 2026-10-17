@@ -5,7 +5,7 @@
 
 <div class="mb-3">
     <label class="form-label small">Periodicidad</label>
-    <select class="form-select" name="schedule" id="selSchedule">
+    <select class="form-control select2" name="schedule" id="selSchedule">
         {% for val, etiqueta in periodicidades %}
             <option value="{{ val }}"
                 {% if tarea.schedule == val %}selected{% elif val == 'personalizado' and not es_predefinida %}selected{% endif %}>
@@ -41,7 +41,8 @@
     (function () {
         var sel = document.getElementById('selSchedule');
         var caja = document.getElementById('cajaCustom');
-        sel.addEventListener('change', function () {
+        $(sel).select2({width: '100%', dropdownParent: $(sel).closest('.modal')});
+        $(sel).on('change', function () {
             caja.hidden = (sel.value !== 'personalizado');
         });
     })();

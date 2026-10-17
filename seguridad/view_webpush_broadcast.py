@@ -17,7 +17,7 @@ from core.funciones_adicionales import salva_logs
 @secure_module
 def webpush_broadcast(request):
     data = {
-        'titulo': 'Push broadcast',
+        'titulo': 'Notificaciones push',
         'modulo': 'Push broadcast',
         'ruta': request.path,
         'fecha': str(date.today()),
