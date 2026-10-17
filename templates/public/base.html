@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ titulo }} · {{ nombreempresa|default:"Turno" }}</title>
+    <title>{{ titulo }} · {{ confi.titulo|default:nombreempresa }}</title>
     {% if favicon %}<link href="{{ favicon }}" rel="shortcut icon"/>{% endif %}
     <link href="/static/fonts/fontawesome/css/all.css?v=6.1.1" rel="stylesheet"/>
     <link href="/static/assets_riz/css/bootstrap.css?v1.1" rel="stylesheet" type="text/css"/>
@@ -16,7 +16,7 @@
 <header class="pb-header">
     <div class="container pb-header-inner">
         <a href="/" class="pb-marca">
-            {% if logo %}<img src="{{ logo }}" alt="{{ nombreempresa }}">{% else %}<span>{{ nombreempresa|default:"Turno" }}</span>{% endif %}
+            {% if logo %}<img src="{{ logo }}" alt="{{ confi.titulo|default:nombreempresa }}">{% else %}<span>{{ nombreempresa }}</span>{% endif %}
         </a>
         {% block nav_publica %}
         <nav class="pb-nav">
@@ -38,7 +38,7 @@
 {% if not ventana %}
 <footer class="pb-footer">
     <div class="container">
-        <span>{{ nombreempresa|default:"Turno" }}</span>
+        <span>{{ confi.titulo|default:nombreempresa }}</span>
         <span>{{ fecha_actual|date:"Y" }}</span>
     </div>
 </footer>
@@ -47,8 +47,9 @@
 <script src="/static/js/jquery-3.3.1.min.js"></script>
 <script src="/static/assets_riz/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="/static/jquery.blockUI.js"></script>
+{% include 'public/parciales/funciones_base.html' %}
 <script>
-    function pantallaespera(titulo = 'Procesando', mensaje = 'Por favor espere...') {
+    function pantallaespera(titulo = '{{ t.procesando|default:"Procesando"|escapejs }}', mensaje = '{{ t.espere|default:"Por favor espere..."|escapejs }}') {
         const logoUrl = '{% if confi and confi.logo_sistema_white %}{{ confi.logo_sistema_white.url }}{% elif logo %}{{ logo }}{% endif %}';
         const blockMsg = `
         <div style="text-align:center;">

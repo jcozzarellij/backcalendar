@@ -1,0 +1,68 @@
+<link rel="stylesheet" href="/static/sweetalert2/sweetalert2.css">
+<script src="/static/sweetalert2/sweetalert2.js"></script>
+<script>
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+            }
+        }
+    });
+
+    function getPromise(url, params) {
+        return new Promise((resolve, reject) => {
+            $.get(url, params, function (data) {
+                resolve(data);
+            }, 'json').fail(function (jqXHR, status, error) {
+                reject({jqXHR: jqXHR, status: status, error: error});
+            });
+        });
+    }
+
+    function postPromise(url, params) {
+        return new Promise(resolve => {
+            $.post(url, params, function (data) {
+                resolve(data);
+            }, 'json');
+        });
+    }
+
+    function alertaSuccess(mensaje) {
+        Swal.fire({toast: true, position: 'top-end', type: 'success', title: mensaje, showConfirmButton: false, timer: 6000});
+    }
+
+    function alertaWarning(mensaje) {
+        Swal.fire({toast: true, position: 'top-end', type: 'warning', title: mensaje, showConfirmButton: false, timer: 6000});
+    }
+
+    function alertaDanger(mensaje, timer = 4000) {
+        Swal.fire({toast: true, position: 'top-end', type: 'error', title: mensaje, showConfirmButton: false, timer: timer});
+    }
+
+    function mensajeSuccess(mensaje) {
+        Swal.fire(mensaje, '{{ confi.titulo|default:nombreempresa|escapejs }}', 'success');
+    }
+
+    function mensajeWarning(mensaje) {
+        Swal.fire(mensaje, '{{ confi.titulo|default:nombreempresa|escapejs }}', 'warning');
+    }
+
+    function mensajeDanger(mensaje) {
+        Swal.fire(mensaje, '{{ confi.titulo|default:nombreempresa|escapejs }}', 'error');
+    }
+</script>

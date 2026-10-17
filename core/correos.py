@@ -23,7 +23,8 @@ _ESPERA_SLOT_SEG = 20
 
 def armar(subject, html, *, to=None, cc=None, texto='', formato='html',
           adjuntos_rutas=None, adjuntos_render=None):
-    """Normaliza un correo al diccionario que entienden el task y el hilo."""
+    """Normaliza un correo al diccionario que entienden el task y el hilo. Cada `adjuntos_render` es
+    `{'filename', 'content', 'mimetype'}`; con `'cid'` va como imagen en línea para `<img src="cid:...">`."""
     return {
         'subject': subject or '',
         'html': html or '',
@@ -56,7 +57,11 @@ def enviar_ahora(datos):
         msg.content_subtype = 'html'
 
     for adjunto in datos.get('adjuntos_render') or []:
-        msg.attach(adjunto.get('filename'), adjunto.get('content'), adjunto.get('mimetype'))
+        if adjunto.get('cid'):
+            msg.attach(_imagen_en_linea(adjunto))
+            msg.mixed_subtype = 'related'
+        else:
+            msg.attach(adjunto.get('filename'), adjunto.get('content'), adjunto.get('mimetype'))
     for ruta in datos.get('adjuntos_rutas') or []:
         try:
             msg.attach_file(ruta)
@@ -71,6 +76,15 @@ def enviar_ahora(datos):
         # disparó: el registro o la alerta ya se completaron. Queda en el log, no rompe nada.
         logger.warning('correo: no se pudo enviar «%s» (%s)', datos.get('subject'), ex)
         return False
+
+
+def _imagen_en_linea(adjunto):
+    """Imagen que el HTML muestra con `<img src="cid:...">` (p. ej. el QR de una cita), no como adjunto suelto."""
+    from email.mime.image import MIMEImage
+    imagen = MIMEImage(adjunto['content'], _subtype=(adjunto.get('mimetype') or 'image/png').split('/')[-1])
+    imagen.add_header('Content-ID', f"<{adjunto['cid']}>")
+    imagen.add_header('Content-Disposition', 'inline', filename=adjunto.get('filename') or f"{adjunto['cid']}.png")
+    return imagen
 
 
 def _en_hilo(datos):
