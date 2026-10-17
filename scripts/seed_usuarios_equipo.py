@@ -20,7 +20,7 @@ django.setup()
 from django.contrib.auth.models import Group
 from django.db import transaction
 
-from agenda.funciones_permisos import ROL_LIDER_GENERAL, ROL_MIEMBRO
+from agenda.funciones_permisos import ROL_ADMINISTRADOR, ROL_PROGRAMADOR
 from autenticacion.models import Usuario
 from core.funciones import codnombre
 
@@ -42,10 +42,10 @@ def run():
                 admin.email = ADMIN['email']
             admin.save()
             print(f'  ~ administrador renombrado: {admin.get_full_name()} ({admin.username})')
-        lider_general, _ = Group.objects.get_or_create(name=ROL_LIDER_GENERAL)
-        if admin and not admin.groups.filter(pk=lider_general.pk).exists():
-            admin.groups.add(lider_general)
-        miembro, _ = Group.objects.get_or_create(name=ROL_MIEMBRO)
+        administrador, _ = Group.objects.get_or_create(name=ROL_ADMINISTRADOR)
+        if admin and not admin.groups.filter(pk=administrador.pk).exists():
+            admin.groups.add(administrador)
+        programador, _ = Group.objects.get_or_create(name=ROL_PROGRAMADOR)
         for nombre, apellido in EQUIPO:
             usuario = Usuario.objects.filter(first_name__iexact=nombre, last_name__iexact=apellido).first()
             if usuario is None:
@@ -60,8 +60,8 @@ def run():
                     usuario.is_staff = usuario.is_active = True
                     usuario.save()
                 print(f'  ~ {usuario.get_full_name()} ya existe ({usuario.username})')
-            if not usuario.groups.filter(pk=miembro.pk).exists():
-                usuario.groups.add(miembro)
+            if not usuario.groups.filter(pk=programador.pk).exists():
+                usuario.groups.add(programador)
     print('Listo.')
 
 

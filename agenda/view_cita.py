@@ -14,7 +14,7 @@ from core.funciones import addData, log, paginador, secure_module
 from core.funciones_adicionales import salva_logs
 from .forms import CierreCitaForm
 from .funciones_citas import cancelar_cita, mover_cita, registrar_cierre, sincronizar_google
-from .funciones_permisos import es_coordinador, es_lider_equipo
+from .funciones_permisos import es_admin_proyectos
 from .models import ESTADO_CITA, Cita, NotaCita
 
 
@@ -37,7 +37,7 @@ def citaView(request, pk=None):
         if cita is None:
             raise Http404
         participa = cita.participantes.filter(status=True, usuario=request.user).exists()
-        if not (participa or es_coordinador(request.user) or (cita.equipo_id and es_lider_equipo(request.user, cita.equipo))):
+        if not (participa or es_admin_proyectos(request.user)):
             messages.error(request, 'No participas en esta cita.')
             return JsonResponse({'error': True, 'message': 'Sin acceso.'}, status=403) if request.method == 'POST' else render(request, '403.html', data, status=403)
     if request.method == 'POST':
@@ -109,7 +109,7 @@ def citaView(request, pk=None):
             return render(request, 'agenda/cita/detalle.html', data)
         criterio, estado = request.GET.get('criterio', '').strip(), request.GET.get('estado', '').strip()
         filtros, url_vars = Q(status=True), ''
-        if not es_coordinador(request.user):
+        if not es_admin_proyectos(request.user):
             filtros &= Q(participantes__usuario=request.user, participantes__status=True) | Q(equipo__lider=request.user) | Q(proyecto__lider=request.user)
         if criterio:
             filtros &= Q(codigo__icontains=criterio) | Q(titulo__icontains=criterio) | Q(cliente__nombres__icontains=criterio) | Q(cliente__correo__icontains=criterio)

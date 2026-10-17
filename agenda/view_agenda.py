@@ -14,7 +14,7 @@ from core.funciones import addData, log, secure_module
 from core.funciones_adicionales import salva_logs
 from .forms import CitaRapidaForm
 from .funciones_citas import citas_del_usuario, crear_cita, mover_cita, obtener_o_crear_cliente
-from .funciones_permisos import equipos_visibles, es_coordinador, es_lider_general
+from .funciones_permisos import equipos_visibles, es_admin_proyectos
 from .funciones_turnos import duracion_turno, franjas_del_dia
 from .models import Cita, Equipo, Solicitud
 
@@ -105,7 +105,7 @@ def agendaView(request):
                 salva_logs(request, __file__, request.method, action, type(ex).__name__,
                            'Error on line {}'.format(sys.exc_info()[-1].tb_lineno), ex)
                 return JsonResponse({'result': False, 'message': 'No se pudo cargar el formulario.'})
-        vista = request.GET.get('vista', 'semana')
+        vista = request.GET.get('vista') or request.COOKIES.get('cal_vista') or 'semana'
         if vista not in ('dia', 'semana', 'mes'):
             vista = 'semana'
         try:
@@ -170,7 +170,7 @@ def agendaView(request):
                 filas.append({'hora': h, 'celdas': [col['celdas'][i] for col in columnas]})
         semanas = [columnas[i:i + 7] for i in range(0, len(columnas), 7)] if vista == 'mes' else []
         cola = []
-        if es_lider_general(request.user) or es_coordinador(request.user) or mis_equipos.exists():
+        if es_admin_proyectos(request.user) or mis_equipos.exists():
             visibles = equipos_visibles(request.user)
             cola = list(Solicitud.objects.filter(status=True, estado='en_cola').filter(equipo__in=visibles) | Solicitud.objects.filter(status=True, estado='en_cola', equipo__isnull=True))
             cola = sorted({s.pk: s for s in cola}.values(), key=lambda s: s.fecha_registro)[:12]
@@ -179,4 +179,7 @@ def agendaView(request):
             'filas': filas, 'columnas': columnas, 'semanas': semanas, 'paso': paso, 'proyectos': list(proyectos.values()),
             'cola': cola, 'hoy': date.today(),
         })
-        return render(request, 'agenda/agenda/listado.html', data)
+        respuesta = render(request, 'agenda/agenda/listado.html', data)
+        if request.GET.get('vista') == vista:
+            respuesta.set_cookie('cal_vista', vista, max_age=60 * 60 * 24 * 365, samesite='Lax')
+        return respuesta

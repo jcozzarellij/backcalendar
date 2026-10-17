@@ -7,7 +7,7 @@ general ni coordinador ve solo las citas en las que participa y las solicitudes 
 """
 from django.db.models import Q
 
-from .funciones_permisos import equipos_visibles, es_coordinador, es_lider_general
+from .funciones_permisos import equipos_visibles, es_admin_proyectos
 from .models import Cita, Cliente, Solicitud
 
 
@@ -20,7 +20,7 @@ def buscar(texto, usuario, limite=8):
     vacio = {'texto': texto, 'clientes': [], 'citas': [], 'solicitudes': [], 'total': 0}
     if len(texto) < 2:
         return vacio
-    todo = es_lider_general(usuario) or es_coordinador(usuario)
+    todo = es_admin_proyectos(usuario)
     q_cliente = (Q(nombres__unaccent__icontains=texto) | Q(correo__icontains=texto) | Q(telefono__icontains=texto)
                  | Q(codigo__iexact=texto))
     clientes = list(Cliente.objects.filter(status=True).filter(q_cliente).order_by('nombres')[:limite])

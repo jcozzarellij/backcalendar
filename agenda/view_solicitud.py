@@ -15,7 +15,7 @@ from core.funciones_adicionales import salva_logs
 from .forms import CitaRapidaForm, SolicitudForm
 from .funciones_citas import crear_cita, responsables_de
 from .funciones_disponibilidad import primer_espacio
-from .funciones_permisos import equipos_visibles, es_coordinador, es_lider_general
+from .funciones_permisos import equipos_visibles, es_admin_proyectos
 from .funciones_portal import tiempos_de
 from .models import ESTADO_SOLICITUD, Equipo, Solicitud
 
@@ -34,7 +34,7 @@ def solicitudView(request):
     model = Solicitud
     Formulario = SolicitudForm
     visibles = equipos_visibles(request.user)
-    todo = es_lider_general(request.user) or es_coordinador(request.user)
+    todo = es_admin_proyectos(request.user)
     base = model.objects.filter(status=True) if todo else model.objects.filter(
         status=True).filter(Q(equipo__in=visibles) | Q(equipo__isnull=True))
     if request.method == 'POST':

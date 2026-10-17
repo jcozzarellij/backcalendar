@@ -15,7 +15,7 @@ from core.funciones import addData, log, secure_module
 from core.funciones_adicionales import salva_logs
 from seguridad.models import PARAMETRO_GRUPO_CHOICES, ParametroSistema
 from . import funciones_google
-from .funciones_permisos import es_lider_general
+from .funciones_permisos import es_administrador
 from .models import ConexionAplicacion
 
 GRUPOS_AGENDA = ('tiempos', 'portal', 'cliente', 'recordatorios')
@@ -33,7 +33,7 @@ def parametrosAgendaView(request):
     }
     addData(request, data)
     model = ParametroSistema
-    puede_editar = es_lider_general(request.user)
+    puede_editar = es_administrador(request.user)
     if request.method == 'POST':
         res_json = []
         action = request.POST.get('action', '')

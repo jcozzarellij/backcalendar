@@ -13,7 +13,7 @@ from core.custom_models import FormError
 from core.funciones import addData, log, paginador, secure_module
 from core.funciones_adicionales import salva_logs
 from .forms import ProyectoForm
-from .funciones_permisos import es_lider_general
+from .funciones_permisos import es_administrador
 from .models import Equipo, Proyecto
 
 
@@ -34,7 +34,7 @@ def proyectoView(request):
         res_json = []
         action = request.POST.get('action', '')
         try:
-            if not es_lider_general(request.user):
+            if not es_administrador(request.user):
                 raise ValueError('Solo el líder general administra los proyectos.')
             with transaction.atomic():
                 if action == 'add':
@@ -93,7 +93,7 @@ def proyectoView(request):
                            'Error on line {}'.format(sys.exc_info()[-1].tb_lineno), ex)
                 return JsonResponse({'result': False, 'message': 'No se pudo cargar el formulario.'})
         criterio, filtros, url_vars = request.GET.get('criterio', '').strip(), Q(status=True), ''
-        data['puede_crear'] = es_lider_general(request.user)
+        data['puede_crear'] = es_administrador(request.user)
         if criterio:
             filtros &= Q(nombre__icontains=criterio) | Q(codigo__icontains=criterio)
             data['criterio'] = criterio

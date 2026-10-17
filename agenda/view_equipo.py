@@ -13,7 +13,7 @@ from core.custom_models import FormError
 from core.funciones import addData, log, paginador, secure_module
 from core.funciones_adicionales import salva_logs
 from .forms import EquipoForm, MiembroEquipoForm
-from .funciones_permisos import equipos_visibles, es_lider_general, puede_gestionar_equipo
+from .funciones_permisos import equipos_visibles, es_administrador, puede_gestionar_equipo
 from .models import Equipo, Feriado, MiembroEquipo
 
 
@@ -36,7 +36,7 @@ def equipoView(request):
         try:
             with transaction.atomic():
                 if action == 'add':
-                    if not es_lider_general(request.user):
+                    if not es_administrador(request.user):
                         raise ValueError('Solo el líder general crea equipos.')
                     form = Formulario(request.POST, request=request)
                     if not form.is_valid():
@@ -58,7 +58,7 @@ def equipoView(request):
                     res_json.append({'error': False, 'reload': True})
                 elif action == 'delete':
                     filtro = model.objects.get(pk=int(request.POST['id']), status=True)
-                    if not es_lider_general(request.user):
+                    if not es_administrador(request.user):
                         raise ValueError('Solo el líder general elimina equipos.')
                     for miembro in filtro.miembros.filter(status=True):
                         miembro.status = False
@@ -136,7 +136,7 @@ def equipoView(request):
                 return JsonResponse({'result': False, 'message': 'No se pudo cargar el formulario.'})
         criterio, filtros, url_vars = request.GET.get('criterio', '').strip(), Q(status=True), ''
         filtros &= Q(pk__in=equipos_visibles(request.user).values('pk'))
-        data['puede_crear'] = es_lider_general(request.user)
+        data['puede_crear'] = es_administrador(request.user)
         if criterio:
             filtros &= Q(nombre__icontains=criterio) | Q(proyecto__nombre__icontains=criterio)
             data['criterio'] = criterio

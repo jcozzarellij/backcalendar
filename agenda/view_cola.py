@@ -7,7 +7,7 @@ from django.shortcuts import render
 from core.funciones import addData, secure_module
 from .funciones_citas import responsables_de
 from .funciones_disponibilidad import espacios_comunes
-from .funciones_permisos import equipos_visibles, es_coordinador, es_lider_general
+from .funciones_permisos import equipos_visibles, es_admin_proyectos
 from .funciones_portal import tiempos_de
 from .models import Solicitud
 
@@ -25,7 +25,7 @@ def colaView(request):
     addData(request, data)
     visibles = equipos_visibles(request.user)
     base = Solicitud.objects.filter(status=True, estado='en_cola')
-    if not (es_lider_general(request.user) or es_coordinador(request.user)):
+    if not es_admin_proyectos(request.user):
         base = base.filter(Q(equipo__in=visibles) | Q(equipo__isnull=True))
     if request.method == 'GET':
         cola = list(base.select_related('cliente', 'producto', 'equipo', 'proyecto', 'producto__equipo').order_by('fecha_registro'))

@@ -7,7 +7,7 @@ from django.test import TestCase
 
 from autenticacion.models import Usuario
 from . import funciones_google
-from .funciones_permisos import (ROL_LIDER_EQUIPO, ROL_LIDER_GENERAL, equipos_visibles, es_lider_equipo,
+from .funciones_permisos import (ROL_ADMIN_PROYECTOS, ROL_ADMINISTRADOR, equipos_visibles, es_lider_equipo,
                                  puede_editar_turnos_de)
 from .funciones_turnos import aplicar_semana_tipo, celdas_a_franjas, franjas_a_celdas, franjas_del_dia, patron_vigente
 from .models import ConexionAplicacion, Equipo, ExcepcionTurno, Feriado, FranjaTurno, MiembroEquipo, PatronTurno, Proyecto
@@ -81,8 +81,8 @@ class PermisosTests(TestCase):
         self.jefe = crear_usuario('jefe')
         self.miembro = crear_usuario('miembro')
         self.ajeno = crear_usuario('ajeno')
-        Group.objects.create(name=ROL_LIDER_GENERAL).user_set.add(self.lider)
-        Group.objects.create(name=ROL_LIDER_EQUIPO).user_set.add(self.jefe)
+        Group.objects.create(name=ROL_ADMINISTRADOR).user_set.add(self.lider)
+        Group.objects.create(name=ROL_ADMIN_PROYECTOS).user_set.add(self.jefe)
         proyecto = Proyecto.objects.create(codigo='p1', nombre='Proyecto 1', lider=self.lider)
         self.equipo = Equipo.objects.create(proyecto=proyecto, nombre='Equipo X', lider=self.jefe)
         MiembroEquipo.objects.create(equipo=self.equipo, usuario=self.miembro)
@@ -271,7 +271,7 @@ class BusquedaTests(TestCase):
         from .funciones_citas import codigo_cliente
         from .models import Cliente
         ana = crear_usuario('ana')
-        Group.objects.get_or_create(name=ROL_LIDER_GENERAL)[0].user_set.add(ana)
+        Group.objects.get_or_create(name=ROL_ADMINISTRADOR)[0].user_set.add(ana)
         Cliente.objects.create(codigo=codigo_cliente(), nombres='José Pérez', correo='jose@prueba.com')
         r = buscar('jose perez', ana)
         self.assertEqual([c.nombres for c in r['clientes']], ['José Pérez'])

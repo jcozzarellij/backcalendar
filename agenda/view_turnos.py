@@ -14,7 +14,7 @@ from core.custom_models import FormError
 from core.funciones import addData, log, secure_module
 from core.funciones_adicionales import salva_logs
 from .forms import ExcepcionTurnoForm
-from .funciones_permisos import es_lider_general, equipos_que_lidera, puede_editar_turnos_de
+from .funciones_permisos import es_administrador, equipos_que_lidera, puede_editar_turnos_de
 from .funciones_turnos import (aplicar_semana_tipo, celdas_a_franjas, duracion_turno, franjas_a_celdas,
                                horas_rejilla, patron_vigente)
 from autenticacion.models import Usuario
@@ -129,7 +129,7 @@ def turnosView(request):
                 return JsonResponse({'result': False, 'message': 'No se pudo cargar el formulario.'})
         data['usuario_turnos'] = usuario
         if administrar:
-            if es_lider_general(request.user):
+            if es_administrador(request.user):
                 data['usuarios'] = Usuario.objects.filter(is_active=True, is_staff=True).order_by('first_name', 'last_name')
             else:
                 del_equipo = equipos_que_lidera(request.user).values_list('miembros__usuario_id', flat=True)

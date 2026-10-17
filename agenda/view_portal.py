@@ -13,7 +13,7 @@ from core.custom_models import FormError
 from core.funciones import addData, log, paginador, secure_module
 from core.funciones_adicionales import salva_logs
 from .forms import PortalForm, ProductoForm
-from .funciones_permisos import es_lider_general
+from .funciones_permisos import es_administrador
 from .funciones_portal import qr_data_uri, tiempos_de
 from .funciones_tokens import base_publica
 from .models import Portal, Producto
@@ -37,7 +37,7 @@ def portalView(request):
         action = request.POST.get('action', '')
         try:
             with transaction.atomic():
-                if not es_lider_general(request.user):
+                if not es_administrador(request.user):
                     raise ValueError('Solo el líder general administra los portales.')
                 if action == 'add':
                     form = Formulario(request.POST, request.FILES, request=request)
@@ -184,7 +184,7 @@ def portalView(request):
                 'tiempos': tiempos_de(producto_actual),
             }
         data.update({
-            'puede_editar': es_lider_general(request.user), 'base_publica': base_publica(), 'portales': listado,
+            'puede_editar': es_administrador(request.user), 'base_publica': base_publica(), 'portales': listado,
             'portal_actual': portal_actual, 'producto_actual': producto_actual, 'compartir': compartir,
             'list_count': len(listado), 'url_vars': url_vars,
         })
