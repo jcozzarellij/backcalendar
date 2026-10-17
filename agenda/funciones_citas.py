@@ -78,6 +78,10 @@ def responsables_de(equipo):
             .select_related('usuario')]
 
 
+def lider_de(equipo):
+    return equipo.lider or (equipo.proyecto.lider if equipo.proyecto_id else None)
+
+
 def copias_de(equipo):
     return [m.usuario for m in MiembroEquipo.objects.filter(status=True, equipo=equipo, rol='copia')
             .select_related('usuario')]

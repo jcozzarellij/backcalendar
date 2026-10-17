@@ -18,6 +18,7 @@ from core.email_config import send_html_mail
 from core.funciones import notificacion
 from seguridad.models import Configuracion
 from . import funciones_tokens
+from .funciones_citas import lider_de
 from .models import Cita
 
 logger = logging.getLogger(__name__)
@@ -28,6 +29,7 @@ TITULOS_LIDER = {
     'movida': 'Una cita cambió de fecha',
     'cancelada': 'Se canceló una cita',
 }
+PRIORIDAD_PANEL = {'reservada': 2, 'movida': 2, 'cancelada': 1}
 
 
 def avisar_reserva(cita_pk, url_cita, url_cliente):
@@ -40,12 +42,35 @@ def avisar_reprogramacion(cita_pk, inicio_anterior, fin_anterior, por_cliente=Fa
     cita = _cita(cita_pk)
     _al_cliente(cita, 'movida', anterior=(inicio_anterior, fin_anterior), por_cliente=por_cliente)
     _al_lider(cita, 'movida', anterior=(inicio_anterior, fin_anterior), por_cliente=por_cliente, autor_id=autor_id)
+    _a_participantes(cita, 'movida', por_cliente=por_cliente, autor_id=autor_id)
 
 
 def avisar_cancelacion(cita_pk, por_cliente=False, autor_id=None):
     cita = _cita(cita_pk)
     _al_cliente(cita, 'cancelada', por_cliente=por_cliente)
     _al_lider(cita, 'cancelada', por_cliente=por_cliente, autor_id=autor_id)
+    _a_participantes(cita, 'cancelada', por_cliente=por_cliente, autor_id=autor_id)
+
+
+def _a_participantes(cita, evento, por_cliente=False, autor_id=None):
+    try:
+        lider = _lider(cita)
+        excluidos = [pk for pk in (autor_id, lider.pk if lider else None) if pk]
+        cuerpo = _cuerpo_panel(cita, evento, por_cliente)
+        for p in cita.participantes.filter(status=True).exclude(usuario_id__in=excluidos).select_related('usuario'):
+            notificacion(TITULOS_LIDER[evento], cuerpo, p.usuario, f'/agenda/citas/{cita.pk}/', PRIORIDAD_PANEL[evento], tipo=1)
+    except Exception as ex:
+        logger.warning('Aviso a los participantes de la cita %s (%s) falló: %s', cita.codigo, evento, ex)
+
+
+def _cuerpo_panel(cita, evento, por_cliente):
+    with translation.override('es'):
+        fecha = date_format(cita.inicio, r'l j \d\e F').capitalize()
+    cuerpo = f'{fecha}, {cita.inicio:%H:%M} · {cita.titulo} ({cita.codigo}).'
+    if evento == 'reservada':
+        return cuerpo
+    quien = 'El cliente' if por_cliente else 'El equipo'
+    return f'{quien} {"movió" if evento == "movida" else "canceló"} la cita. {cuerpo}'
 
 
 def _al_cliente(cita, evento, url_cita='', url_cliente='', anterior=None, por_cliente=True):
@@ -102,10 +127,7 @@ def _al_lider(cita, evento, anterior=None, por_cliente=False, autor_id=None):
         titulo = TITULOS_LIDER[evento]
         with translation.override('es'):
             fecha_corta = date_format(cita.inicio, r'l j \d\e F')
-            cuerpo = f'{fecha_corta.capitalize()}, {cita.inicio:%H:%M} · {cita.titulo} ({cita.codigo}).'
-            if evento != 'reservada':
-                cuerpo = f'{quien} {"movió" if evento == "movida" else "canceló"} la cita. {cuerpo}'
-            notificacion(titulo, cuerpo, lider, url_panel, 1 if evento == 'cancelada' else 2, tipo=1)
+            notificacion(titulo, _cuerpo_panel(cita, evento, por_cliente), lider, url_panel, PRIORIDAD_PANEL[evento], tipo=1)
             if not lider.email:
                 return
             datos = {
@@ -140,7 +162,7 @@ def _portal(cita):
 def _lider(cita):
     if cita.equipo_id is None:
         return None
-    return cita.equipo.lider or (cita.equipo.proyecto.lider if cita.equipo.proyecto_id else None)
+    return lider_de(cita.equipo)
 
 
 def _datos_comunes(cita, confi, idioma, formato_largo):

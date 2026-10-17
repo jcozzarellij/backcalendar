@@ -24,6 +24,7 @@ from django.db.models import Prefetch, prefetch_related_objects
 
 from seguridad.models import ParametroSistema
 from . import funciones_avisos_cita, funciones_tokens
+from .funciones_alertas import avisar_solicitud_nueva
 from .funciones_citas import (cancelar_cita, codigo_solicitud, crear_cita, mover_cita, obtener_o_crear_cliente,
                               responsables_de)
 from .funciones_disponibilidad import espacios_comunes_rango
@@ -211,6 +212,8 @@ def pedir_llamada(producto, datos, request=None):
                           motivo=f'Pidió que le llamen · {producto}'[:300], causa_cola='El cliente pidió una llamada')
     solicitud.save(request)
     capturar(request, solicitud=solicitud)
+    solicitud_pk = solicitud.pk
+    transaction.on_commit(lambda: avisar_solicitud_nueva(solicitud_pk))
     return solicitud
 
 

@@ -13,6 +13,7 @@ from core.custom_models import FormError
 from core.funciones import addData, log, paginador, secure_module
 from core.funciones_adicionales import salva_logs
 from .forms import CitaRapidaForm, SolicitudForm
+from .funciones_alertas import avisar_solicitud_nueva
 from .funciones_citas import crear_cita, responsables_de
 from .funciones_disponibilidad import primer_espacio
 from .funciones_permisos import equipos_visibles, es_admin_proyectos
@@ -51,6 +52,8 @@ def solicitudView(request):
                     form.instance.estado = 'en_cola'
                     form.instance.causa_cola = 'Creada desde el panel'
                     form.save()
+                    solicitud_pk, autor_pk = form.instance.pk, request.user.pk
+                    transaction.on_commit(lambda: avisar_solicitud_nueva(solicitud_pk, autor_pk))
                     log(f'Registró la solicitud {form.instance.codigo}', request, 'add', obj=form.instance.id)
                     messages.success(request, 'Solicitud registrada en la cola')
                     res_json.append({'error': False, 'reload': True})

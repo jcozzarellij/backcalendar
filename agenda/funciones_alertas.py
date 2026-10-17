@@ -6,6 +6,8 @@
 - `generar_avisos(ahora)` — cron: por cada cita que entra en la ventana de aviso de cada participante,
   crea la `Notificacion` y manda el push una sola vez (la propia Notificacion es la guarda).
 - `avisar_asignacion(cita)` — notificación (+ correo si lo pidió) a los participantes de una cita nueva.
+- `avisar_solicitud_nueva(solicitud_pk, autor_id)` — líder y responsables del equipo cuando entra una solicitud a la cola.
+- `avisar_miembro_equipo(miembro, agregado, autor_id)` — al usuario que entra o sale de un equipo.
 - `avisar_google_desconectado(conexion)` — notificación cuando Google rechaza el token.
 - `avisar_tarde(cita, usuario, minutos)` — «llego tarde»: anota, avisa a los demás y manda correo al cliente.
 """
@@ -18,14 +20,17 @@ from django.utils.formats import date_format
 from core import correos
 from core.funciones import notificacion
 from seguridad.models import Configuracion, Notificacion, ParametroSistema
-from .funciones_citas import anotar
-from .models import Cita, ParticipanteCita, PreferenciaAgenda
+from .funciones_citas import anotar, lider_de, responsables_de
+from .models import Cita, ParticipanteCita, PreferenciaAgenda, Solicitud
 
 logger = logging.getLogger(__name__)
 TITULO_AVISO = 'Tu cita empieza pronto'
 TITULO_ASIGNACION = 'Te asignaron una cita'
 TITULO_GOOGLE = 'Google Calendar se desconectó'
 TITULO_TARDE = 'Un compañero llega tarde'
+TITULO_SOLICITUD = 'Nueva solicitud en la cola'
+TITULO_EQUIPO_ALTA = 'Te agregaron a un equipo'
+TITULO_EQUIPO_BAJA = 'Te quitaron de un equipo'
 
 
 def _default_aviso():
@@ -112,6 +117,38 @@ def avisar_asignacion(cita):
                 correos.despachar(correos.armar(f'Te asignaron una cita el {cita.inicio:%d/%m %H:%M} · {cita.codigo}', html, to=[p.usuario.email]))
             except Exception as ex:
                 logger.warning('Correo de asignación falló para %s: %s', p.usuario, ex)
+
+
+def avisar_solicitud_nueva(solicitud_pk, autor_id=None):
+    try:
+        solicitud = Solicitud.objects.select_related('cliente', 'equipo', 'equipo__lider', 'equipo__proyecto__lider').get(pk=solicitud_pk)
+        equipo = solicitud.equipo
+        if equipo is None:
+            return
+        destinatarios = {u.pk: u for u in responsables_de(equipo)}
+        lider = lider_de(equipo)
+        if lider:
+            destinatarios[lider.pk] = lider
+        pedido = 'pidió que le llamen' if solicitud.telefono_para_llamar else 'dejó una solicitud'
+        cuerpo = f'{solicitud.cliente} {pedido}. {solicitud.motivo or solicitud.codigo}'[:300]
+        for usuario in destinatarios.values():
+            if usuario.pk != autor_id:
+                notificacion(TITULO_SOLICITUD, cuerpo, usuario, '/agenda/cola/', 2, tipo=1)
+    except Exception as ex:
+        logger.warning('Aviso de la solicitud %s falló: %s', solicitud_pk, ex)
+
+
+def avisar_miembro_equipo(miembro, agregado, autor_id=None):
+    if miembro.usuario_id == autor_id:
+        return
+    try:
+        if agregado:
+            titulo, cuerpo = TITULO_EQUIPO_ALTA, f'Ahora eres {miembro.get_rol_display().lower()} del equipo {miembro.equipo}.'
+        else:
+            titulo, cuerpo = TITULO_EQUIPO_BAJA, f'Ya no formas parte del equipo {miembro.equipo}.'
+        notificacion(titulo, cuerpo, miembro.usuario, '/agenda/mi-dia/', 3, tipo=1)
+    except Exception as ex:
+        logger.warning('Aviso de equipo para %s falló: %s', miembro.usuario, ex)
 
 
 def avisar_google_desconectado(conexion):

@@ -13,6 +13,7 @@ from core.custom_models import FormError
 from core.funciones import addData, log, paginador, secure_module
 from core.funciones_adicionales import salva_logs
 from .forms import EquipoForm, MiembroEquipoForm
+from .funciones_alertas import avisar_miembro_equipo
 from .funciones_permisos import equipos_visibles, es_administrador, puede_gestionar_equipo
 from .models import Equipo, Feriado, MiembroEquipo
 
@@ -79,6 +80,8 @@ def equipoView(request):
                         raise FormError(form)
                     form.instance.equipo = equipo
                     form.save()
+                    nuevo, autor_pk = form.instance, request.user.pk
+                    transaction.on_commit(lambda: avisar_miembro_equipo(nuevo, True, autor_pk))
                     log(f'Agregó a {form.instance.usuario} al equipo {equipo}', request, 'add', obj=form.instance.id)
                     messages.success(request, 'Miembro agregado')
                     res_json.append({'error': False, 'reload': True})
@@ -92,11 +95,13 @@ def equipoView(request):
                         request, 'change', obj=miembro.id)
                     res_json = {'error': False}
                 elif action == 'delmiembro':
-                    miembro = MiembroEquipo.objects.get(pk=int(request.POST['id']), status=True)
+                    miembro = MiembroEquipo.objects.select_related('usuario', 'equipo').get(pk=int(request.POST['id']), status=True)
                     if not puede_gestionar_equipo(request.user, miembro.equipo):
                         raise ValueError('No gestionas este equipo.')
                     miembro.status = False
                     miembro.save(request)
+                    autor_pk = request.user.pk
+                    transaction.on_commit(lambda: avisar_miembro_equipo(miembro, False, autor_pk))
                     log(f'Quitó a {miembro.usuario} del equipo {miembro.equipo}', request, 'del', obj=miembro.id)
                     messages.success(request, 'Miembro quitado')
                     res_json = {'error': False}
