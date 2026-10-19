@@ -11,17 +11,25 @@ geográficos, feriados, parámetros, crons, dominios de correo, textos del porta
 (sin miembros ni líderes), portales y productos, y la configuración del sitio sin claves OAuth.
 Qué se borra: el resto de usuarios, turnos, citas y clientes, reuniones, conexiones y tokens, logs,
 auditoría, sesiones, notificaciones, push, `django_migrations` y las tablas huérfanas `agents_cne_*`.
+Con `--conservar-migraciones` la tabla `django_migrations` se mantiene (en producción basta `migrate`).
+Con `--con-seeders`, sobre la copia ya limpia se corren los seeders de `SEEDERS` (geografía, feriados,
+parámetros, roles, textos del portal, usuarios del equipo, sus membresías y su semana tipo); el
+nombre del admin se repone después, porque `seed_usuarios_equipo` lo renombra. Los feriados se
+bajan de una API pública, así que ese paso necesita internet.
 
 Idempotente sobre la base local (solo lee). Cada corrida genera archivos nuevos con su fecha.
 
 Uso:
     python scripts/generar_backup_produccion.py
     python scripts/generar_backup_produccion.py --contenedor db_backcalendar
+    python scripts/generar_backup_produccion.py --conservar-migraciones
+    python scripts/generar_backup_produccion.py --conservar-migraciones --con-seeders
 """
 import argparse
 import os
 import subprocess
 import sys
+import tempfile
 import zipfile
 from datetime import datetime
 from pathlib import Path
@@ -58,9 +66,15 @@ APPS_HUERFANAS = ('agents_cne', 'agents_ai', 'crm', 'monitoreo')
 
 CARPETAS_MEDIA = ('configuracion', 'productos', 'guia', 'pwa')
 
+SEEDERS = [
+    'seed_ecuador_geo', 'seed_feriados_ecuador', 'seed_parametros_agenda', 'seed_roles_agenda',
+    'seed_textos_portal', 'seed_usuarios_equipo', 'seed_miembros_equipo', 'seed_turnos_equipo',
+]
 
-def sql_limpieza():
-    tablas = ', '.join(f'public.{t}' for t in TABLAS_A_VACIAR)
+
+def sql_limpieza(conservar_migraciones=False):
+    tablas = ', '.join(f'public.{t}' for t in TABLAS_A_VACIAR
+                       if not (conservar_migraciones and t == 'django_migrations'))
     apps = ', '.join(f"'{a}'" for a in APPS_HUERFANAS)
     return f"""
 \\set ON_ERROR_STOP on
@@ -145,6 +159,7 @@ UNION ALL SELECT 'productos', count(*) FROM agenda_producto
 UNION ALL SELECT 'feriados', count(*) FROM agenda_feriado
 UNION ALL SELECT 'ciudades', count(*) FROM area_geografica_ciudad
 UNION ALL SELECT 'citas', count(*) FROM agenda_cita
+UNION ALL SELECT 'migraciones', count(*) FROM django_migrations
 UNION ALL SELECT 'tablas agents_cne', count(*) FROM pg_tables WHERE tablename LIKE 'agents\\_cne\\_%';
 """
 
@@ -154,6 +169,37 @@ def ejecutar(comando, entrada=None):
     if resultado.returncode != 0:
         raise RuntimeError(f'Falló: {" ".join(comando[:4])}...\n{resultado.stderr.strip()}')
     return resultado.stdout
+
+
+def puerto_publicado(contenedor):
+    """Puerto del host donde el contenedor publica Postgres (ej. 5435)."""
+    salida = ejecutar(['docker', 'port', contenedor, '5432/tcp'])
+    return salida.strip().splitlines()[0].rsplit(':', 1)[-1]
+
+
+def correr_seeders(base_temporal, contenedor):
+    """Corre cada seeder en su propio proceso apuntando a la base temporal del contenedor, aunque
+    `credenciales.json` apunte a otra base."""
+    puerto = puerto_publicado(contenedor)
+    with tempfile.TemporaryDirectory() as carpeta:
+        Path(carpeta, 'settings_backup_tmp.py').write_text(
+            'from backcalendar.settings import *  # noqa\n'
+            f"DATABASES = {{'default': {{**DATABASES['default'], 'HOST': '127.0.0.1', 'PORT': {puerto!r}, "
+            f"'NAME': {base_temporal!r}}}}}\n",
+            encoding='utf-8')
+        entorno = {**os.environ, 'DJANGO_SETTINGS_MODULE': 'settings_backup_tmp',
+                   'PYTHONPATH': os.pathsep.join([carpeta, str(BASE_DIR)]), 'PYTHONIOENCODING': 'utf-8'}
+        for seeder in SEEDERS:
+            resultado = subprocess.run([sys.executable, str(BASE_DIR / 'scripts' / f'{seeder}.py')], cwd=BASE_DIR,
+                                       env=entorno, capture_output=True, text=True, encoding='utf-8')
+            if resultado.returncode != 0:
+                raise RuntimeError(f'Falló {seeder}:\n{resultado.stderr.strip()[-1500:]}')
+            ultima = (resultado.stdout.strip().splitlines() or [''])[-1]
+            print(f'    {seeder}: {ultima}')
+
+
+def literal_sql(valor):
+    return "'" + (valor or '').replace("'", "''") + "'"
 
 
 def empaquetar_media(destino):
@@ -177,6 +223,10 @@ def empaquetar_media(destino):
 def main():
     parser = argparse.ArgumentParser(description='Backup limpio para producción.')
     parser.add_argument('--contenedor', default='db_backcalendar', help='Contenedor Docker de Postgres.')
+    parser.add_argument('--con-seeders', action='store_true',
+                        help='Corre los seeders de datos iniciales sobre la copia limpia.')
+    parser.add_argument('--conservar-migraciones', action='store_true',
+                        help='No vacía django_migrations (producción usa las migraciones del repositorio).')
     args = parser.parse_args()
 
     base = settings.DATABASES['default']
@@ -200,9 +250,27 @@ def main():
 
         print('3/5 Limpiando la copia temporal...')
         salida = ejecutar(docker + ['psql', '-U', usuario_bd, '-d', temporal, '-q', '-tA', '-F', ': '],
-                          entrada=sql_limpieza())
+                          entrada=sql_limpieza(args.conservar_migraciones))
         for linea in salida.strip().splitlines():
             print(f'    {linea}')
+
+        if args.con_seeders:
+            print('    Corriendo seeders sobre la copia limpia...')
+            admin = Usuario.objects.get(username=USUARIO_ADMIN)
+            correr_seeders(temporal, args.contenedor)
+            ejecutar(docker + ['psql', '-U', usuario_bd, '-d', temporal, '-q', '-v', 'ON_ERROR_STOP=1', '-c',
+                               f'UPDATE autenticacion_usuario SET first_name = {literal_sql(admin.first_name)}, '
+                               f'last_name = {literal_sql(admin.last_name)}, email = {literal_sql(EMAIL_ADMIN)} '
+                               f'WHERE username = {literal_sql(USUARIO_ADMIN)};'])
+            salida = ejecutar(docker + ['psql', '-U', usuario_bd, '-d', temporal, '-tA', '-F', ': ', '-c',
+                                        "SELECT 'usuarios', count(*) FROM autenticacion_usuario "
+                                        "UNION ALL SELECT 'miembros', count(*) FROM agenda_miembroequipo "
+                                        "UNION ALL SELECT 'semanas tipo', count(*) FROM agenda_patronturno "
+                                        "UNION ALL SELECT 'franjas', count(*) FROM agenda_franjaturno "
+                                        "UNION ALL SELECT 'feriados', count(*) FROM agenda_feriado "
+                                        "UNION ALL SELECT 'grupos', count(*) FROM auth_group;"])
+            for linea in salida.strip().splitlines():
+                print(f'    {linea}')
 
         print(f'4/5 Generando {destino_backup.name}...')
         ejecutar(docker + ['pg_dump', '-U', usuario_bd, '-Fc', '-d', temporal, '-f', limpio])
