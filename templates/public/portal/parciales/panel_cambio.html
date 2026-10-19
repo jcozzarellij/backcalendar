@@ -1,5 +1,5 @@
-<div class="{{ clase }}" id="{{ panel_id }}{{ cita_pk }}" hidden data-panel-cita="{{ grupo }}" data-pt-agenda data-url-horas="{{ url_horas }}{% if cita_pk %}?cita={{ cita_pk }}{% endif %}" data-action="reprogramar" aria-labelledby="{{ panel_id }}{{ cita_pk }}-titulo">
-    <{{ nivel }} class="ci-h2" id="{{ panel_id }}{{ cita_pk }}-titulo">{{ t.ci_nuevo_dia }}</{{ nivel }}>
+<div class="{{ clase }}" id="{{ panel_id }}{{ dom }}" hidden data-panel-cita="{{ grupo }}" data-pt-agenda data-url-horas="{{ url_horas }}{% if cita_ref %}?cita={{ cita_ref|urlencode }}{% endif %}" data-action="reprogramar" aria-labelledby="{{ panel_id }}{{ dom }}-titulo">
+    <{{ nivel }} class="ci-h2" id="{{ panel_id }}{{ dom }}-titulo">{{ t.ci_nuevo_dia }}</{{ nivel }}>
     {% if dias %}
         {% include 'public/portal/parciales/dias.html' with dias=dias clase='ci-dias' etiqueta=t.libres %}
     {% else %}
@@ -9,7 +9,7 @@
     <form class="ag-form" data-form-cambio novalidate hidden>
         {% csrf_token %}
         <input type="hidden" name="action" value="reprogramar">
-        {% if cita_pk %}<input type="hidden" name="cita" value="{{ cita_pk }}">{% endif %}
+        {% if cita_ref %}<input type="hidden" name="cita" value="{{ cita_ref }}">{% endif %}
         {% if ventana %}<input type="hidden" name="ventana" value="1">{% endif %}
         <input type="hidden" name="inicio" value="">
         <p class="ag-aviso" data-resumen></p>

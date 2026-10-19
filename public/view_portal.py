@@ -10,6 +10,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from agenda import funciones_portal, funciones_tokens
 from agenda.forms import BuscarCitaForm, ReservaPublicaForm
 from agenda.models import Cita, Portal, Producto
+from core.crypto import cifrar_id, descifrar_id
 from core.custom_forms import FormError
 from core.funciones import addData, rate_limit
 from core.funciones_adicionales import salva_logs
@@ -105,6 +106,7 @@ def agendar(request, slug, padre=None):
             'url_horas': request.path,
             'atencion': funciones_portal.atencion_de(producto, t, tiempos),
             'nombre_producto': nombre,
+            'logo_producto': _logo(producto),
             'descripcion_producto': funciones_portal.descripcion_producto(producto, idioma),
             'nombre_padre': funciones_portal.nombre_producto(producto.padre, idioma) if producto.padre_id else '',
             'partes': [{'nombre': funciones_portal.nombre_producto(s, idioma), 'ruta': s.ruta}
@@ -244,8 +246,8 @@ def conectar(request, portal, token):
     citas = Cita.objects.filter(status=True, cliente=cliente).select_related(*RELACIONES_CITA).order_by('-inicio')
 
     def _cita_propia():
-        pk = request.POST.get('cita') or request.GET.get('cita') or ''
-        cita = citas.filter(pk=int(pk)).first() if pk.isdigit() else None
+        pk = descifrar_id(request.POST.get('cita') or request.GET.get('cita') or '')
+        cita = citas.filter(pk=pk).first() if pk else None
         if cita is None:
             raise ValueError(t['mx_ajena'])
         return cita
@@ -287,6 +289,8 @@ def conectar(request, portal, token):
             _presentar(c, idioma, t)
             (proximas if c.inicio >= ahora and c.estado in ('confirmada', 'pendiente') else pasadas).append(c)
         proximas.reverse()
+        for n, c in enumerate(proximas + pasadas, start=1):
+            c.ref, c.dom = cifrar_id(c.pk), n
         for c in proximas:
             if c.producto_id and c.estado == 'confirmada' and c.producto_id not in dias_por_producto:
                 dias_por_producto[c.producto_id] = _dias(c.producto)
@@ -410,3 +414,9 @@ def _dias(producto):
     for d in dias:
         d['valor'] = d['fecha'].strftime('%Y-%m-%d')
     return dias
+
+
+def _logo(producto):
+    """URL del logo del producto o, en un subproducto sin logo propio, el de su padre."""
+    archivo = producto.logo or (producto.padre.logo if producto.padre_id else None)
+    return archivo.url if archivo else ''

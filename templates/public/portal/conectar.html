@@ -2,7 +2,7 @@
 
 {% block meta_pagina %}
     <meta name="robots" content="noindex, nofollow">
-    <link rel="stylesheet" href="/static/css/public/reserva.css?v3.4">
+    <link rel="stylesheet" href="/static/css/public/reserva.css?v3.5">
 {% endblock %}
 
 {% block pagina %}
@@ -21,12 +21,12 @@
                     <ul class="mx-lista">
                         {% for c in proximas %}
                             <li>
-                                <article class="mx-boleto" id="cita-{{ c.pk }}" aria-labelledby="mx-fecha-{{ c.pk }}">
+                                <article class="mx-boleto" id="cita-{{ c.dom }}" aria-labelledby="mx-fecha-{{ c.dom }}">
                                     <div class="mx-boleto-fila">
                                         <div class="mx-boleto-cuerpo">
                                             <span class="ag-hoja ci-hoja" aria-hidden="true"><span class="ag-hoja-mes">{{ c.inicio|date:"M" }}</span><span class="ag-hoja-dia">{{ c.inicio|date:"j" }}</span></span>
                                             <div class="mx-boleto-datos">
-                                                <p class="ci-fecha-larga" id="mx-fecha-{{ c.pk }}">{{ c.inicio|date:t.formato_fecha|capfirst }}</p>
+                                                <p class="ci-fecha-larga" id="mx-fecha-{{ c.dom }}">{{ c.inicio|date:t.formato_fecha|capfirst }}</p>
                                                 <p class="mx-hora">{{ c.inicio|time:"H:i" }} {{ t.ci_a }} {{ c.fin|time:"H:i" }}</p>
                                                 <p class="ld-ticket-dato mx-producto"><i class="fas fa-video" aria-hidden="true"></i>{{ c.nombre_mostrar }}</p>
                                                 <p class="mx-codigo">{{ t.ci_codigo }}: <strong>{{ c.codigo }}</strong><span class="ci-estado ci-estado-{{ c.estado }}">{{ c.estado_texto }}</span></p>
@@ -35,14 +35,14 @@
                                         </div>
                                         <div class="mx-boleto-talon">
                                             {% if c.enlace_meet %}<a href="{{ c.enlace_meet }}" class="btn btn-success ld-agendar" target="_blank" rel="noopener"><i class="fas fa-video" aria-hidden="true"></i>{{ t.mx_entrar }}<span class="visually-hidden"> ({{ t.ld_nueva_pestana }})</span></a>{% endif %}
-                                            {% if c.dias_cambio %}<button type="button" class="btn btn-light ag-boton-suave" data-abrir="pt-cambio-{{ c.pk }}" aria-expanded="false" aria-controls="pt-cambio-{{ c.pk }}"><i class="far fa-calendar" aria-hidden="true"></i>{{ t.mx_cambiar }}<span class="visually-hidden"> {{ c.codigo }}</span></button>{% endif %}
-                                            <button type="button" class="btn btn-light ag-boton-suave" data-abrir="pt-cancelar-{{ c.pk }}" aria-expanded="false" aria-controls="pt-cancelar-{{ c.pk }}"><i class="fas fa-xmark" aria-hidden="true"></i>{{ t.mx_cancelar }}<span class="visually-hidden"> {{ c.codigo }}</span></button>
+                                            {% if c.dias_cambio %}<button type="button" class="btn btn-light ag-boton-suave" data-abrir="pt-cambio-{{ c.dom }}" aria-expanded="false" aria-controls="pt-cambio-{{ c.dom }}"><i class="far fa-calendar" aria-hidden="true"></i>{{ t.mx_cambiar }}<span class="visually-hidden"> {{ c.codigo }}</span></button>{% endif %}
+                                            <button type="button" class="btn btn-light ag-boton-suave" data-abrir="pt-cancelar-{{ c.dom }}" aria-expanded="false" aria-controls="pt-cancelar-{{ c.dom }}"><i class="fas fa-xmark" aria-hidden="true"></i>{{ t.mx_cancelar }}<span class="visually-hidden"> {{ c.codigo }}</span></button>
                                         </div>
                                     </div>
                                     {% if c.dias_cambio %}
-                                        {% include 'public/portal/parciales/panel_cambio.html' with clase='mx-panel' panel_id='pt-cambio-' grupo=c.pk nivel='h3' cita_pk=c.pk dias=c.dias_cambio %}
+                                        {% include 'public/portal/parciales/panel_cambio.html' with clase='mx-panel' panel_id='pt-cambio-' grupo=c.dom nivel='h3' dom=c.dom cita_ref=c.ref dias=c.dias_cambio %}
                                     {% endif %}
-                                    {% include 'public/portal/parciales/panel_cancelar.html' with clase='mx-panel' panel_id='pt-cancelar-' grupo=c.pk nivel='h3' cita_pk=c.pk %}
+                                    {% include 'public/portal/parciales/panel_cancelar.html' with clase='mx-panel' panel_id='pt-cancelar-' grupo=c.dom nivel='h3' dom=c.dom cita_ref=c.ref %}
                                 </article>
                             </li>
                         {% endfor %}

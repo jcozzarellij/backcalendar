@@ -1,12 +1,12 @@
-<div class="{{ clase }}" id="{{ panel_id }}{{ cita_pk }}" hidden data-panel-cita="{{ grupo }}" aria-labelledby="{{ panel_id }}{{ cita_pk }}-titulo">
-    <{{ nivel }} class="ci-h2" id="{{ panel_id }}{{ cita_pk }}-titulo">{{ t.ci_seguro }}</{{ nivel }}>
+<div class="{{ clase }}" id="{{ panel_id }}{{ dom }}" hidden data-panel-cita="{{ grupo }}" aria-labelledby="{{ panel_id }}{{ dom }}-titulo">
+    <{{ nivel }} class="ci-h2" id="{{ panel_id }}{{ dom }}-titulo">{{ t.ci_seguro }}</{{ nivel }}>
     <form class="ag-form" data-form-cancelar novalidate>
         {% csrf_token %}
         <input type="hidden" name="action" value="cancelar">
-        {% if cita_pk %}<input type="hidden" name="cita" value="{{ cita_pk }}">{% endif %}
+        {% if cita_ref %}<input type="hidden" name="cita" value="{{ cita_ref }}">{% endif %}
         {% if ventana %}<input type="hidden" name="ventana" value="1">{% endif %}
-        <label class="ag-label" for="{{ panel_id }}{{ cita_pk }}-motivo">{{ t.ci_motivo }} <span class="ag-opcional">{{ t.opcional }}</span></label>
-        <input type="text" class="ag-campo" id="{{ panel_id }}{{ cita_pk }}-motivo" name="motivo" placeholder="{{ t.ph_motivo }}" maxlength="200">
+        <label class="ag-label" for="{{ panel_id }}{{ dom }}-motivo">{{ t.ci_motivo }} <span class="ag-opcional">{{ t.opcional }}</span></label>
+        <input type="text" class="ag-campo" id="{{ panel_id }}{{ dom }}-motivo" name="motivo" placeholder="{{ t.ph_motivo }}" maxlength="200">
         <p class="pt-error ag-error" data-error role="alert" hidden></p>
         <div class="ag-acciones">
             <button type="submit" class="btn btn-danger ci-boton-cancelar"><i class="fas fa-xmark" aria-hidden="true"></i>{{ t.ci_si_cancelar }}</button>

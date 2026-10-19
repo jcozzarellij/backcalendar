@@ -65,6 +65,27 @@ def decrypt_text(cipher: str) -> str:
         return cipher
 
 
+
+def cifrar_id(pk) -> str:
+    """Id opaco para el HTML público: Fernet del pk (no se puede leer ni adivinar desde el navegador)."""
+    if pk in (None, ''):
+        return ''
+    return _fernet().encrypt(f'id:{int(pk)}'.encode('utf-8')).decode('ascii')
+
+
+def descifrar_id(token) -> int | None:
+    """Inversa de `cifrar_id`. Devuelve None si el token no es válido o fue alterado."""
+    if not token or not isinstance(token, str):
+        return None
+    try:
+        plano = _fernet().decrypt(token.encode('ascii')).decode('utf-8')
+    except (InvalidToken, UnicodeError, ValueError):
+        return None
+    if not plano.startswith('id:') or not plano[3:].isdigit():
+        return None
+    return int(plano[3:])
+
+
 class EncryptedTextField(models.TextField):
     """TextField que cifra transparente con Fernet en BD.
 
