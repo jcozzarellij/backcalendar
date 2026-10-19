@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% if not login_google_activo %}
+        <div class="alert alert-warning d-flex align-items-start gap-2 small py-2" role="note">
+            <i class="fa fa-circle-exclamation mt-1" aria-hidden="true"></i>
+            <div>El inicio de sesión con Google está apagado. Actívalo en <a href="/seguridad/configuracion/">Configuración del sitio</a>, pestaña Conexión Google.</div>
+        </div>
+    {% endif %}
+
+    <div class="row align-items-center mb-3">
+        <div class="col-md-12">
+            <button type="button" onclick="formModal(0, 'Nuevo dominio', 'add')" class="btn btn-success btn-sm">
+                <i class="fas fa-plus-circle me-2"></i>Nuevo dominio
+            </button>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header py-2">
+            <h5 class="card-title mb-0">Dominios permitidos</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="tabla" class="table table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>Dominio</th>
+                        <th>Descripción</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Acción</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for l in listado %}
+                        <tr>
+                            <td>@{{ l.dominio }}</td>
+                            <td>{{ l.descripcion|default:"—" }}</td>
+                            <td class="text-center">
+                                {% if l.activo %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-secondary">Pausado</span>{% endif %}
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="formModal({{ l.pk }}, 'Editar dominio', 'change')" aria-label="Editar {{ l.dominio }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="eliminarajax({{ l.pk }}, '{{ l.dominio|escapejs }}', 'delete')" aria-label="Eliminar {{ l.dominio }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                No hay dominios cargados: nadie puede iniciar sesión con Google. Agrega uno con «Nuevo dominio».
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header py-2">
+            <div class="row align-items-center g-2">
+                <div class="col-md">
+                    <h5 class="card-title mb-0">Cuentas vinculadas</h5>
+                </div>
+                <div class="col-md-5">
+                    <form method="GET" class="mb-0">
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="criterio" class="form-control" value="{{ criterio|default:'' }}" placeholder="Buscar por usuario o correo" aria-label="Buscar cuentas vinculadas">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                            {% if criterio %}<a href="{{ ruta }}" class="btn btn-secondary"><i class="fas fa-times"></i></a>{% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Correo de Google</th>
+                        <th class="text-center">Último acceso</th>
+                        <th class="text-center">Acción</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for c in cuentas %}
+                        <tr>
+                            <td>{{ c.usuario.full_name }} <span class="text-muted small">({{ c.usuario.username }})</span></td>
+                            <td>{{ c.email }}</td>
+                            <td class="text-center">{{ c.ultimo_acceso|date:"d/m/Y H:i"|default:"—" }}</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-danger btn-sm" onclick="eliminarajax({{ c.pk }}, '{{ c.email|escapejs }}', 'desvincular', 'Vas a desvincular {{ c.email|escapejs }} de {{ c.usuario.username|escapejs }}')">
+                                    <i class="fas fa-link-slash me-1"></i>Desvincular
+                                </button>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                {% if criterio %}Ninguna cuenta coincide con «{{ criterio }}».{% else %}Todavía nadie inició sesión con Google. La cuenta se vincula sola la primera vez que el usuario entra.{% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% include 'agenda/parciales/modal_crud.html' %}
+{% endblock %}
+
+{% block jscript %}
+    <script src="/static/js/forms.js?version=2"></script>
+    <script src="/static/js/agenda/crud.js?v1.1"></script>
+{% endblock %}

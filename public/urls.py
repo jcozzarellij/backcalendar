@@ -4,7 +4,7 @@ from django.views.generic import RedirectView
 from .view_changepass import changepass
 from .view_landing import catalogo, landing
 from .view_restaurar import restaurar
-from .view_login import login_tienda, logout_tienda
+from .view_login import login_google, login_google_callback, login_tienda, logout_tienda
 from .view_portal import cita_cliente, conectar, incrustar, mi_cita
 from .view_recordarusername import recordarusername
 from .view_terminoscondiciones import proteccion_datos, terminosycondiciones
@@ -12,6 +12,8 @@ from .view_terminoscondiciones import proteccion_datos, terminosycondiciones
 urlpatterns = [
     path('', landing),
     path('catalogo/', catalogo),
+    path('login/google/', login_google),
+    path('login/google/callback/', login_google_callback),
     re_path(r'^login/', login_tienda),
     re_path(r'^logout/', logout_tienda),
     re_path(r'^restorepass/', restaurar),

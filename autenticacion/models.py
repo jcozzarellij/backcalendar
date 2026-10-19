@@ -97,3 +97,26 @@ class Usuario(AbstractUser, ModeloBase):
         verbose_name = 'Perfil'
         verbose_name_plural = "Perfiles"
         ordering = ('id',)
+
+
+class CuentaGoogle(ModeloBase):
+    """Vínculo de inicio de sesión: una cuenta de Google (por su `sub`, que Google no cambia)
+    atada a un solo usuario. No es la conexión de calendario (`agenda.ConexionAplicacion`)."""
+    usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT, related_name='cuentas_google', verbose_name='Usuario')
+    google_sub = models.CharField(max_length=255, verbose_name='Identificador de Google')
+    email = models.EmailField(max_length=254, verbose_name='Correo de Google')
+    ultimo_acceso = models.DateTimeField(blank=True, null=True, verbose_name='Último acceso')
+
+    class Meta:
+        verbose_name = 'Cuenta de Google vinculada'
+        verbose_name_plural = 'Cuentas de Google vinculadas'
+        ordering = ['email']
+        constraints = [
+            models.UniqueConstraint(fields=['google_sub'], condition=models.Q(status=True),
+                                    name='cuentagoogle_sub_unico_activo'),
+            models.UniqueConstraint(fields=['usuario'], condition=models.Q(status=True),
+                                    name='cuentagoogle_usuario_unico_activo'),
+        ]
+
+    def __str__(self):
+        return f'{self.email} → {self.usuario.username}'

@@ -424,3 +424,61 @@ html, body {
         transition: none;
     }
 }
+
+.au-separador {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin: 1.25rem 0;
+    color: var(--app-muted);
+    font-size: .9rem;
+}
+
+.au-separador::before,
+.au-separador::after {
+    content: "";
+    flex: 1;
+    border-top: 1px solid var(--app-borde);
+}
+
+.au-panel-cuerpo .btn.au-google {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+    width: 100%;
+    min-height: 56px;
+    border: 1px solid var(--app-borde);
+    background: var(--app-blanco);
+    color: var(--app-tinta);
+    font-size: 1.05rem;
+    font-weight: 500;
+    transition: background-color 150ms ease-out, transform 100ms ease-out;
+}
+
+.au-panel-cuerpo .btn.au-google:hover,
+.au-panel-cuerpo .btn.au-google:focus {
+    background: var(--app-gris-claro);
+    color: var(--app-tinta);
+}
+
+.au-panel-cuerpo .btn.au-google:focus-visible {
+    outline: 3px solid var(--app-azul);
+    outline-offset: 3px;
+}
+
+.au-panel-cuerpo .btn.au-google:active {
+    transform: scale(0.97);
+}
+
+.au-google svg {
+    width: 20px;
+    height: 20px;
+    flex: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .au-panel-cuerpo .btn.au-google {
+        transition: none;
+    }
+}
