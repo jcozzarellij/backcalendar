@@ -73,28 +73,32 @@ def _config_cliente(cliente):
     }}
 
 
-def _flujo(state=None):
+def _flujo(state=None, code_verifier=None):
     from google_auth_oauthlib.flow import Flow
     cliente = cliente_oauth()
     if cliente['redirect'].startswith('http://'):
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
     os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
-    return Flow.from_client_config(_config_cliente(cliente), scopes=SCOPES, redirect_uri=cliente['redirect'], state=state)
+    return Flow.from_client_config(_config_cliente(cliente), scopes=SCOPES, redirect_uri=cliente['redirect'], state=state,
+                                   code_verifier=code_verifier, autogenerate_code_verifier=False)
 
 
 def url_autorizacion(request):
+    """El `code_verifier` (PKCE) se guarda en sesión junto al `state`: Google exige el mismo en el canje."""
     if not configurada():
         raise ErrorGoogle('Google Calendar todavía no está configurado en el sistema.')
-    estado = secrets.token_urlsafe(24)
-    request.session[CLAVE_ESTADO_SESION] = estado
-    url, _ = _flujo(state=estado).authorization_url(access_type='offline', prompt='consent',
-                                                     include_granted_scopes='true')
+    estado, verificador = secrets.token_urlsafe(24), secrets.token_urlsafe(64)
+    request.session[CLAVE_ESTADO_SESION] = {'state': estado, 'verificador': verificador}
+    url, _ = _flujo(state=estado, code_verifier=verificador).authorization_url(
+        access_type='offline', prompt='consent', include_granted_scopes='true')
     return url
 
 
 def completar_autorizacion(request, usuario):
     """Canjea el `code` del callback, guarda el refresh token cifrado y devuelve la conexión."""
-    estado = request.session.pop(CLAVE_ESTADO_SESION, None)
+    guardado = request.session.pop(CLAVE_ESTADO_SESION, None)
+    guardado = guardado if isinstance(guardado, dict) else {}
+    estado = guardado.get('state')
     if not estado or estado != request.GET.get('state'):
         raise ErrorGoogle('La autorización no coincide con la sesión. Vuelve a intentarlo.')
     if request.GET.get('error'):
@@ -102,7 +106,7 @@ def completar_autorizacion(request, usuario):
     codigo = request.GET.get('code')
     if not codigo:
         raise ErrorGoogle('Google no devolvió el código de autorización.')
-    flujo = _flujo(state=estado)
+    flujo = _flujo(state=estado, code_verifier=guardado.get('verificador'))
     try:
         flujo.fetch_token(code=codigo)
     except Exception as ex:
