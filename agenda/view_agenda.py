@@ -14,7 +14,8 @@ from core.custom_models import FormError
 from core.funciones import addData, log, secure_module
 from core.funciones_adicionales import salva_logs
 from . import funciones_reuniones
-from .forms import CitaRapidaForm, ReunionForm
+from .forms import CitaRapidaForm, ReunionForm, atar_a_turnos
+from .funciones_disponibilidad import HorarioNoDisponible, horas_libres, sugerencias, validar_horario
 from .funciones_citas import citas_del_usuario, crear_cita, mover_cita, obtener_o_crear_cliente
 from .funciones_permisos import equipos_visibles, es_admin_proyectos
 from .funciones_turnos import duracion_turno, franjas_del_dia
@@ -24,6 +25,31 @@ PALETA = ['#dbe9f4', '#e7f3d9', '#f3e6f7', '#fdebd3', '#e0f2f1', '#f1e5d8']
 PALETA_BORDE = ['#005082', '#4f8f00', '#7b3fa0', '#b45309', '#00796b', '#8a5a2b']
 HORA_INICIO = 7
 HORA_FIN = 20
+
+
+def _entero(valor, defecto):
+    try:
+        return max(5, min(720, int(valor)))
+    except (TypeError, ValueError):
+        return defecto
+
+
+def _atar(usuario, form, inicio, duracion, data, actual=''):
+    """Mi agenda solo agenda en horas libres de los turnos: arma el select de horas del día pedido (o de hoy)
+    y deja en `data` los días sugeridos para el panel del formulario."""
+    hoy = date.today()
+    try:
+        fecha = max(hoy, datetime.strptime(inicio[:10], '%Y-%m-%d').date())
+    except ValueError:
+        fecha = hoy
+    horas = horas_libres(usuario, fecha, duracion)
+    if actual and actual.startswith(fecha.isoformat()) and actual not in [h['valor'] for h in horas]:
+        horas = sorted(horas + [{'valor': actual, 'texto': actual[11:16]}], key=lambda h: h['valor'])
+    if inicio not in [h['valor'] for h in horas]:
+        form.initial['inicio'] = ''
+    data['sugerencias'] = sugerencias(usuario, duracion)
+    data['hora_actual'] = actual
+    return atar_a_turnos(form, fecha.isoformat(), horas, hoy.isoformat())
 
 
 def _lunes(fecha):
@@ -62,6 +88,7 @@ def agendaView(request):
                     equipo = mis_equipos.filter(pk=int(equipo_pk)).first() if equipo_pk.isdigit() else None
                     cliente = obtener_o_crear_cliente(d['nombres'], d['correo'], d.get('telefono', ''), None, request)
                     inicio = d['inicio']
+                    validar_horario(request.user, inicio, inicio + timedelta(minutes=d['duracion']))
                     cita = crear_cita(cliente=cliente, inicio=inicio, fin=inicio + timedelta(minutes=d['duracion']),
                                       organizador=request.user, titulo=d['titulo'], equipo=equipo,
                                       proyecto=equipo.proyecto if equipo else None, producto=d.get('producto'),
@@ -74,6 +101,7 @@ def agendaView(request):
                                                                  participantes__usuario=request.user, participantes__status=True)
                     inicio = datetime.strptime(request.POST['inicio'][:16], '%Y-%m-%dT%H:%M')
                     fin = datetime.strptime(request.POST['fin'][:16], '%Y-%m-%dT%H:%M') if request.POST.get('fin') else inicio + (cita.fin - cita.inicio)
+                    validar_horario(request.user, inicio, fin, ignorar=[(cita.inicio, cita.fin)])
                     mover_cita(cita, inicio, fin, request, 'Movida desde el calendario.')
                     log(f'Reprogramó la cita {cita.codigo} a {inicio:%d/%m/%Y %H:%M}', request, 'change', obj=cita.id)
                     res_json.append({'error': False, 'message': f'Cita movida al {inicio:%d/%m %H:%M}.'})
@@ -84,6 +112,14 @@ def agendaView(request):
                     if not form.is_valid():
                         raise FormError(form)
                     d = form.cleaned_data
+                    if not todo_el_dia:
+                        nuevo_fin = d['inicio'] + timedelta(minutes=d['duracion'])
+                        if action == 'reunion':
+                            validar_horario(request.user, d['inicio'], nuevo_fin)
+                        else:
+                            actual = funciones_reuniones.para_editar(request.user, plataforma, request.POST.get('evento', ''))
+                            if (actual['inicio'], actual['fin']) != (d['inicio'], nuevo_fin):
+                                validar_horario(request.user, d['inicio'], nuevo_fin, ignorar=[(actual['inicio'], actual['fin'])])
                     if action == 'reunion':
                         funciones_reuniones.crear(request.user, plataforma, d, request)
                         log(f'Creó la reunión «{d["titulo"]}» en {plataforma} desde su agenda', request, 'add')
@@ -96,6 +132,8 @@ def agendaView(request):
                 elif action == 'mover_reunion':
                     inicio = datetime.strptime(request.POST['inicio'][:16], '%Y-%m-%dT%H:%M')
                     fin = datetime.strptime(request.POST['fin'][:16], '%Y-%m-%dT%H:%M')
+                    actual = funciones_reuniones.para_editar(request.user, request.POST.get('plataforma', ''), request.POST.get('id', ''))
+                    validar_horario(request.user, inicio, fin, ignorar=[(actual['inicio'], actual['fin'])])
                     funciones_reuniones.mover(request.user, request.POST.get('plataforma', ''), request.POST.get('id', ''), inicio, fin, request)
                     log(f'Movió una reunión de {request.POST.get("plataforma", "")} al {inicio:%d/%m/%Y %H:%M}', request, 'change')
                     res_json.append({'error': False, 'message': f'Reunión movida al {inicio:%d/%m %H:%M}.'})
@@ -110,6 +148,8 @@ def agendaView(request):
                     res_json.append({'error': False})
                 else:
                     raise ValueError('Acción no permitida.')
+        except HorarioNoDisponible as ex:
+            res_json = [{'error': True, 'message': str(ex), 'form': [{'inicio': str(ex)}], 'sugerencias': ex.sugerencias}]
         except ValueError as ex:
             res_json = [{'error': True, 'message': str(ex)}]
         except FormError as ex:
@@ -129,7 +169,7 @@ def agendaView(request):
                         duracion = int(request.GET.get('duracion') or duracion_turno())
                     except ValueError:
                         duracion = duracion_turno()
-                    data['form'] = CitaRapidaForm(initial={'inicio': inicio, 'duracion': duracion})
+                    data['form'] = _atar(request.user, CitaRapidaForm(initial={'inicio': inicio, 'duracion': duracion}), inicio, duracion, data)
                     data['equipos'] = mis_equipos
                     template = get_template('agenda/agenda/form_cita.html')
                     return JsonResponse({'result': True, 'data': template.render(data)})
@@ -140,22 +180,40 @@ def agendaView(request):
                         return JsonResponse({'result': False, 'message': 'Esa plataforma todavía no está disponible para ti.'})
                     if action == 'reunion':
                         inicio = request.GET.get('inicio', '')[:16]
-                        data['form'] = ReunionForm(initial={'inicio': inicio, 'duracion': request.GET.get('duracion') or 30})
+                        duracion = _entero(request.GET.get('duracion'), 30)
+                        data['form'] = _atar(request.user, ReunionForm(initial={'inicio': inicio, 'duracion': duracion}), inicio, duracion, data)
                     else:
                         try:
                             evento = funciones_reuniones.para_editar(request.user, plataforma, request.GET.get('evento', ''))
                         except ValueError as ex:
                             return JsonResponse({'result': False, 'message': str(ex)})
                         data['evento'] = evento
-                        data['form'] = ReunionForm(todo_el_dia=evento['todo_el_dia'], creando=False, initial={
-                            'titulo': evento['titulo'], 'inicio': evento['inicio'].strftime('%Y-%m-%dT%H:%M'),
-                            'duracion': max(5, int((evento['fin'] - evento['inicio']).total_seconds() // 60)),
+                        inicio = evento['inicio'].strftime('%Y-%m-%dT%H:%M')
+                        duracion = max(5, int((evento['fin'] - evento['inicio']).total_seconds() // 60))
+                        form = ReunionForm(todo_el_dia=evento['todo_el_dia'], creando=False, initial={
+                            'titulo': evento['titulo'], 'inicio': inicio, 'duracion': duracion,
                             'color': evento['color_id'], 'lugar': evento['lugar'], 'descripcion': evento['descripcion'],
                             'invitados': ', '.join(evento['invitados']),
                         })
+                        data['form'] = form if evento['todo_el_dia'] else _atar(request.user, form, inicio, duracion, data, actual=inicio)
                     data['accion_form'] = action
                     template = get_template('agenda/agenda/form_reunion.html')
                     return JsonResponse({'result': True, 'data': template.render(data, request)})
+                if action == 'horas_libres':
+                    try:
+                        fecha = datetime.strptime(request.GET.get('fecha', ''), '%Y-%m-%d').date()
+                    except ValueError:
+                        return JsonResponse({'result': False, 'message': 'Elige una fecha válida.'})
+                    duracion = _entero(request.GET.get('duracion'), duracion_turno())
+                    horas = horas_libres(request.user, fecha, duracion)
+                    actual = request.GET.get('actual', '')[:16]
+                    if actual.startswith(fecha.isoformat()) and actual not in [h['valor'] for h in horas]:
+                        horas = sorted(horas + [{'valor': actual, 'texto': actual[11:16]}], key=lambda h: h['valor'])
+                    return JsonResponse({'result': True, 'horas': horas,
+                                         'sugerencias': [] if horas else sugerencias(request.user, duracion)})
+                if action == 'sugerencias':
+                    duracion = _entero(request.GET.get('duracion'), duracion_turno())
+                    return JsonResponse({'result': True, 'sugerencias': sugerencias(request.user, duracion)})
                 return JsonResponse({'result': False, 'message': 'Acción no permitida.'})
             except Exception as ex:
                 salva_logs(request, __file__, request.method, action, type(ex).__name__,

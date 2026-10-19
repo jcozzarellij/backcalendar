@@ -260,6 +260,8 @@ class ProductoForm(ModelFormBase):
             self.fields[campo].widget.attrs['col'] = '3'
         for campo in ('activo', 'destacado'):
             self.fields[campo].widget.attrs['col'] = '6'
+        self.fields['logo'].widget.attrs['class'] = 'dropify'
+        self.fields['logo'].widget.attrs['data-height'] = '120'
 
     def clean(self):
         datos = super().clean()
@@ -332,3 +334,22 @@ class ClienteForm(ModelFormBase):
         if Cliente.objects.filter(status=True, correo__iexact=correo).exclude(id=self.instance.id or 0).exists():
             raise ValidationError('Ya existe un cliente con este correo')
         return correo
+
+
+def atar_a_turnos(form, fecha, horas, minimo):
+    """Mi agenda: la fecha se elige aparte y la hora solo entre las libres de los turnos (`horas` de
+    `funciones_disponibilidad.horas_libres`). Reemplaza el `inicio` libre por un select en el mismo lugar."""
+    if 'inicio' not in form.fields:
+        return form
+    campos = {}
+    for nombre, campo in form.fields.items():
+        if nombre == 'inicio':
+            campos['fecha'] = forms.DateField(label='Fecha', required=False, widget=forms.DateInput(
+                attrs={'type': 'date', 'col': '6', 'min': minimo, 'class': 'form-control'}, format='%Y-%m-%d'))
+            campo.label = 'Hora disponible'
+            campo.widget = forms.Select(attrs={'col': '6', 'class': 'select2'},
+                                        choices=[('', 'Elige una hora')] + [(h['valor'], h['texto']) for h in horas])
+        campos[nombre] = campo
+    form.fields = campos
+    form.initial['fecha'] = fecha
+    return form

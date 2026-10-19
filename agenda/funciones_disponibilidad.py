@@ -235,3 +235,63 @@ def primer_espacio(usuarios, desde, dias=14, duracion=None, margen=0, antelacion
     por_dia = espacios_comunes_rango(usuarios, minimo.date(), minimo.date() + timedelta(days=dias), duracion, margen,
                                      desde_hora=minimo)
     return next((espacios[0] for _, espacios in sorted(por_dia.items()) if espacios), None)
+
+
+class HorarioNoDisponible(ValueError):
+    """El horario pedido no está libre dentro de los turnos; trae los días sugeridos para elegir otro."""
+
+    def __init__(self, mensaje, sugerencias):
+        super().__init__(mensaje)
+        self.sugerencias = sugerencias
+
+
+def _opcion(inicio):
+    return {'valor': inicio.strftime('%Y-%m-%dT%H:%M'), 'texto': inicio.strftime('%H:%M')}
+
+
+def horas_libres(usuario, fecha, duracion, ahora=None):
+    """Horas en que `usuario` puede agendar algo de `duracion` minutos en `fecha`: dentro de sus turnos, sin
+    choques y no en el pasado. Lista de {'valor': 'YYYY-MM-DDTHH:MM', 'texto': 'HH:MM'}."""
+    ahora = ahora or datetime.now()
+    if fecha < ahora.date():
+        return []
+    return [_opcion(h) for h in espacios_libres(usuario, fecha, duracion, paso=duracion_turno(), desde_hora=ahora)]
+
+
+def sugerencias(usuario, duracion, ahora=None, dias=14, max_dias=5, por_dia=4):
+    """Los próximos días con espacio libre para `duracion` minutos y sus primeras horas, para proponer al usuario."""
+    from django.utils.formats import date_format
+    ahora = ahora or datetime.now()
+    hoy = ahora.date()
+    por_fecha = espacios_libres_rango(usuario, hoy, hoy + timedelta(days=dias), duracion, paso=duracion_turno(),
+                                      desde_hora=ahora)
+    salida = []
+    for fecha, horas in sorted(por_fecha.items()):
+        if not horas:
+            continue
+        salida.append({'fecha': fecha.isoformat(), 'etiqueta': date_format(fecha, 'D j M').capitalize(),
+                       'horas': [_opcion(h) for h in horas[:por_dia]]})
+        if len(salida) >= max_dias:
+            break
+    return salida
+
+
+def validar_horario(usuario, inicio, fin, ignorar=(), ahora=None):
+    """Lanza `HorarioNoDisponible` si [inicio, fin) ya pasó, choca con algo agendado o cae fuera de los turnos
+    de `usuario`. `ignorar` son los intervalos (inicio, fin) del propio evento que se está moviendo o editando."""
+    ahora = ahora or datetime.now()
+    if inicio < ahora:
+        motivo = 'Ese horario ya pasó.'
+    else:
+        bloques = [parte for b in bloques_propios(usuario, inicio, fin) + ocupados_google(usuario, inicio, fin)
+                   for parte in _restar_intervalos(b, list(ignorar))]
+        dentro = any(datetime.combine(inicio.date(), a) <= inicio and datetime.combine(inicio.date(), b) >= fin
+                     for a, b in franjas_del_dia(usuario, inicio.date()))
+        if _ocupado_en(inicio, fin, bloques, 0):
+            motivo = 'Ya tienes algo agendado en ese horario.'
+        elif not dentro:
+            motivo = 'Ese horario está fuera de tus turnos disponibles.'
+        else:
+            return
+    duracion = max(5, int((fin - inicio).total_seconds() // 60))
+    raise HorarioNoDisponible(f'{motivo} Elige una de las horas sugeridas.', sugerencias(usuario, duracion, ahora))

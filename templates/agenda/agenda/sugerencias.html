@@ -1,0 +1,15 @@
+<div class="col-12">
+    <div class="cal-sugerencias" id="cal-sugerencias" data-actual="{{ hora_actual }}">
+        <p class="cal-sugerencias-titulo"><i class="far fa-calendar-check me-1" aria-hidden="true"></i>Días con disponibilidad en tus turnos</p>
+        <div class="cal-sugerencias-lista">
+            {% for dia in sugerencias %}
+                <div class="cal-sugerencia-dia">
+                    <span class="cal-sugerencia-fecha">{{ dia.etiqueta }}</span>
+                    {% for h in dia.horas %}<button type="button" class="btn btn-light btn-sm cal-sugerencia" data-fecha="{{ dia.fecha }}" data-valor="{{ h.valor }}">{{ h.texto }}</button>{% endfor %}
+                </div>
+            {% empty %}
+                <p class="small text-muted mb-0">No tienes espacios libres en tus turnos de las próximas dos semanas. Revisa <a href="/agenda/mis-turnos/">Mis turnos</a>.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>

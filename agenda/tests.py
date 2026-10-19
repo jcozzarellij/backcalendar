@@ -286,3 +286,202 @@ class BusquedaTests(TestCase):
         r = buscar('jose perez', ana)
         self.assertEqual([c.nombres for c in r['clientes']], ['José Pérez'])
         self.assertEqual(buscar('x', ana)['total'], 0)
+
+
+class BaseReservaTests(TestCase):
+    """Usuario con turno los lunes 9:00-11:00 y un producto del portal para reservar."""
+
+    def setUp(self):
+        from .models import Portal, Producto
+        from . import funciones_portal
+        self.funciones_portal = funciones_portal
+        self.ana = crear_usuario('ana')
+        proyecto = Proyecto.objects.create(codigo='demo', nombre='Demo', lider=self.ana)
+        self.equipo = Equipo.objects.create(proyecto=proyecto, nombre='Equipo demo', lider=self.ana)
+        MiembroEquipo.objects.create(equipo=self.equipo, usuario=self.ana, rol='responsable')
+        hoy = date.today()
+        self.lunes = hoy + timedelta(days=(7 - hoy.weekday()) % 7 or 7)
+        if (self.lunes - hoy).days < 3:
+            self.lunes += timedelta(days=7)
+        patron = PatronTurno.objects.create(usuario=self.ana, vigencia_desde=hoy)
+        FranjaTurno.objects.create(patron=patron, dia_semana=0, hora_inicio=time(9, 0), hora_fin=time(11, 0))
+        self.portal = Portal.objects.create(nombre='Demo', slug='demo', principal=True)
+        self.producto = Producto.objects.create(portal=self.portal, slug='kawana', nombre='Kawana', equipo=self.equipo,
+                                                duracion_min=40, antelacion_horas=1, ventana_dias=30)
+        self.datos = {'nombres': 'Cliente Prueba', 'correo': 'cliente@prueba.com', 'telefono': '', 'mensaje': ''}
+
+    def reservar(self, hora=time(9, 0)):
+        with patch.object(self.funciones_portal.funciones_avisos_cita, 'avisar_reserva'):
+            return self.funciones_portal.reservar(self.producto, datetime.combine(self.lunes, hora), self.datos)
+
+
+class LogoProductoTests(BaseReservaTests):
+    def _archivo(self, nombre, tamano=100):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        return SimpleUploadedFile(nombre, b'0' * tamano, content_type='application/octet-stream')
+
+    def test_logo_valida_extension_y_tamano(self):
+        from django.core.exceptions import ValidationError
+        campo = self.producto._meta.get_field('logo')
+        campo.run_validators(self._archivo('logo.png'))
+        with self.assertRaises(ValidationError):
+            campo.run_validators(self._archivo('logo.exe'))
+        with self.assertRaises(ValidationError):
+            campo.run_validators(self._archivo('logo.svg'))
+        with self.assertRaises(ValidationError):
+            campo.run_validators(self._archivo('grande.png', 2 * 1024 * 1024 + 10))
+
+    def test_tarjeta_del_landing_lleva_el_logo(self):
+        from .funciones_portal import productos_publicos, textos
+        t = textos('es')
+        self.assertIsNone(productos_publicos(self.portal, 'es', t)[0]['logo'])
+        self.producto.logo = 'productos/kawana.png'
+        self.producto.save()
+        self.assertEqual(productos_publicos(self.portal, 'es', t)[0]['logo'], '/media/productos/kawana.png')
+
+    def test_form_de_producto_usa_dropify(self):
+        from .forms import ProductoForm
+        form = ProductoForm(portal=self.portal)
+        self.assertEqual(form.fields['logo'].widget.attrs['class'], 'dropify')
+        self.assertIn('.png', form.fields['logo'].widget.attrs['accept'])
+
+
+class AvisosProximosTests(BaseReservaTests):
+    def setUp(self):
+        super().setUp()
+        from . import funciones_avisos_proximos
+        self.avisos = funciones_avisos_proximos
+        self.correo = patch.object(funciones_avisos_proximos.correos, 'enviar_ahora', return_value=True).start()
+        self.push = patch('pwa.notificaciones.enviar_push_usuario', return_value=True).start()
+        self.addCleanup(patch.stopall)
+        self.ana.email = 'ana@prueba.com'
+        self.ana.save()
+
+    def test_cita_del_portal_avisa_solo_al_responsable_una_vez(self):
+        from .models import AvisoProximo
+        cita, _ = self.reservar()
+        self.assertEqual(self.avisos.enviar_avisos_proximos(cita.inicio - timedelta(minutes=8)), (2, 0))
+        self.assertEqual(set(AvisoProximo.objects.filter(cita=cita).values_list('usuario_id', 'canal')),
+                         {(self.ana.pk, 'correo'), (self.ana.pk, 'push')})
+        self.assertEqual(self.avisos.enviar_avisos_proximos(cita.inicio - timedelta(minutes=5)), (0, 0))
+        self.assertEqual(self.correo.call_count, 1)
+        self.assertEqual(self.push.call_count, 1)
+
+    def test_avisa_tambien_a_quien_agendo(self):
+        from .models import AvisoProximo, Cita
+        cita, _ = self.reservar()
+        bea = crear_usuario('bea')
+        bea.email = 'bea@prueba.com'
+        bea.save()
+        Cita.objects.filter(pk=cita.pk).update(usuario_creacion=bea)
+        self.avisos.enviar_avisos_proximos(cita.inicio - timedelta(minutes=10))
+        self.assertEqual(set(AvisoProximo.objects.filter(cita=cita, canal='correo').values_list('usuario_id', flat=True)),
+                         {self.ana.pk, bea.pk})
+
+    def test_fuera_de_la_ventana_no_avisa(self):
+        cita, _ = self.reservar()
+        self.assertEqual(self.avisos.enviar_avisos_proximos(cita.inicio - timedelta(minutes=11)), (0, 0))
+        self.assertEqual(self.avisos.enviar_avisos_proximos(cita.inicio + timedelta(minutes=1)), (0, 0))
+
+    def test_reunion_avisa_al_organizador_y_registra_el_fallo_de_push(self):
+        from .models import AvisoProximo, Reunion
+        inicio = datetime.combine(self.lunes, time(10, 0))
+        reunion = Reunion.objects.create(organizador=self.ana, plataforma='google', titulo='Revisión', inicio=inicio,
+                                         fin=inicio + timedelta(minutes=30))
+        self.push.return_value = False
+        self.assertEqual(self.avisos.enviar_avisos_proximos(inicio - timedelta(minutes=3)), (1, 1))
+        self.assertFalse(AvisoProximo.objects.get(reunion=reunion, canal='push').exito)
+        self.assertEqual(self.avisos.enviar_avisos_proximos(inicio - timedelta(minutes=2)), (0, 0))
+
+
+class IdsCifradosTests(BaseReservaTests):
+    def test_cifrar_y_descifrar(self):
+        from core.crypto import cifrar_id, descifrar_id
+        token = cifrar_id(42)
+        self.assertNotIn('42', token)
+        self.assertEqual(descifrar_id(token), 42)
+        self.assertNotEqual(cifrar_id(42), token)
+        self.assertIsNone(descifrar_id('42'))
+        self.assertIsNone(descifrar_id(token[:-4] + 'AAAA'))
+        self.assertIsNone(descifrar_id(''))
+
+    def test_mis_citas_no_expone_ids_y_solo_acepta_el_cifrado(self):
+        import re
+        from django.test import Client as Navegador
+        from . import funciones_tokens
+        cita, _ = self.reservar()
+        url = f'/conectar/demo/{funciones_tokens.emitir("cliente", cliente=cita.cliente)}/'
+        navegador = Navegador()
+        html = navegador.get(url).content.decode()
+        self.assertNotRegex(html, rf'(cita-|pt-cambio-|pt-cancelar-|name="cita" value="){cita.pk}\b')
+        ref = re.search(r'name="cita" value="([^"]+)"', html).group(1)
+        r = navegador.post(url, {'action': 'cancelar', 'cita': str(cita.pk), 'motivo': 'x'})
+        self.assertTrue(r.json()['error'])
+        r = navegador.post(url, {'action': 'cancelar', 'cita': ref, 'motivo': 'Prueba'})
+        self.assertFalse(r.json()['error'], r.json())
+
+
+class MiAgendaTurnosTests(BaseReservaTests):
+    def setUp(self):
+        super().setUp()
+        self.ana.is_superuser = True
+        self.ana.save()
+
+    def test_validar_horario(self):
+        from .funciones_disponibilidad import HorarioNoDisponible, validar_horario
+        nueve = datetime.combine(self.lunes, time(9, 0))
+        validar_horario(self.ana, nueve, nueve + timedelta(minutes=30))
+        with self.assertRaisesMessage(HorarioNoDisponible, 'fuera de tus turnos') as error:
+            validar_horario(self.ana, nueve + timedelta(hours=3), nueve + timedelta(hours=3, minutes=30))
+        self.assertTrue(error.exception.sugerencias)
+        cita, _ = self.reservar()
+        with self.assertRaisesMessage(HorarioNoDisponible, 'Ya tienes algo agendado'):
+            validar_horario(self.ana, nueve, nueve + timedelta(minutes=30))
+        validar_horario(self.ana, nueve, nueve + timedelta(minutes=30), ignorar=[(cita.inicio, cita.fin)])
+        with self.assertRaisesMessage(HorarioNoDisponible, 'ya pasó'):
+            validar_horario(self.ana, datetime.now() - timedelta(hours=1), datetime.now())
+
+    def test_horas_libres_solo_dentro_del_turno(self):
+        from .funciones_disponibilidad import horas_libres
+        self.reservar()
+        horas = [h['texto'] for h in horas_libres(self.ana, self.lunes, 40)]
+        self.assertNotIn('09:00', horas)
+        self.assertTrue(horas)
+        self.assertTrue(all('09:00' <= h <= '10:20' for h in horas))
+        self.assertEqual(horas_libres(self.ana, self.lunes + timedelta(days=1), 40), [])
+
+    def test_vista_rechaza_reunion_fuera_de_turno_y_sugiere(self):
+        self.client.force_login(self.ana)
+        r = self.client.post('/agenda/mi-agenda/', {'action': 'reunion', 'plataforma': 'google', 'titulo': 'Fuera',
+                                                     'inicio': f'{self.lunes:%Y-%m-%d}T15:00', 'duracion': 30})
+        res = r.json()[0]
+        self.assertTrue(res['error'])
+        self.assertIn('inicio', res['form'][0])
+        self.assertTrue(res['sugerencias'])
+        r = self.client.get('/agenda/mi-agenda/', {'action': 'horas_libres', 'fecha': self.lunes.isoformat(), 'duracion': 30})
+        self.assertEqual(r.json()['horas'][0]['valor'], f'{self.lunes:%Y-%m-%d}T09:00')
+
+    def test_form_de_cita_atado_a_turnos(self):
+        self.client.force_login(self.ana)
+        r = self.client.get('/agenda/mi-agenda/', {'action': 'agendar', 'inicio': f'{self.lunes:%Y-%m-%d}T09:00',
+                                                   'duracion': 40})
+        html = r.json()['data']
+        self.assertIn('type="date"', html)
+        self.assertIn(f'value="{self.lunes:%Y-%m-%d}T09:00" selected', html)
+        self.assertIn('cal-sugerencias', html)
+
+
+class OffcanvasAgendaTests(BaseReservaTests):
+    def test_offcanvas_lista_hoy_y_proximas(self):
+        self.ana.is_superuser = True
+        self.ana.save()
+        cita, _ = self.reservar()
+        self.client.force_login(self.ana)
+        r = self.client.get('/agenda/mi-dia/', {'action': 'offcanvas'})
+        self.assertTrue(r.json()['result'])
+        self.assertIn('Próximas reuniones', r.json()['data'])
+        self.assertIn(cita.titulo, r.json()['data'])
+        self.assertNotContains(self.client.get('/panel/'), 'mi-agenda-offcanvas')
+        from seguridad.models import Modulo
+        Modulo.objects.create(url='/agenda/mi-dia/', nombre='Mi día')
+        self.assertContains(self.client.get('/panel/'), 'mi-agenda-offcanvas')

@@ -11,6 +11,7 @@
             </div>
         </div>
     {% endfor %}
+    {% if 'fecha' in form.fields %}{% include 'agenda/agenda/sugerencias.html' %}{% endif %}
     <div class="col-lg-12">
         <div class="mb-2">
             <label class="form-label small mb-1" for="id_equipo">Equipo que atiende <span class="text-muted">(opcional)</span></label>

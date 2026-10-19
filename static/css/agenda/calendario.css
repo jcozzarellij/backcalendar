@@ -435,3 +435,58 @@ a.cal-mes-cita[draggable="true"] {
 .cal-rejilla:not(:has(thead th:nth-child(3))) {
     min-width: 0;
 }
+
+.cal-sugerencias {
+    padding: .75rem;
+    border-radius: 12px;
+    background: #f3f8fb;
+    border: 1px solid #d6e6ef;
+}
+
+.cal-sugerencias-titulo {
+    margin: 0 0 .5rem;
+    font-size: .85rem;
+    font-weight: 600;
+    color: #005082;
+}
+
+.cal-sugerencias-lista {
+    display: grid;
+    gap: .4rem;
+}
+
+.cal-sugerencia-dia {
+    display: grid;
+    grid-template-columns: 7.5rem repeat(4, minmax(0, 4.5rem));
+    align-items: center;
+    gap: .35rem;
+}
+
+.cal-sugerencia-fecha {
+    font-size: .85rem;
+    font-weight: 600;
+    color: #1a2b3c;
+}
+
+.cal-sugerencia {
+    min-height: 36px;
+    font-variant-numeric: tabular-nums;
+}
+
+.cal-sugerencia.btn-primary {
+    color: #ffffff;
+}
+
+@media (max-width: 575.98px) {
+    .cal-sugerencia-dia {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .cal-sugerencia-fecha {
+        grid-column: 1 / -1;
+    }
+}
+
+.cal-celda.cal-fuera {
+    cursor: not-allowed;
+}

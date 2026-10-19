@@ -45,13 +45,15 @@
         return nodo;
     }
 
-    function enviar(datos, exito) {
+    function enviar(datos, exito, alSugerir) {
         pantallaespera();
         $.post(ruta, Object.assign({csrfmiddlewaretoken: csrfAgenda()}, datos), function (data) {
             $.unblockUI();
             const res = Array.isArray(data) ? data[0] : data;
             if (res && res.error === false) {
                 (exito || function () { location.reload(); })(res);
+            } else if (res && res.sugerencias && alSugerir) {
+                elegirSugerencia(res.message, res.sugerencias, alSugerir);
             } else {
                 mensajeWarning((res && res.message) || 'No se pudo completar la acción.');
             }
@@ -77,10 +79,11 @@
 
     function moverYa(actual, inicio) {
         const fin = sumarMinutos(inicio, actual.minutos);
+        const otraHora = function (valor) { moverYa(actual, valor); };
         if (actual.tipo === 'cita') {
-            enviar({action: 'mover', id: actual.pk, inicio: inicio, fin: fin});
+            enviar({action: 'mover', id: actual.pk, inicio: inicio, fin: fin}, null, otraHora);
         } else {
-            enviar({action: 'mover_reunion', id: actual.ref, plataforma: actual.plataforma, inicio: inicio, fin: fin});
+            enviar({action: 'mover_reunion', id: actual.ref, plataforma: actual.plataforma, inicio: inicio, fin: fin}, null, otraHora);
         }
     }
 
@@ -135,7 +138,7 @@
     }
 
     function nuevaCita(inicio) {
-        formModal(0, 'Nueva cita · ' + texto(inicio), 'agendar', {inicio: inicio, duracion: paso});
+        formModal(0, 'Nueva cita', 'agendar', {inicio: inicio, duracion: paso});
     }
 
     function elegir(inicio) {
@@ -290,6 +293,8 @@
             arrastre = null;
             if (actual.tipo === 'solicitud') {
                 formModal(actual.pk, 'Asignar horario a ' + actual.nombre, 'asignar', {inicio: inicio}, '/agenda/solicitudes/');
+            } else if (celda.classList.contains('cal-fuera')) {
+                sugerirHorario('Ese horario está fuera de tus turnos disponibles.', actual.minutos, function (valor) { moverYa(actual, valor); });
             } else {
                 mover(actual, inicio);
             }

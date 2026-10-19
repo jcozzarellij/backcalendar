@@ -34,6 +34,7 @@
             </div>
         </div>
     {% endfor %}
+    {% if 'fecha' in form.fields %}{% include 'agenda/agenda/sugerencias.html' %}{% endif %}
 </div>
 
 <div class="border-top my-3"></div>
