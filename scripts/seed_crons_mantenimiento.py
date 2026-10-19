@@ -51,6 +51,16 @@ TAREAS = [
                        'participante según sus minutos de aviso.',
     },
     {
+        'clave': 'avisos_proximos',
+        'nombre': 'Aviso 10 minutos antes',
+        'comando': 'python manage.py avisos_proximos',
+        'schedule': '* * * * *',
+        'icono': 'bi-alarm-fill',
+        'orden': 81,
+        'descripcion': 'Cada minuto avisa por correo y push al responsable asignado y a quien agendó las citas, y al '
+                       'organizador de las reuniones propias, que empiezan en los próximos 10 minutos.',
+    },
+    {
         'clave': 'reconciliar_google',
         'nombre': 'Reconciliación con Google Calendar',
         'comando': 'python manage.py reconciliar_google',

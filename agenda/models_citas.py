@@ -5,7 +5,7 @@ from django.db.models import F, Func, Q
 
 from backcalendar.settings import AUTH_USER_MODEL
 from core.custom_models import ModeloBase, RegistroInmutable
-from .models import PLATAFORMA_REUNION, Equipo, Portal, Producto, Proyecto
+from .models import PLATAFORMA_REUNION, Equipo, Portal, Producto, Proyecto, Reunion
 
 ESTADO_SOLICITUD = (
     ('en_cola', 'En cola'),
@@ -402,3 +402,38 @@ class TextoPortal(ModeloBase):
         verbose_name_plural = 'Textos del portal'
         ordering = ('clave',)
         constraints = [models.UniqueConstraint(fields=['clave'], name='texto_portal_clave_unica')]
+
+
+CANAL_AVISO = (
+    ('correo', 'Correo'),
+    ('push', 'Notificación push'),
+)
+
+
+class AvisoProximo(RegistroInmutable):
+    """Evidencia del aviso «empieza en 10 minutos» por usuario y canal; la unicidad impide repetirlo."""
+    cita = models.ForeignKey(Cita, on_delete=models.PROTECT, blank=True, null=True, related_name='avisos_proximos',
+                             verbose_name='Cita')
+    reunion = models.ForeignKey(Reunion, on_delete=models.PROTECT, blank=True, null=True,
+                                related_name='avisos_proximos', verbose_name='Reunión')
+    usuario = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='avisos_proximos',
+                                verbose_name='Usuario')
+    canal = models.CharField(max_length=10, choices=CANAL_AVISO, verbose_name='Canal')
+    enviado_en = models.DateTimeField(auto_now_add=True, verbose_name='Enviado')
+    exito = models.BooleanField(default=True, verbose_name='Enviado con éxito')
+    detalle = models.CharField(max_length=300, blank=True, default='', verbose_name='Detalle')
+
+    def __str__(self):
+        return f'{self.cita or self.reunion} · {self.usuario} · {self.canal}'
+
+    class Meta:
+        verbose_name = 'Aviso de inicio próximo'
+        verbose_name_plural = 'Avisos de inicio próximo'
+        constraints = [
+            models.UniqueConstraint(fields=['cita', 'usuario', 'canal'], name='aviso_proximo_cita_unico',
+                                    condition=Q(cita__isnull=False)),
+            models.UniqueConstraint(fields=['reunion', 'usuario', 'canal'], name='aviso_proximo_reunion_unico',
+                                    condition=Q(reunion__isnull=False)),
+            models.CheckConstraint(condition=Q(cita__isnull=False) | Q(reunion__isnull=False),
+                                   name='aviso_proximo_con_origen'),
+        ]
