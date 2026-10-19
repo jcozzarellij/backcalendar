@@ -71,7 +71,7 @@ def portalView(request):
                     res_json = {'error': False}
                 elif action == 'addproducto':
                     portal = model.objects.get(pk=int(request.POST['pk']), status=True)
-                    form = ProductoForm(request.POST, portal=portal, request=request)
+                    form = ProductoForm(request.POST, request.FILES, portal=portal, request=request)
                     if not form.is_valid():
                         raise FormError(form)
                     form.instance.portal = portal
@@ -81,7 +81,7 @@ def portalView(request):
                     res_json.append({'error': False, 'reload': True})
                 elif action == 'changeproducto':
                     producto = Producto.objects.select_related('portal').get(pk=int(request.POST['pk']), status=True)
-                    form = ProductoForm(request.POST, instance=producto, portal=producto.portal, request=request)
+                    form = ProductoForm(request.POST, request.FILES, instance=producto, portal=producto.portal, request=request)
                     if not form.is_valid():
                         raise FormError(form)
                     form.save()

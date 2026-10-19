@@ -3,14 +3,17 @@
 {% block meta_pagina %}
     <meta name="description" content="{{ t.ag_meta }} {{ nombre_producto }}.">
     <meta name="robots" content="noindex">
-    <link rel="stylesheet" href="/static/css/public/reserva.css?v3.4">
+    <link rel="stylesheet" href="/static/css/public/reserva.css?v3.5">
 {% endblock %}
 
 {% block pagina %}
 <section class="ag-cabecera" aria-labelledby="ag-producto">
     <a href="/{% if ventana %}incrustar/{{ portal.slug }}/{% endif %}" class="ct-volver"><i class="fas fa-arrow-left" aria-hidden="true"></i>{{ t.ver_productos }}</a>
     {% if nombre_padre %}<p class="ag-padre">{{ nombre_padre }}</p>{% endif %}
-    <h1 id="ag-producto" class="ag-producto">{{ nombre_producto }}</h1>
+    <div class="ag-producto-fila">
+        {% if logo_producto %}<img src="{{ logo_producto }}" alt="" class="ag-producto-logo" width="72" height="72">{% endif %}
+        <h1 id="ag-producto" class="ag-producto">{{ nombre_producto }}</h1>
+    </div>
     {% if descripcion_producto %}<p class="ag-descripcion">{{ descripcion_producto }}</p>{% endif %}
     <p class="ld-ticket-dato ag-atencion"><i class="fas fa-video" aria-hidden="true"></i>{{ atencion }}</p>
     {% if partes %}
@@ -148,7 +151,10 @@
             <aside class="ag-resumen" aria-live="polite" aria-labelledby="ag-resumen-titulo">
                 <div class="ag-resumen-cuerpo">
                     <h2 class="ag-resumen-titulo" id="ag-resumen-titulo">{{ t.su_cita }}</h2>
-                    <p class="ag-resumen-producto">{{ nombre_producto }}</p>
+                    <div class="ag-resumen-producto-fila">
+                        {% if logo_producto %}<img src="{{ logo_producto }}" alt="" class="ag-resumen-logo" width="44" height="44" loading="lazy">{% endif %}
+                        <p class="ag-resumen-producto">{{ nombre_producto }}</p>
+                    </div>
                     <p class="ag-resumen-detalle">{{ atencion }}</p>
                 </div>
                 <dl class="ag-troquel ag-resumen-talon">

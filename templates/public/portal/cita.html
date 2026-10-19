@@ -2,7 +2,7 @@
 
 {% block meta_pagina %}
     <meta name="robots" content="noindex, nofollow">
-    <link rel="stylesheet" href="/static/css/public/reserva.css?v3.4">
+    <link rel="stylesheet" href="/static/css/public/reserva.css?v3.5">
 {% endblock %}
 
 {% block pagina %}
@@ -76,10 +76,10 @@
                 </section>
 
                 {% if puede_cambiar %}
-                    {% include 'public/portal/parciales/panel_cambio.html' with clase='ci-panel' panel_id='pt-cambio' grupo='cita' nivel='h2' cita_pk='' %}
+                    {% include 'public/portal/parciales/panel_cambio.html' with clase='ci-panel' panel_id='pt-cambio' grupo='cita' nivel='h2' dom='' cita_ref='' %}
                 {% endif %}
                 {% if puede_cancelar %}
-                    {% include 'public/portal/parciales/panel_cancelar.html' with clase='ci-panel' panel_id='pt-cancelar' grupo='cita' nivel='h2' cita_pk='' %}
+                    {% include 'public/portal/parciales/panel_cancelar.html' with clase='ci-panel' panel_id='pt-cancelar' grupo='cita' nivel='h2' dom='' cita_ref='' %}
                 {% endif %}
 
                 {% include 'public/parciales/ayuda.html' with ayuda_id='ci-ayuda-titulo' %}

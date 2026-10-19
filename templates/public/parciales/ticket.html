@@ -2,7 +2,10 @@
     <article class="ld-ticket">
         <div class="row g-0 h-100">
             <div class="{% if p.partes %}col-lg-5{% else %}col-sm{% endif %} ld-ticket-cuerpo">
-                <h3 class="ld-ticket-nombre">{{ p.nombre }}</h3>
+                <div class="ld-ticket-cabeza">
+                    {% if p.logo %}<img src="{{ p.logo }}" alt="{{ p.nombre }}" class="ld-ticket-logo" width="56" height="56" loading="lazy">{% endif %}
+                    <h3 class="ld-ticket-nombre">{{ p.nombre }}</h3>
+                </div>
                 {% if p.descripcion %}<p class="ld-ticket-desc">{{ p.descripcion }}</p>{% endif %}
                 <p class="ld-ticket-meta">
                     <span class="ld-ticket-dato"><i class="fas fa-video" aria-hidden="true"></i>{{ p.atencion }}</span>

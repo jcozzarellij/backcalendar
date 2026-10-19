@@ -5,7 +5,7 @@ from django.conf import settings
 from django.http import Http404
 from django.views.static import serve
 
-PUBLICOS = ('configuracion/', 'fotousuario/', 'pwa/')
+PUBLICOS = ('configuracion/', 'fotousuario/', 'pwa/', 'productos/')
 EXTENSIONES = {'.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.tiff', '.jfif'}
 PREDEFINIDOS = {'foto_defaultd.png', 'loadmail.gif', 'no-image.webp'}
 

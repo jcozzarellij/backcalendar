@@ -221,6 +221,9 @@ class Producto(ModeloBase):
     descripcion_en = models.CharField(max_length=300, blank=True, default='', verbose_name='Descripción (inglés)')
     descripcion_pt = models.CharField(max_length=300, blank=True, default='', verbose_name='Descripción (portugués)')
     sitio_web = models.URLField(blank=True, default='', verbose_name='Sitio del producto')
+    logo = models.FileField(upload_to='productos/', blank=True, null=True, verbose_name='Logo',
+                            help_text='PNG, JPG o WEBP de hasta 2 MB. Se muestra en la tarjeta del landing.',
+                            validators=[FileExtensionValidator(['png', 'jpg', 'jpeg', 'webp']), validate_file_size_2mb])
     equipo = models.ForeignKey(Equipo, on_delete=models.PROTECT, blank=True, null=True, related_name='productos',
                                verbose_name='Equipo que atiende')
     duracion_min = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name='Duración (min)')

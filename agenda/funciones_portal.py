@@ -352,6 +352,7 @@ def _tarjetas(productos, idioma, t):
         'slug': p.slug,
         'ruta': f'/{p.slug}/',
         'sitio_web': p.sitio_web,
+        'logo': p.logo.url if p.logo else None,
         'atencion': atencion_de(p, t),
         'partes': [{'nombre': nombre_producto(s, idioma), 'descripcion': descripcion_producto(s, idioma),
                     'slug': s.slug, 'ruta': f'/{p.slug}/{s.slug}/'}
