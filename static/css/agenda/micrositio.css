@@ -488,6 +488,21 @@ body.mi-cuerpo .swal2-popup {
     box-shadow: 0 18px 40px rgba(26, 43, 60, 0.18);
 }
 
+body.mi-cuerpo .swal2-container.swal2-top-end {
+    overflow: visible;
+}
+
+body.mi-cuerpo .swal2-popup.swal2-toast {
+    padding: .65rem 1rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(26, 43, 60, 0.12);
+}
+
+body.mi-cuerpo .swal2-popup.swal2-toast .swal2-title {
+    margin: 0 .5rem;
+    font-size: .95rem;
+}
+
 body.mi-cuerpo .swal2-popup .swal2-title {
     color: var(--mi-tinta);
     font-size: 1.15rem;

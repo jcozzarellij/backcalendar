@@ -81,3 +81,12 @@
         animation: none;
     }
 }
+
+.modal-open .af-caja,
+.modal-open .push-snack,
+body:has(.offcanvas.show) .af-caja,
+body:has(.offcanvas.show) .push-snack,
+body:has(.mi-lateral.abierto) .af-caja,
+body:has(.mi-lateral.abierto) .push-snack {
+    z-index: 1040;
+}

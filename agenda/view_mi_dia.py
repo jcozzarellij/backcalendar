@@ -1,7 +1,9 @@
 from datetime import date, datetime, timedelta
 
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import render
+from django.template.loader import get_template
 from django.utils.formats import date_format
 
 from core.funciones import addData, secure_module
@@ -27,6 +29,13 @@ def miDiaView(request):
         'fecha': str(hoy),
     }
     addData(request, data)
+    if 'action' in request.GET:
+        data['action'] = action = request.GET['action']
+        if action == 'offcanvas':
+            data.update(_agenda_offcanvas(request.user, hoy, ahora))
+            template = get_template('agenda/mi_dia/offcanvas.html')
+            return JsonResponse({'result': True, 'data': template.render(data)})
+        return JsonResponse({'result': False, 'message': 'Acción no permitida.'})
     dia_ini = datetime.combine(hoy, datetime.min.time())
     dia_fin = dia_ini + timedelta(days=1)
     citas = list(citas_del_usuario(request.user, dia_ini, dia_fin))
@@ -57,3 +66,31 @@ def miDiaView(request):
         'equipo': request.user.membresias_agenda.filter(status=True).exists(),
     }
     return render(request, 'agenda/mi_dia/listado.html', data)
+
+
+DIAS_PROXIMOS = 7
+MAX_PROXIMOS = 8
+
+
+def _agenda_offcanvas(usuario, hoy, ahora):
+    """Lo de hoy y lo próximo (citas y reuniones) para el panel lateral «Mi agenda» del panel."""
+    dia_ini = datetime.combine(hoy, datetime.min.time())
+    dia_fin = dia_ini + timedelta(days=1)
+    tope = dia_ini + timedelta(days=DIAS_PROXIMOS + 1)
+    citas = list(citas_del_usuario(usuario, dia_ini, tope))
+    items = [{'inicio': c.inicio, 'fin': c.fin, 'titulo': c.titulo,
+              'detalle': '' if str(c.cliente) in c.titulo else str(c.cliente), 'tipo': 'cita',
+              'url': f'/agenda/citas/{c.pk}/', 'enlace': c.enlace_meet} for c in citas]
+    eventos, _, error = funciones_reuniones.agenda_externa(usuario, dia_ini, tope, excluir=[c.google_event_id for c in citas])
+    items += [{'inicio': e['inicio'], 'fin': e['fin'], 'titulo': e['titulo'], 'detalle': e.get('lugar', ''),
+               'tipo': 'reunion', 'url': '/agenda/mi-agenda/', 'enlace': e.get('meet', ''),
+               'todo_el_dia': e['todo_el_dia']} for e in eventos]
+    items.sort(key=lambda i: i['inicio'])
+    for i in items:
+        i['en_curso'] = i['inicio'] <= ahora < i['fin']
+        i['terminado'] = i['fin'] <= ahora
+    return {
+        'oc_hoy': [i for i in items if i['inicio'] < dia_fin and i['fin'] > dia_ini],
+        'oc_proximas': [i for i in items if i['inicio'] >= dia_fin][:MAX_PROXIMOS],
+        'oc_error': error,
+    }

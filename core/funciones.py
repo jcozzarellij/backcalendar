@@ -220,7 +220,7 @@ def modulos_permitidos(request):
 def agregar_sidebar(request, data):
     """Secciones del sidebar con sus módulos visibles, sección abierta, módulo de la ruta actual y
     contadores de pendientes. Una consulta para las secciones con sus módulos ya filtrados y ordenados."""
-    from agenda.models import Solicitud
+    from agenda.models import PreferenciaAgenda, Solicitud
     modulos = modulos_permitidos(request)
     ids = [m.id for m in modulos]
     grupos = list(ModuloGrupo.objects.filter(status=True, modulos__id__in=ids).order_by('prioridad').distinct()
@@ -231,6 +231,8 @@ def agregar_sidebar(request, data):
     data['grupo_abierto'] = next((g.pk for g in grupos for m in g.modulos_visibles if ruta.startswith(m.url.lower())),
                                  None)
     data['es_pantalla_modulo'] = request.path == '/panel/' or any(m.url == request.path for m in modulos)
+    data['acceso_mi_dia'] = any(m.url == '/agenda/mi-dia/' for m in modulos)
+    data['tour_pendiente'] = not PreferenciaAgenda.objects.filter(usuario=request.user, primer_ingreso_visto=True).exists()
     contadores = {'/agenda/alertas/': data.get('totalnot', 0)}
     if any(m.url == '/agenda/cola/' for m in modulos):
         contadores['/agenda/cola/'] = Solicitud.objects.filter(status=True, estado='en_cola').count()

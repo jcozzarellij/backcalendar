@@ -48,14 +48,14 @@
                             <div class="d-flex flex-wrap gap-2 mt-3">
                                 <button type="button" class="btn btn-primary btn-sm" onclick="accionAgenda({{ p.conexion.pk }}, 'probar')"><i class="fas fa-plug me-1"></i>Probar conexión</button>
                                 {% if not p.conexion.conectada %}
-                                    <a href="?action=conectar_google" class="btn btn-success btn-sm"><i class="fas fa-rotate me-1"></i>Volver a conectar</a>
+                                    <a href="?action=conectar_google" class="btn btn-success btn-sm" data-tour-texto="Si Google dejó de responder o cambiaste de contraseña, vuelve a conectar tu cuenta desde aquí." data-tour-paso="1"><i class="fas fa-rotate me-1"></i>Volver a conectar</a>
                                 {% endif %}
                                 <button type="button" class="btn btn-danger btn-sm" onclick="eliminarajax({{ p.conexion.pk }}, '{{ p.conexion.cuenta|escapejs }}', 'desconectar', 'Vas a desconectar {{ p.nombre|escapejs }}')"><i class="fas fa-unlink me-1"></i>Desconectar</button>
                             </div>
                         {% elif p.disponible %}
                             <p class="agenda-sub">Tus citas se crean en este calendario con su videollamada y se consulta tu disponibilidad real.</p>
                             {% if google_configurado %}
-                                <a href="?action=conectar_google" class="btn btn-success btn-sm mt-2"><i class="fab fa-google me-1"></i>Conectar con Google</a>
+                                <a href="?action=conectar_google" class="btn btn-success btn-sm mt-2" data-tour-texto="Pulsa aquí e inicia sesión con tu cuenta de Google (Gmail). Acepta los permisos de Calendar: así tus citas y reuniones se crean con enlace de Meet y se cruzan con tu disponibilidad." data-tour-paso="1"><i class="fab fa-google me-1"></i>Conectar con Google</a>
                             {% else %}
                                 <p class="agenda-sub mb-0">Disponible cuando el administrador configure Google.</p>
                             {% endif %}

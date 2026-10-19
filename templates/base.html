@@ -13,7 +13,7 @@
     <link href="/static/assets_riz/css/app.min.css?1.6" rel="stylesheet" type="text/css"/>
     <link href="/static/assets_riz/css/icons.min.css" rel="stylesheet" type="text/css"/>
 
-    <link rel="stylesheet" href="/static/fonts/turno_fuentes.css?v1.2">
+    <link rel="stylesheet" href="/static/fonts/turno_fuentes.css?v1.4">
     <link href="/static/base_adicional.css?2.3" rel="stylesheet" type="text/css"/>
     <link href="/static/base_tablas.css?1.5" rel="stylesheet" type="text/css"/>
     <meta name="vapid-key" content="{{ vapid_key }}">
@@ -23,7 +23,7 @@
         <link rel="stylesheet" href="/static/css/pwa/install_bar.css?v={{ version_css }}">
     {% endif %}
     <link rel="stylesheet" href="/static/css/pwa/push_optin.css?v={{ version_css }}">
-    <link rel="stylesheet" href="/static/css/agenda/micrositio.css?v3.0">
+    <link rel="stylesheet" href="/static/css/agenda/micrositio.css?v3.1">
     <link rel="stylesheet" href="/static/css/core/interaccion.css?v={{ version_css }}">
     {% block head %}{% endblock %}
     <script>
@@ -39,7 +39,13 @@
         <a href="/panel/" class="mi-marca" aria-label="{{ nombreempresa }}">
             {% if confi.logo_sistema %}<img src="/media/{{ confi.logo_sistema }}" alt="{{ nombreempresa }}">{% else %}<span>{{ alias|default:nombreempresa }}</span>{% endif %}
         </a>
-        <nav class="mi-nav" aria-label="Principal">
+        <div class="mi-buscador d-print-none" role="search">
+            <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="search" id="mi-buscar-modulo" class="mi-buscador-input" placeholder="Buscar módulo" aria-label="Buscar módulo en el menú" autocomplete="off" aria-controls="mi-nav-principal">
+            <kbd class="mi-buscador-atajo" aria-hidden="true">/</kbd>
+        </div>
+        <p class="mi-buscador-vacio" id="mi-buscar-vacio" hidden>Ningún módulo coincide.</p>
+        <nav class="mi-nav" id="mi-nav-principal" aria-label="Principal">
             <a href="/panel/" class="mi-nav-item {% if request.path == '/panel/' %}activo{% endif %}">
                 <i class="fas fa-house" aria-hidden="true"></i><span>Panel</span>
             </a>
@@ -87,7 +93,8 @@
                 {% endif %}
             </div>
             <div class="mi-cabecera-campana">
-                <div class="dropdown d-print-none">
+                <button type="button" class="mi-campana mi-guia-boton d-print-none" id="mi-guia-boton" aria-label="Ver la guía del panel" title="Guía del panel" data-csrf="{{ csrf_token }}" data-auto="{% if tour_pendiente %}1{% endif %}"><i class="fas fa-circle-question" aria-hidden="true"></i></button>
+                <div class="dropdown d-print-none" data-tour="notificaciones">
                     <a class="mi-campana" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false" aria-label="Notificaciones">
                         <i class="fas fa-bell"></i>{% if totalnot %}<span class="mi-campana-punto">{% if totalnot > 99 %}99+{% else %}{{ totalnot }}{% endif %}</span>{% endif %}
                     </a>
@@ -113,6 +120,20 @@
         {% block content %}{% endblock %}
     </main>
 </div>
+{% if acceso_mi_dia %}
+    <button type="button" class="btn btn-primary mi-agenda-flotante d-print-none" data-bs-toggle="offcanvas" data-bs-target="#mi-agenda-offcanvas" aria-controls="mi-agenda-offcanvas" data-tour="agenda-flotante">
+        <i class="fas fa-calendar-day" aria-hidden="true"></i><span>Mi agenda</span>
+    </button>
+    <div class="offcanvas offcanvas-end mi-agenda-offcanvas" tabindex="-1" id="mi-agenda-offcanvas" aria-labelledby="mi-agenda-offcanvas-titulo" data-url="/agenda/mi-dia/">
+        <div class="offcanvas-header">
+            <h2 class="offcanvas-title h5 mb-0" id="mi-agenda-offcanvas-titulo">Mi agenda</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+        </div>
+        <div class="offcanvas-body" id="mi-agenda-offcanvas-cuerpo" aria-live="polite">
+            <p class="text-center text-muted py-4 mb-0"><span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Cargando tu agenda…</p>
+        </div>
+    </div>
+{% endif %}
 <script src="/static/js/agenda/micrositio.js?v1.1"></script>
 {% endblock %}
 
@@ -480,8 +501,16 @@
         });
     });
 </script>
-<link rel="stylesheet" href="/static/css/agenda/alerta_flotante.css?v1.0">
+<link rel="stylesheet" href="/static/css/agenda/alerta_flotante.css?v1.3">
 <script src="/static/js/agenda/alerta_flotante.js?v1.0"></script>
+<link rel="stylesheet" href="/static/css/core/buscador_modulos.css?v1.0">
+<script src="/static/js/core/buscador_modulos.js?v1.0"></script>
+<link rel="stylesheet" href="/static/css/agenda/offcanvas_agenda.css?v1.2">
+<script src="/static/js/agenda/offcanvas_agenda.js?v1.2"></script>
+<link rel="stylesheet" href="/static/assets/plugins/intro.js/minified/introjs.min.css">
+<link rel="stylesheet" href="/static/css/core/tour.css?v1.1">
+<script src="/static/assets/plugins/intro.js/minified/intro.min.js"></script>
+<script src="/static/js/core/tour.js?v1.0"></script>
 {% block jscript %}
 {% endblock %}
 

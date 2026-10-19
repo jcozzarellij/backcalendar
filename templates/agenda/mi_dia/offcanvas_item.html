@@ -1,0 +1,17 @@
+<li class="oc-item oc-{{ i.tipo }}{% if i.en_curso %} oc-en-curso{% endif %}{% if i.terminado %} oc-terminado{% endif %}">
+    <div class="oc-hora">
+        {% if mostrar_dia %}<span class="oc-dia">{{ i.inicio|date:"D j M"|capfirst }}</span>{% endif %}
+        {% if i.todo_el_dia %}<span>Todo el día</span>{% else %}<span>{{ i.inicio|time:"H:i" }}</span><span class="oc-fin">{{ i.fin|time:"H:i" }}</span>{% endif %}
+    </div>
+    <div class="oc-cuerpo">
+        <a href="{{ i.url }}" class="oc-nombre">{{ i.titulo }}</a>
+        <span class="oc-detalle">
+            <span class="badge {% if i.tipo == 'cita' %}text-bg-primary{% else %}text-bg-success{% endif %}">{% if i.tipo == 'cita' %}Cita{% else %}Reunión{% endif %}</span>
+            {% if i.en_curso %}<span class="badge text-bg-warning">En curso</span>{% endif %}
+            {% if i.detalle %}<span class="text-truncate">{{ i.detalle }}</span>{% endif %}
+        </span>
+    </div>
+    {% if i.enlace and not i.terminado %}
+        <a href="{{ i.enlace }}" class="btn btn-success btn-sm oc-unirse" target="_blank" rel="noopener" aria-label="Unirse a {{ i.titulo }}"><i class="fas fa-video" aria-hidden="true"></i></a>
+    {% endif %}
+</li>
