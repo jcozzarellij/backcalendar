@@ -1,15 +1,15 @@
 {
-  "POSTGRES_USER": "",
-  "POSTGRES_HOST": "",
-  "POSTGRES_PORT": "",
+  "POSTGRES_USER": "postgres",
+  "POSTGRES_HOST": "127.0.0.1",
+  "POSTGRES_PORT": "5432",
   "POSTGRES_PASSWORD": "",
-  "POSTGRES_DBNAME": "",
-  "USE_SSL": false,
+  "POSTGRES_DBNAME": "backcalendar",
+  "USE_SSL": true,
   "SECRET_KEY": "",
   "DEBUG": false,
-  "DOMINIO_GENERAL": "",
-  "BASE_URL_PRODUCCION": "",
-  "WINDOWS": true,
+  "DOMINIO_GENERAL": "tudominio.com",
+  "BASE_URL_PRODUCCION": "https://tudominio.com",
+  "WINDOWS": false,
   "EMAIL_HOST": "smtp.gmail.com",
   "EMAIL_PORT": 587,
   "EMAIL_USE_TLS": true,
@@ -19,14 +19,13 @@
   "ADMINS": [
     [
       "Admin",
-      "admin@dominio.com"
+      "admin@tudominio.com"
     ]
   ],
   "ID_GRUPO_ADMINISTRADOR": 1,
-  "BACKEND_PUBLIC_URL": "",
+  "BACKEND_PUBLIC_URL": "https://tudominio.com",
   "PG_DUMP_CMD": "",
-  "ERROR_NOTIFY_EMAILS": [],
-  "GOOGLE_OAUTH_CLIENT_ID": "",
-  "GOOGLE_OAUTH_CLIENT_SECRET": "",
-  "GOOGLE_OAUTH_REDIRECT_URI": ""
+  "ERROR_NOTIFY_EMAILS": [
+    "admin@tudominio.com"
+  ]
 }

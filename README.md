@@ -25,9 +25,9 @@ Cada persona del equipo conecta su propio Google Calendar desde **Agenda → Con
 1. En [Google Cloud Console](https://console.cloud.google.com/) crear un proyecto (por ejemplo «Turno») y habilitar **Google Calendar API** (APIs y servicios → Biblioteca).
 2. **Pantalla de consentimiento OAuth**: tipo de usuario **Interno** si todas las cuentas son del Google Workspace de la empresa (sin verificación de Google ni vencimiento del token a los 7 días). Si hay cuentas Gmail externas, tipo Externo y publicar la app.
 3. Permisos (scopes) que pide Turno: `calendar.events`, `calendar.freebusy`, `calendar.calendarlist.readonly`, `openid`, `userinfo.email`.
-4. **Credenciales → Crear credenciales → ID de cliente OAuth → Aplicación web**. En «URI de redirección autorizados» poner exactamente `https://<dominio>/agenda/aplicaciones/google/` (en desarrollo, `http://127.0.0.1:8000/agenda/aplicaciones/google/`).
-5. Copiar el ID y el secreto a `credenciales.json`: `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` y, si el dominio no es `BACKEND_PUBLIC_URL`, `GOOGLE_OAUTH_REDIRECT_URI`.
-6. Reiniciar el servidor. En «Conexiones» aparece el botón **Conectar con Google**; «Probar conexión» verifica el acceso al calendario.
+4. **Credenciales → Crear credenciales → ID de cliente OAuth → Aplicación web**. En «URI de redirección autorizados» poner exactamente `https://<dominio>/agenda/aplicaciones/google/` y, para iniciar sesión con Google, `https://<dominio>/login/google/callback/` (en desarrollo, las mismas rutas sobre `http://127.0.0.1:8008`). `<dominio>` es el de `BACKEND_PUBLIC_URL`.
+5. Cargar el ID y el secreto en **Configuración del sitio → Conexión Google** (el secreto se guarda cifrado). La pestaña muestra las URIs exactas que hay que registrar. Para el login con Google, activar ahí «Permitir inicio de sesión con Google» y cargar los dominios en **Dominios de correo**.
+6. En «Conexiones» aparece el botón **Conectar con Google**; «Probar conexión» verifica el acceso al calendario.
 
 La página de inicio (`/`) toma de **Configuración → Identidad gráfica** el logo, el favicon y el **Fondo de la portada** (foto ancha detrás del título; sin foto el hero queda en azul). Los botones «Agendar cita» llevan a `/agendar/<producto>/`.
 
