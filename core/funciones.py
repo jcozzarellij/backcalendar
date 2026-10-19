@@ -552,6 +552,8 @@ def salva_auditoria(request, model, action, nombre, qs_nuevo=None, qs_anterior=N
 def codnombre(nombres, apellidos, user_pk=0):
     lnombres = nombres.split(' ')
     lapellidos = apellidos.split(' ')
+    lnombres = [remover_caracteres_especiales_unicode(x) for x in lnombres]
+    lapellidos = [remover_caracteres_especiales_unicode(x) for x in lapellidos]
     codnombre = "{}{}".format(lnombres[0].lower()[0], str(lapellidos[0].lower()))
     # Sin `status`: el username es único en toda la tabla, así que un usuario dado de baja
     # sigue ocupando el suyo. Filtrar acá generaría uno que choca al guardar.
