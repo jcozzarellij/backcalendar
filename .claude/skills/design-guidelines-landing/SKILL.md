@@ -1,6 +1,6 @@
 ---
 name: design-guidelines-landing
-description: "Línea visual del landing público de Turno y su catálogo, el «mostrador»: tickets troquelados, barra de vidrio, Manrope + DM Sans, verde de acción con texto blanco. Usar al tocar `templates/public/landing.html`, `catalogo.html`, `static/css/public/landing.css` o sus parciales, al cambiar qué productos se publican o destacan, y al llevar otra pantalla pública (portal de agendar, Mis citas, legales) a este estilo."
+description: "Línea visual del landing público de Turno y su catálogo, el «mostrador»: tickets troquelados, barra de vidrio, Roboto, verde de acción con texto blanco. Usar al tocar `templates/public/landing.html`, `catalogo.html`, `static/css/public/landing.css` o sus parciales, al cambiar qué productos se publican o destacan, y al llevar otra pantalla pública (portal de agendar, Mis citas, legales) a este estilo."
 ---
 
 # Landing de Turno: el mostrador
@@ -24,7 +24,7 @@ Extiende `templates/public/base_landing.html`: ya trae fuentes precargadas, `lan
 - **Fondo**: nube `#E6F0F5`, con una sola hoja verde del logo asomando arriba a la derecha, recortada por el borde de la página.
 - **Ticket**: papel blanco con radio de 20 px. El troquel es discontinuo (`#c3d4df`), con dos muescas del color del fondo, y el talón lleva la acción. Un producto con partes (Moodle) corta el ticket en horizontal y lista cada parte como fila nube con su propia píldora «Agendar».
 - **Vidrio**: solo la barra superior (blanco al 60 %, blur 22 px, radio 22 px). Se vuelve sólida con `prefers-reduced-transparency`, con `prefers-contrast` y cuando el navegador no soporta `backdrop-filter`.
-- **Tipografía**: Manrope 800 en titulares (−0.03 a −0.035em) y DM Sans en el cuerpo. La base es de 19 px (23 px con letra grande) y todo tamaño público va en `em` sobre esa base.
+- **Tipografía**: Roboto en titulares (800, −0.03 a −0.035em) y en el cuerpo. El «OK» de los avisos SweetAlert (`.ag-swal-si`) es azul sólido con texto blanco. La base es de 19 px (23 px con letra grande) y todo tamaño público va en `em` sobre esa base.
 - **Color**:
   - El azul `#005082` informa y navega: enlaces, iconos, «Iniciar sesión», numeradores y la banda de empresas.
   - El verde de acción `#3f7f00` (hover `#336600`), con texto blanco, va solo en «Agendar» y en el botón de la banda.

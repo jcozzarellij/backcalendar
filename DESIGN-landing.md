@@ -34,12 +34,12 @@ Cuatro materiales: fondo nube, papel blanco, tinta y vidrio (solo la barra). El 
 
 ## Typography
 
-Manrope 800 para titulares, con tracking de −0.03 a −0.035em; DM Sans 400 para el cuerpo. Ambas autoalojadas en `static/fonts/manrope` y `static/fonts/dmsans`, declaradas en `static/fonts/turno_fuentes.css`.
+Roboto en todo el landing y el portal público: 800/900 para titulares, con tracking de −0.03 a −0.035em, y 400 para el cuerpo. Autoalojada en `static/fonts/family-roboto/woff` (subconjunto latino 400, 500, 700 y 900), declarada en `static/fonts/turno_fuentes.css`. El botón de confirmación de los avisos (`.ag-swal-si`, el «OK» de «¡Listo! Su cita quedó agendada») es sólido azul `#005082` con texto blanco, sin aro de enfoque exterior.
 
 - **Display** `clamp(2.2em, 2.4vw + 1.3em, 3.7em)`, 1.02: un titular por página.
 - **Headline** `clamp(1.5em, 1.2vw + 1.1em, 2.1em)`, 1.12: encabezados de sección.
 - **Ticket** `1.65em`, 1.1: nombre del producto.
-- **Body** DM Sans 400, 19 px (23 px con «Letra más grande»), 1.5.
+- **Body** Roboto 400, 19 px (23 px con «Letra más grande»), 1.5.
 
 ### Named Rules
 

@@ -16,8 +16,8 @@
     --ld-ok-texto: #24480a;
     --ld-peligro: #b3261e;
     --ld-placeholder: #5f6f7e;
-    --ld-titulos: 'Manrope', 'DM Sans', system-ui, sans-serif;
-    --ld-cuerpo: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --ld-titulos: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --ld-cuerpo: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
     --ld-base: 19px;
     --ld-salida: cubic-bezier(.16, 1, .3, 1);
 }
@@ -481,6 +481,23 @@ html.ld-grande {
 .ld-ticket-cuerpo {
     padding: 1.25em 1.6em;
     min-width: 0;
+}
+
+.ld-ticket-cabeza {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.ld-ticket-logo {
+    flex: 0 0 auto;
+    width: 56px;
+    height: 56px;
+    padding: 6px;
+    border-radius: 14px;
+    background: var(--ld-papel);
+    box-shadow: inset 0 0 0 1px var(--ld-linea);
+    object-fit: contain;
 }
 
 .ld-ticket-nombre {
@@ -1128,13 +1145,14 @@ html.ld-grande {
 }
 
 .ag-swal-si {
-    background: var(--ld-verde-accion);
+    background: var(--ld-azul);
     color: #ffffff;
     font-weight: 700;
 }
 
-.ag-swal-si:hover {
-    background: var(--ld-verde-accion-hover);
+.ag-swal-si:hover,
+.ag-swal-si:focus {
+    background: var(--ld-azul-oscuro);
     color: #ffffff;
 }
 
@@ -1153,11 +1171,22 @@ html.ld-grande {
     color: var(--ld-tinta);
 }
 
-.ag-swal-si:focus-visible,
-.ag-swal-no:focus-visible {
-    outline: 3px solid var(--ld-azul);
-    outline-offset: 2px;
+.swal2-popup .ag-swal-si:focus,
+.swal2-popup .ag-swal-si:focus-visible {
+    outline: 0;
     box-shadow: none;
+}
+
+.ag-swal-si.ag-swal-peligro:hover,
+.ag-swal-si.ag-swal-peligro:focus {
+    background: #8f1d17;
+}
+
+.swal2-popup .ag-swal-no:focus,
+.swal2-popup .ag-swal-no:focus-visible {
+    outline: 0;
+    box-shadow: none;
+    background: var(--ld-linea);
 }
 
 .ld-menu {

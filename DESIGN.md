@@ -1,6 +1,6 @@
 ---
 name: Turno de Exducere Online
-description: Landing público de Turno, el mostrador: fondo nube con la hoja verde del logo, tickets de papel troquelado, barra de vidrio, azul que informa y verde que actúa; Manrope y DM Sans.
+description: Landing público de Turno, el mostrador: fondo nube con la hoja verde del logo, tickets de papel troquelado, barra de vidrio, azul que informa y verde que actúa; Roboto en titulares y cuerpo.
 colors:
   azul: "#005082"
   azul-oscuro: "#003a5f"
@@ -21,25 +21,25 @@ colors:
   vidrio: "rgba(255, 255, 255, 0.6)"
 typography:
   display:
-    fontFamily: "Manrope, DM Sans, system-ui, sans-serif"
+    fontFamily: "Roboto, system-ui, sans-serif"
     fontSize: "clamp(2.2em, 2.4vw + 1.3em, 3.7em)"
     fontWeight: 800
     lineHeight: 1.02
     letterSpacing: "-0.035em"
   headline-publico:
-    fontFamily: "Manrope, DM Sans, system-ui, sans-serif"
+    fontFamily: "Roboto, system-ui, sans-serif"
     fontSize: "clamp(1.5em, 1.2vw + 1.1em, 2.1em)"
     fontWeight: 800
     lineHeight: 1.12
     letterSpacing: "-0.03em"
   ticket:
-    fontFamily: "Manrope, DM Sans, system-ui, sans-serif"
+    fontFamily: "Roboto, system-ui, sans-serif"
     fontSize: "1.65em"
     fontWeight: 800
     lineHeight: 1.1
     letterSpacing: "-0.03em"
   body-publico:
-    fontFamily: "DM Sans, system-ui, -apple-system, Segoe UI, sans-serif"
+    fontFamily: "Roboto, system-ui, -apple-system, Segoe UI, sans-serif"
     fontSize: "19px"
     fontWeight: 400
     lineHeight: 1.5
