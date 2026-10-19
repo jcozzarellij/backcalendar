@@ -1,10 +1,12 @@
+import re
+
 from django import forms
 from django.contrib.auth.models import Group
 from django.db.models import Value
 from django.db.models.functions import Concat
 
 from core.custom_models import ModelFormBase
-from seguridad.models import Configuracion, Modulo, ModuloGrupo, GroupModulo
+from seguridad.models import Configuracion, DominioCorreoPermitido, Modulo, ModuloGrupo, GroupModulo
 
 
 class ConfiguracionForm(ModelFormBase):
@@ -126,3 +128,28 @@ class GroupModuloForm(ModelFormBase):
         self.fields['modulos'].queryset = self.fields['modulos'].queryset.order_by('orden')
         self.fields["group"].widget = forms.HiddenInput()
         self.fields["group"].required = False  # ✅ también puedes ponerlo explícito por si acaso
+
+
+DOMINIO_VALIDO = re.compile(r'^(?=.{3,150}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$')
+
+
+class DominioCorreoPermitidoForm(ModelFormBase):
+    class Meta:
+        model = DominioCorreoPermitido
+        exclude = ('usuario_modificacion', 'fecha_modificacion', 'usuario_creacion', 'fecha_registro', 'status')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['dominio'].widget.attrs['col'] = '8'
+        self.fields['activo'].widget.attrs['col'] = '4'
+
+    def clean_dominio(self):
+        dominio = DominioCorreoPermitido.normalizar(self.cleaned_data.get('dominio'))
+        if not DOMINIO_VALIDO.match(dominio):
+            raise forms.ValidationError('Escribe un dominio válido, sin @. Ej.: excudere.com')
+        repetido = DominioCorreoPermitido.objects.filter(dominio=dominio, status=True)
+        if self.instance.pk:
+            repetido = repetido.exclude(pk=self.instance.pk)
+        if repetido.exists():
+            raise forms.ValidationError('Ese dominio ya está registrado.')
+        return dominio

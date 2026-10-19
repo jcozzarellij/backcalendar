@@ -6,6 +6,7 @@ from .view_auditoria import auditoria
 from .view_configuracion import configuracion
 from .view_configuracion_terminos import confiTerminos
 from .view_databasebackup import databaseBackupView
+from .view_dominiocorreo import dominiocorreoView
 from .view_grupo import grupo
 from .view_grupourls import grupoUrlsView
 from .view_modulo import modulo
@@ -64,6 +65,11 @@ seguridad_urls = (
         "nombre": "Tareas programadas",
         "url": 'crons/',
         "vista": cronsView,
+    },
+    {
+        "nombre": "Dominios de correo",
+        "url": 'dominios-correo/',
+        "vista": dominiocorreoView,
     },
     {
         "nombre": "Push broadcast",

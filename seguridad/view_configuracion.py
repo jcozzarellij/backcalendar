@@ -11,6 +11,7 @@ from django.shortcuts import render, redirect
 from core.custom_models import FormError
 from core.funciones import addData, secure_module, log, remover_caracteres_especiales_unicode, generar_nombre
 from core.funciones_adicionales import salva_logs
+from autenticacion.funciones_login_google import uri_retorno
 from seguridad.forms import ConfiguracionForm, SECRETOS_CONEXIONES
 from seguridad.models import Configuracion
 
@@ -133,7 +134,7 @@ def configuracion(request):
             {'clave': 'plataforma', 'titulo': 'Configuración de plataforma', 'icono': 'fa-gears',
              'campos': ['pg_dump_cmd', 'backup_retencion']},
             {'clave': 'google', 'titulo': 'Conexión Google', 'icono': 'fa-calendar-check',
-             'campos': ['google_client_id', 'google_client_secret', 'google_redirect_uri'],
+             'campos': ['google_client_id', 'google_client_secret', 'google_redirect_uri', 'conexion_google'],
              'nota': _nota_google(confi)},
             {'clave': 'teams', 'titulo': 'Conexión Teams', 'icono': 'fa-users',
              'campos': ['teams_client_id', 'teams_client_secret', 'teams_tenant_id', 'teams_redirect_uri'],
@@ -154,6 +155,8 @@ def _nota_google(confi):
     """Texto de ayuda de la pestaña Google: qué URI registrar y de dónde salen hoy las claves."""
     nota = (f'Cliente OAuth de tipo «Aplicación web». En Google Cloud registra como URI de redirección '
             f'{confi.google_redirect_uri or settings.GOOGLE_OAUTH_REDIRECT_URI} y habilita la Google Calendar API.')
+    nota += (f' Para iniciar sesión con Google, registra también {uri_retorno()} y carga los dominios '
+             'permitidos en Dominios de correo.')
     if not confi.google_client_id and settings.GOOGLE_OAUTH_CLIENT_ID:
         nota += ' Hoy se usan las claves de credenciales.json; al guardar aquí un ID de cliente pasan a usarse estas.'
     if confi.google_client_id:

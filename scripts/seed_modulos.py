@@ -110,6 +110,7 @@ SECCIONES = [
             ('/seguridad/configuracion/',        'Configuración del sitio', 10, 'fa-gear'),
             ('/seguridad/terminosycondiciones/', 'Términos y condiciones',  20, 'fa-file-contract'),
             ('/seguridad/webpush-broadcast/',    'Notificaciones push',    40, 'fa-bullhorn'),
+            ('/seguridad/dominios-correo/',      'Dominios de correo',     50, 'fa-at'),
         ],
     },
     {

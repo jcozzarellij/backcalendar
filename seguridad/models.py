@@ -196,6 +196,9 @@ class Configuracion(ModeloBase):
                                               help_text='Se guarda cifrado. Déjalo vacío para conservar el actual.')
     google_redirect_uri = models.CharField(max_length=500, blank=True, default='', verbose_name='URI de redirección de Google',
                                            help_text='Vacío = la URI por defecto del sistema, que se muestra arriba.')
+    conexion_google = models.BooleanField(default=False, verbose_name='Permitir inicio de sesión con Google',
+                                          help_text='Muestra «Continuar con Google» en /login/. Solo entran correos de los '
+                                                    'dominios permitidos que ya pertenezcan a un usuario.')
     teams_client_id = models.CharField(max_length=300, blank=True, default='', verbose_name='ID de aplicación (cliente) de Microsoft',
                                        help_text='Microsoft Entra › Registros de aplicaciones › Información general.')
     teams_client_secret = EncryptedTextField(blank=True, default='', verbose_name='Secreto de cliente de Microsoft',
@@ -519,3 +522,32 @@ class TareaCron(ModeloBase):
 
     def __str__(self):
         return f'{self.nombre} ({self.schedule})'
+
+
+class DominioCorreoPermitido(ModeloBase):
+    """Dominios de correo con los que se puede iniciar sesión con Google (ej. `gmail.com`).
+    Sin filas activas nadie entra con Google."""
+    dominio = models.CharField(max_length=150, verbose_name='Dominio',
+                               help_text='Solo el dominio, sin @. Ej.: excudere.com o gmail.com.')
+    descripcion = models.CharField(max_length=300, blank=True, default='', verbose_name='Descripción')
+    activo = models.BooleanField(default=True, verbose_name='Activo')
+
+    @staticmethod
+    def normalizar(dominio):
+        return (dominio or '').strip().lower().lstrip('@').strip()
+
+    def save(self, *args, **kwargs):
+        self.dominio = DominioCorreoPermitido.normalizar(self.dominio)
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = 'Dominio de correo permitido'
+        verbose_name_plural = 'Dominios de correo permitidos'
+        ordering = ['dominio']
+        constraints = [
+            models.UniqueConstraint(fields=['dominio'], condition=models.Q(status=True),
+                                    name='dominiocorreo_dominio_unico_activo'),
+        ]
+
+    def __str__(self):
+        return self.dominio
